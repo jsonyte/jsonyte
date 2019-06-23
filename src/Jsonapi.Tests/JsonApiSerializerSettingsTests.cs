@@ -9,32 +9,32 @@ namespace Jsonapi.Tests
         public void CanConvertData()
         {
             var article = JsonConvert.DeserializeObject<Article>(@"
-{
-  'data': {
-    'type': 'articles',
-    'id': '1',
-    'attributes': {
-      'title': 'My article'
-    },
-    relationships: {
-      'author': {
-        'data': {
-          'type': 'authors',
-          'id': '2'
-        }
-      }
-    }
-  },
-  included: [
-    {
-      'type': 'authors',
-      'id': '2',
-      'attributes': {
-        'name': 'Rob'
-      }
-    }
-  ]
-}");
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'My article'
+                    },
+                    relationships: {
+                      'author': {
+                        'data': {
+                          'type': 'authors',
+                          'id': '2'
+                        }
+                      }
+                    }
+                  },
+                  included: [
+                    {
+                      'type': 'authors',
+                      'id': '2',
+                      'attributes': {
+                        'name': 'Rob'
+                      }
+                    }
+                  ]
+                }", new JsonApiSerializerSettings());
         }
 
         private class Article

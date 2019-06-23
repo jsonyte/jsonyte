@@ -1,4 +1,5 @@
 ﻿using System;
+using Jsonapi.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -13,6 +14,16 @@ namespace Jsonapi.Resolvers
 
         protected override JsonConverter ResolveContractConverter(Type objectType)
         {
+            if (objectType.IsDocument())
+            {
+                return new DocumentConverter();
+            }
+
+            if (objectType.IsResource())
+            {
+                return new ResourceConverter();
+            }
+
             return base.ResolveContractConverter(objectType);
         }
     }

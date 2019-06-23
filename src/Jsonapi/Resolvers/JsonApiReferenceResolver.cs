@@ -1,12 +1,17 @@
-﻿using Newtonsoft.Json.Serialization;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json.Serialization;
 
 namespace Jsonapi.Resolvers
 {
     public class JsonApiReferenceResolver : IReferenceResolver
     {
+        private readonly Dictionary<string, object> references = new Dictionary<string, object>();
+
         public object ResolveReference(object context, string reference)
         {
-            throw new System.NotImplementedException();
+            references.TryGetValue(reference, out var value);
+
+            return value;
         }
 
         public string GetReference(object context, object value)
@@ -21,7 +26,7 @@ namespace Jsonapi.Resolvers
 
         public void AddReference(object context, string reference, object value)
         {
-            throw new System.NotImplementedException();
+            references.Add(reference, value);
         }
     }
 }
