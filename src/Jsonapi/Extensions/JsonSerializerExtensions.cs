@@ -24,23 +24,5 @@ namespace Jsonapi.Extensions
                 property.ValueProvider.SetValue(target, value);
             }
         }
-
-        public static void AddReference(this JsonSerializer serializer, object target)
-        {
-            var contract = serializer.ResolveObjectContract(target.GetType());
-
-            var idProperty = contract.Properties.GetClosestMatchProperty(JsonApiMembers.Id);
-            var typeProperty = contract.Properties.GetClosestMatchProperty(JsonApiMembers.Type);
-
-            if (idProperty != null && typeProperty != null)
-            {
-                var id = idProperty.ValueProvider.GetValue(target);
-                var type = typeProperty.ValueProvider.GetValue(target);
-
-                var key = $"{type}:{id}";
-
-                serializer.ReferenceResolver.AddReference(null, key, target);
-            }
-        }
     }
 }

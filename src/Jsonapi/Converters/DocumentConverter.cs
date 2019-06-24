@@ -31,9 +31,10 @@ namespace Jsonapi.Converters
                     var dataType = objectType.GenericTypeArguments.First();
 
                     var value = serializer.Deserialize(reader, dataType);
-                    var property = contract.Properties.GetClosestMatchProperty(member);
 
-                    property.ValueProvider.SetValue(document, value);
+                    contract.Properties.GetClosestMatchProperty(member)
+                        .ValueProvider
+                        .SetValue(document, value);
                 }
 
                 if (member == JsonApiMembers.Included)
@@ -49,9 +50,11 @@ namespace Jsonapi.Converters
                         if (existingResource != null)
                         {
                             var resourceType = existingResource.GetType();
-                            var resourceContract = serializer.ContractResolver.ResolveContract(resourceType);
 
-                            resourceContract.Converter.ReadJson(resource.CreateReader(), resourceType, existingResource, serializer);
+                            serializer.ContractResolver
+                                .ResolveContract(resourceType)
+                                .Converter
+                                .ReadJson(resource.CreateReader(), resourceType, existingResource, serializer);
                         }
                         else
                         {

@@ -40,16 +40,17 @@ namespace Jsonapi.Converters
                     {
                         dataContract.Converter.ReadJson(dataJson.CreateReader(), dataType, data, serializer);
 
-                        serializer.AddReference(data);
+                        serializer.ReferenceResolver.AddReference(null, key.ToString(), data);
                     }
                     else if (existingData is JObject existingDataJson)
                     {
                         dataContract.Converter.ReadJson(existingDataJson.CreateReader(), dataType, data, serializer);
                     }
 
-                    var property = contract.Properties.GetClosestMatchProperty(JsonApiMembers.Data);
-
-                    property.ValueProvider.SetValue(relationship, data);
+                    contract.Properties
+                        .GetClosestMatchProperty(JsonApiMembers.Data)
+                        .ValueProvider
+                        .SetValue(relationship, data);
                 }
             }
 
