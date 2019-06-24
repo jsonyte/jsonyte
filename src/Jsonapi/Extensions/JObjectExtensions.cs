@@ -9,6 +9,11 @@ namespace Jsonapi.Extensions
             var id = value[JsonApiMembers.Id].Value<string>();
             var type = value[JsonApiMembers.Type].Value<string>();
 
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
+            {
+                throw new JsonApiException("Resource identifier must contain valid Id and Type");
+            }
+
             return new ResourceIdentifier(id, type);
         }
     }
