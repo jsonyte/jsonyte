@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Serialization;
 
 namespace Jsonapi.Resolvers
@@ -16,12 +17,12 @@ namespace Jsonapi.Resolvers
 
         public string GetReference(object context, object value)
         {
-            throw new System.NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public bool IsReferenced(object context, object value)
         {
-            throw new System.NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public void AddReference(object context, string reference, object value)

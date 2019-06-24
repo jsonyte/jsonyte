@@ -1,6 +1,6 @@
 ﻿using System;
+using Jsonapi.Extensions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Jsonapi.Converters
 {
@@ -18,7 +18,7 @@ namespace Jsonapi.Converters
                 return ReadDocument(reader, objectType, serializer);
             }
 
-            var contract = (JsonObjectContract) serializer.ContractResolver.ResolveContract(objectType);
+            var contract = serializer.ResolveObjectContract(objectType);
             var resource = existingValue ?? contract.DefaultCreator();
 
             var flags = ResourceFlags.None;
@@ -41,7 +41,11 @@ namespace Jsonapi.Converters
                 {
                     foreach (var relationshipMember in reader.GetMembers())
                     {
-                        serializer.Populate(reader, resource, relationshipMember);
+                        var property = contract.Properties.GetClosestMatchProperty(relationshipMember);
+
+                        var value = ReadRelationship(reader, property.PropertyType, serializer);
+
+                        property.ValueProvider.SetValue(resource, value);
                     }
                 }
             }
@@ -51,14 +55,30 @@ namespace Jsonapi.Converters
 
         public override bool CanConvert(Type objectType)
         {
-            throw new NotImplementedException();
+            return objectType.IsResource();
         }
 
         private object ReadDocument(JsonReader reader, Type objectType, JsonSerializer serializer)
         {
-            var type = typeof(JsonApiDocument<>).MakeGenericType(objectType);
+            return ReadObject(reader, typeof(JsonApiDocument<>), objectType, serializer);
+        }
 
-            return serializer.Deserialize(reader, type);
+        private object ReadRelationship(JsonReader reader, Type objectType, JsonSerializer serializer)
+        {
+            return ReadObject(reader, typeof(JsonApiRelationship<>), objectType, serializer);
+        }
+
+        private object ReadObject(JsonReader reader, Type containerType, Type objectType, JsonSerializer serializer)
+        {
+            var type = containerType.MakeGenericType(objectType);
+
+            var value = serializer.Deserialize(reader, type);
+
+            return serializer.ResolveObjectContract(type)
+                .Properties
+                .GetClosestMatchProperty(JsonApiMembers.Data)
+                .ValueProvider
+                .GetValue(value);
         }
 
         private ResourceFlags AddFlags(ResourceFlags flags, string member)

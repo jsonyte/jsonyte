@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
+using Jsonapi.Extensions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Linq;
 
 namespace Jsonapi.Converters
 {
@@ -14,7 +15,7 @@ namespace Jsonapi.Converters
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            var contract = (JsonObjectContract) serializer.ContractResolver.ResolveContract(objectType);
+            var contract = serializer.ResolveObjectContract(objectType);
             var document = contract.DefaultCreator();
 
             serializer.ReferenceResolver.AddReference(null, JsonApiMembers.Document, document);
@@ -34,6 +35,30 @@ namespace Jsonapi.Converters
 
                     property.ValueProvider.SetValue(document, value);
                 }
+
+                if (member == JsonApiMembers.Included)
+                {
+                    foreach (var _ in reader.GetValues())
+                    {
+                        var resource = serializer.Deserialize<JObject>(reader);
+
+                        var key = resource.GetResourceIdentifier();
+
+                        var existingResource = serializer.ReferenceResolver.ResolveReference(null, key.ToString());
+
+                        if (existingResource != null)
+                        {
+                            var resourceType = existingResource.GetType();
+                            var resourceContract = serializer.ContractResolver.ResolveContract(resourceType);
+
+                            resourceContract.Converter.ReadJson(resource.CreateReader(), resourceType, existingResource, serializer);
+                        }
+                        else
+                        {
+                            serializer.ReferenceResolver.AddReference(null, key.ToString(), resource);
+                        }
+                    }
+                }
             }
 
             return document;
@@ -41,7 +66,7 @@ namespace Jsonapi.Converters
 
         public override bool CanConvert(Type objectType)
         {
-            throw new NotImplementedException();
+            return objectType.IsDocument();
         }
 
         private DocumentFlags AddFlags(DocumentFlags flags, string member)

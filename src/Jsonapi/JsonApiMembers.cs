@@ -17,5 +17,9 @@
         public const string Type = "type";
 
         public const string Relationship = "relationships";
+
+        public const string Included = "included";
+
+        public const string Links = "links";
     }
 }
