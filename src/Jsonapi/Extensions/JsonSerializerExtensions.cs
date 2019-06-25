@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -6,6 +7,16 @@ namespace Jsonapi.Extensions
 {
     public static class JsonSerializerExtensions
     {
+        public static object ResolveDocument(this JsonSerializer serializer)
+        {
+            return serializer.ReferenceResolver.ResolveReference(null, JsonApiMembers.Document);
+        }
+
+        public static Queue<object> ResolveIncludedResources(this JsonSerializer serializer)
+        {
+            return serializer.ReferenceResolver.ResolveReference(null, JsonApiMembers.Included) as Queue<object>;
+        }
+
         public static JsonObjectContract ResolveObjectContract(this JsonSerializer serializer, Type type)
         {
             return serializer.ContractResolver.ResolveContract(type) as JsonObjectContract;

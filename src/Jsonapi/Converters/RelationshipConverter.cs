@@ -10,7 +10,32 @@ namespace Jsonapi.Converters
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            throw new NotImplementedException();
+            var contract = serializer.ResolveObjectContract(value.GetType());
+            var dataContract = serializer.ResolveObjectContract(value.GetType().GenericTypeArguments.First());
+
+            var resources = serializer.ResolveIncludedResources();
+
+            var data = contract.Properties
+                .GetClosestMatchProperty(JsonApiMembers.Data)
+                .ValueProvider
+                .GetValue(value);
+
+            writer.WritePropertyName(JsonApiMembers.Data);
+            writer.WriteStartObject();
+
+            var identifiers = contract.Properties
+                .Where(x => x.PropertyName == JsonApiMembers.Id || x.PropertyName == JsonApiMembers.Type)
+                .OrderBy(x => x.PropertyName);
+
+            foreach (var property in identifiers)
+            {
+                writer.WritePropertyName(property.PropertyName);
+                writer.WriteValue(property.ValueProvider.GetValue(data).ToString());
+            }
+
+            resources.Enqueue(data);
+
+            writer.WriteEndObject();
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
@@ -31,7 +56,7 @@ namespace Jsonapi.Converters
 
                     var dataJson = serializer.Deserialize<JObject>(reader);
 
-                    var key = dataJson.GetResourceIdentifier();
+                    var key = ResourceIdentifier.Create(dataJson);
                     
                     var existingData = serializer.ReferenceResolver.ResolveReference(null, key.ToString());
                     var data = dataContract.DefaultCreator();

@@ -8,6 +8,11 @@ namespace Jsonapi.Resolvers
 {
     public class JsonApiContractResolver : DefaultContractResolver
     {
+        public JsonApiContractResolver()
+        {
+            NamingStrategy = new CamelCaseNamingStrategy();
+        }
+
         protected override JsonConverter ResolveContractConverter(Type objectType)
         {
             if (typeof(JToken).IsAssignableFrom(objectType))

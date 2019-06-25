@@ -16,7 +16,7 @@
 
         public const string Type = "type";
 
-        public const string Relationship = "relationships";
+        public const string Relationships = "relationships";
 
         public const string Included = "included";
 
