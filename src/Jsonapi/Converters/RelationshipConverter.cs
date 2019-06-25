@@ -23,7 +23,7 @@ namespace Jsonapi.Converters
             writer.WritePropertyName(JsonApiMembers.Data);
             writer.WriteStartObject();
 
-            var identifiers = contract.Properties
+            var identifiers = dataContract.Properties
                 .Where(x => x.PropertyName == JsonApiMembers.Id || x.PropertyName == JsonApiMembers.Type)
                 .OrderBy(x => x.PropertyName);
 

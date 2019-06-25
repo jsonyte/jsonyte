@@ -37,6 +37,28 @@ namespace Jsonapi.Tests
                 }", new JsonApiSerializerSettings());
         }
 
+        [Fact]
+        public void CanWriteData()
+        {
+            var article = new Article
+            {
+                Id = 1,
+                Title = "My article",
+                Author = new Author
+                {
+                    Id = 2,
+                    Name = "Rob",
+                    Country = new Country
+                    {
+                        Id = 3,
+                        Zone = "NZ"
+                    }
+                }
+            };
+
+            var json = JsonConvert.SerializeObject(article, new JsonApiSerializerSettings());
+        }
+
         private class Article
         {
             public int Id { get; set; }
@@ -55,6 +77,17 @@ namespace Jsonapi.Tests
             public string Type { get; } = "authors";
 
             public string Name { get; set; }
+
+            public Country Country { get; set; }
+        }
+
+        private class Country
+        {
+            public int Id { get; set; }
+
+            public string Type { get; } = "country";
+
+            public string Zone { get; set; }
         }
     }
 }
