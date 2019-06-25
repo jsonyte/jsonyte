@@ -11,26 +11,41 @@ namespace Jsonapi.Tests
             var article = JsonConvert.DeserializeObject<Article>(@"
                 {
                   'data': {
-                    'type': 'articles',
                     'id': '1',
+                    'type': 'articles',
                     'attributes': {
                       'title': 'My article'
                     },
-                    relationships: {
+                    'relationships': {
                       'author': {
                         'data': {
-                          'type': 'authors',
-                          'id': '2'
+                          'id': '2',
+                          'type': 'authors'
                         }
                       }
                     }
                   },
-                  included: [
+                  'included': [
                     {
-                      'type': 'authors',
                       'id': '2',
+                      'type': 'authors',
                       'attributes': {
                         'name': 'Rob'
+                      },
+                      'relationships': {
+                        'country': {
+                          'data': {
+                            'id': '3',
+                            'type': 'country'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '3',
+                      'type': 'country',
+                      'attributes': {
+                        'zone': 'NZ'
                       }
                     }
                   ]
