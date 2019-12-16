@@ -1,5 +1,6 @@
 ﻿using System;
 using Jsonapi.Converters;
+using Jsonapi.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;

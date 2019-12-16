@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace Jsonapi
+namespace Jsonapi.Extensions
 {
     public static class TypeExtensions
     {
