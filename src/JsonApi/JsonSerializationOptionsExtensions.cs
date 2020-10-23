@@ -22,7 +22,7 @@ namespace JsonApi
                 throw new JsonApiException("JSON:API extensions not initialized, please call use 'AddJsonApi' on 'JsonSerializerOptions' first");
             }
 
-            return state.ClassInfos.GetOrAdd(type, x => new JsonClassInfo(x, options));
+            return state.Classes.GetOrAdd(type, x => new JsonClassInfo(x, options));
         }
     }
 }

@@ -8,7 +8,7 @@ namespace JsonApi.Converters
 {
     internal class JsonApiStateConverter : JsonConverter<JsonApiStateConverter>
     {
-        public ConcurrentDictionary<Type, JsonClassInfo> ClassInfos { get; } = new ConcurrentDictionary<Type, JsonClassInfo>();
+        public ConcurrentDictionary<Type, JsonClassInfo> Classes { get; } = new ConcurrentDictionary<Type, JsonClassInfo>();
 
         public override JsonApiStateConverter Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

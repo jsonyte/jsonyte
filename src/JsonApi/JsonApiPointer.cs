@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace JsonApi
+﻿namespace JsonApi
 {
     public class JsonApiPointer
     {
