@@ -15,6 +15,16 @@ namespace JsonApi
 
         internal static JsonClassInfo GetClassInfo(this JsonSerializerOptions options, Type type)
         {
+            return GetState(options).Classes.GetOrAdd(type, x => new JsonClassInfo(x, options));
+        }
+
+        internal static MemberAccessor GetMemberAccessor(this JsonSerializerOptions options)
+        {
+            return GetState(options).MemberAccessor;
+        }
+
+        private static JsonApiStateConverter GetState(JsonSerializerOptions options)
+        {
             var state = options.GetConverter(typeof(JsonApiStateConverter)) as JsonApiStateConverter;
 
             if (state == null)
@@ -22,7 +32,7 @@ namespace JsonApi
                 throw new JsonApiException("JSON:API extensions not initialized, please call use 'AddJsonApi' on 'JsonSerializerOptions' first");
             }
 
-            return state.Classes.GetOrAdd(type, x => new JsonClassInfo(x, options));
+            return state;
         }
     }
 }
