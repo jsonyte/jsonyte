@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using JsonApi.Converters;
 
 namespace JsonApi
 {
@@ -25,9 +26,11 @@ namespace JsonApi
         public JsonApiResource[] Included { get; set; }
     }
 
+    [JsonConverter(typeof(JsonApiDocumentConverter<JsonApiDocument>))]
     public class JsonApiDocument
     {
         [JsonPropertyName("data")]
+        [JsonConverter(typeof(JsonApiResourcesConverter))]
         public JsonApiResource[] Data { get; set; }
 
         [JsonPropertyName("errors")]

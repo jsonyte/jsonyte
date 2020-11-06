@@ -7,7 +7,7 @@ namespace JsonApi.Serialization
     {
         public override Func<object> CreateCreator(Type type)
         {
-            return () => Activator.CreateInstance(type);
+            return () => Activator.CreateInstance(type, false);
         }
 
         public override Func<object, T> CreatePropertyGetter<T>(PropertyInfo property)

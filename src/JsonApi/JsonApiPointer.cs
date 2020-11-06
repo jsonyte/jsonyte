@@ -1,5 +1,9 @@
-﻿namespace JsonApi
+﻿using System.Text.Json.Serialization;
+using JsonApi.Converters;
+
+namespace JsonApi
 {
+    [JsonConverter(typeof(JsonApiPointerConverter))]
     public class JsonApiPointer
     {
         private readonly string value;

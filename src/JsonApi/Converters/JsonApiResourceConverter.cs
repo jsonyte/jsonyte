@@ -63,7 +63,7 @@ namespace JsonApi.Converters
                 {
                     ReadResource(ref reader, info, resource, true);
                 }
-                else if (info.Properties.TryGetValue(name, out var property))
+                else if (!string.IsNullOrEmpty(name) && info.Properties.TryGetValue(name, out var property))
                 {
                     property.Read(ref reader, resource);
                 }

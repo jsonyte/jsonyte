@@ -14,6 +14,7 @@ namespace JsonApi.Serialization
             Options = options;
             Creator = options.GetMemberAccessor().CreateCreator(type);
             Properties = GetProperties(type);
+            ClassType = GetClassType(type);
         }
 
         public JsonSerializerOptions Options { get; }
@@ -21,6 +22,8 @@ namespace JsonApi.Serialization
         public Func<object> Creator { get; }
 
         public Dictionary<string, JsonPropertyInfo> Properties { get; }
+
+        public JsonClassType ClassType { get; }
 
         private Dictionary<string, JsonPropertyInfo> GetProperties(Type type)
         {
@@ -93,6 +96,21 @@ namespace JsonApi.Serialization
             }
 
             return converters.First();
+        }
+
+        private JsonClassType GetClassType(Type type)
+        {
+            if (type.IsCollection())
+            {
+                if (type.IsArray)
+                {
+                    return JsonClassType.Array;
+                }
+
+                return JsonClassType.List;
+            }
+
+            return JsonClassType.Object;
         }
     }
 }
