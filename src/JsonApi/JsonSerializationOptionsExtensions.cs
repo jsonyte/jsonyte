@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.Json;
 using JsonApi.Converters;
 using JsonApi.Serialization;
@@ -9,8 +10,15 @@ namespace JsonApi
     {
         public static void AddJsonApi(this JsonSerializerOptions options)
         {
-            options.Converters.Add(new JsonApiStateConverter());
-            options.Converters.Add(new JsonApiConverterFactory());
+            if (!options.Converters.OfType<JsonApiStateConverter>().Any())
+            {
+                options.Converters.Add(new JsonApiStateConverter());
+            }
+
+            if (!options.Converters.OfType<JsonApiConverterFactory>().Any())
+            {
+                options.Converters.Add(new JsonApiConverterFactory());
+            }
         }
 
         internal static JsonClassInfo GetClassInfo(this JsonSerializerOptions options, Type type)
