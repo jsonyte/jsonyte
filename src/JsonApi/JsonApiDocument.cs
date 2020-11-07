@@ -17,7 +17,7 @@ namespace JsonApi
         public Dictionary<string, JsonElement> Meta { get; set; }
 
         [JsonPropertyName("jsonapi")]
-        public JsonApiObject Version { get; set; }
+        public JsonApiObject JsonApi { get; set; }
 
         [JsonPropertyName("links")]
         public JsonApiLinks Links { get; set; }
@@ -40,7 +40,7 @@ namespace JsonApi
         public Dictionary<string, JsonElement> Meta { get; set; }
 
         [JsonPropertyName("jsonapi")]
-        public JsonApiObject Version { get; set; }
+        public JsonApiObject JsonApi { get; set; }
 
         [JsonPropertyName("links")]
         public JsonApiLinks Links { get; set; }

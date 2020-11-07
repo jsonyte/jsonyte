@@ -52,6 +52,30 @@ namespace JsonApi.Tests.Deserialization
             Assert.Contains("minimum required", exception.Message.ToLower());
         }
 
+        [Fact]
+        public void CanDeserializeObjectInDocument()
+        {
+            const string json = @"
+            {
+              'data': null,
+              'jsonapi': {
+                'version': '1.0',
+                'meta': {
+                  'count': 10,
+                  'feature': 'something'
+                }
+              }
+            }";
+
+            var document = json.Deserialize<JsonApiDocument>();
+
+            Assert.NotNull(document);
+            Assert.NotNull(document.JsonApi);
+            Assert.Equal("1.0", document.JsonApi.Version.ToString());
+            Assert.Equal(10, document.JsonApi.Meta["count"].GetInt32());
+            Assert.Equal("something", document.JsonApi.Meta["feature"].GetString());
+        }
+
         private class Document
         {
             [JsonPropertyName("jsonapi")]
