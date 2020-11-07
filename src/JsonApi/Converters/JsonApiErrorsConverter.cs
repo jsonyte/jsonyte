@@ -58,11 +58,6 @@ namespace JsonApi.Converters
                 return errors.ToArray();
             }
 
-            if (info.ClassType == JsonClassType.List)
-            {
-                return errors;
-            }
-
             return errors;
         }
     }

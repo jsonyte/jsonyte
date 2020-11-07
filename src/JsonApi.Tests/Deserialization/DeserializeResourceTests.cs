@@ -1,4 +1,7 @@
-﻿using JsonApi.Tests.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using JsonApi.Tests.Models;
 using Xunit;
 
 namespace JsonApi.Tests.Deserialization
@@ -89,7 +92,39 @@ namespace JsonApi.Tests.Deserialization
 
             Assert.Equal("2", articles[1].Id);
             Assert.Equal("articles", articles[1].Type);
-            Assert.Equal("Jsonap 2i", articles[1].Title);
+            Assert.Equal("Jsonapi 2", articles[1].Title);
+        }
+
+        [Theory]
+        [InlineData(typeof(List<Article>))]
+        [InlineData(typeof(Article[]))]
+        [InlineData(typeof(IList<Article>))]
+        [InlineData(typeof(ICollection<Article>))]
+        [InlineData(typeof(IEnumerable<Article>))]
+        public void CanDeserializeCollections(Type type)
+        {
+            const string json = @"
+            {
+              'data': [{
+                'type': 'articles',
+                'id': '1',
+                'attributes': {
+                  'title': 'Jsonapi'
+                }
+              },
+              {
+                'type': 'articles',
+                'id': '2',
+                'attributes': {
+                  'title': 'Jsonapi 2'
+                }
+              }]
+            }";
+
+            var articles = json.Deserialize(type) as IEnumerable<Article>;
+
+            Assert.NotNull(articles);
+            Assert.Equal(2, articles.Count());
         }
     }
 }

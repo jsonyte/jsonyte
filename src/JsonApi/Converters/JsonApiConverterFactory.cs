@@ -21,7 +21,15 @@ namespace JsonApi.Converters
                 return false;
             }
 
-            if (typeToConvert.IsCollection() && typeToConvert.GetCollectionType() == typeof(JsonApiError))
+            var isCollection = typeToConvert.IsCollection();
+            var collectionType = typeToConvert.GetCollectionType();
+
+            if (isCollection && collectionType == typeof(JsonApiError))
+            {
+                return true;
+            }
+
+            if (isCollection && collectionType.IsResource())
             {
                 return true;
             }
@@ -31,17 +39,25 @@ namespace JsonApi.Converters
 
         public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
-            if (typeToConvert.IsCollection() && typeToConvert.GetCollectionType() == typeof(JsonApiError))
+            var isCollection = typeToConvert.IsCollection();
+            var collectionType = typeToConvert.GetCollectionType();
+
+            if (isCollection && collectionType == typeof(JsonApiError))
             {
                 return CreateConverter(typeof(JsonApiErrorsConverter<>), typeToConvert);
+            }
+
+            if (isCollection && collectionType.IsResource())
+            {
+                return CreateConverter(typeof(JsonApiResourceCollectionConverter<,>), typeToConvert, collectionType);
             }
 
             return CreateConverter(typeof(JsonApiResourceConverter<>), typeToConvert);
         }
 
-        private JsonConverter CreateConverter(Type converterType, Type typeToConvert)
+        private JsonConverter CreateConverter(Type converterType, params Type[] typesToConvert)
         {
-            var genericType = converterType.MakeGenericType(typeToConvert);
+            var genericType = converterType.MakeGenericType(typesToConvert);
 
             return Activator.CreateInstance(genericType) as JsonConverter;
         }
