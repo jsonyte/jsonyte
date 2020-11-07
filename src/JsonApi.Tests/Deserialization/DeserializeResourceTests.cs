@@ -12,15 +12,15 @@ namespace JsonApi.Tests.Deserialization
         public void CanDeserializeSimpleObject()
         {
             const string json = @"
-            {
-              'data': {
-                'type': 'articles',
-                'id': '1',
-                'attributes': {
-                  'title': 'Jsonapi'
-                }
-              }
-            }";
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  }
+                }";
 
             var article = json.Deserialize<Article>();
 
@@ -34,19 +34,19 @@ namespace JsonApi.Tests.Deserialization
         public void CanDeserializeNestedObject()
         {
             const string json = @"
-            {
-              'data': {
-                'type': 'articles',
-                'id': '1',
-                'attributes': {
-                  'title': 'Jsonapi',
-                  'author': {
-                    'name': 'Brown Smith',
-                    'title': 'Mr'
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi',
+                      'author': {
+                        'name': 'Brown Smith',
+                        'title': 'Mr'
+                      }
+                    }
                   }
-                }
-              }
-            }";
+                }";
 
             var article = json.Deserialize<ArticleWithNestedAuthor>();
 
@@ -64,22 +64,22 @@ namespace JsonApi.Tests.Deserialization
         public void CanDeserializeSimpleArray()
         {
             const string json = @"
-            {
-              'data': [{
-                'type': 'articles',
-                'id': '1',
-                'attributes': {
-                  'title': 'Jsonapi'
-                }
-              },
-              {
-                'type': 'articles',
-                'id': '2',
-                'attributes': {
-                  'title': 'Jsonapi 2'
-                }
-              }]
-            }";
+                {
+                  'data': [{
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  },
+                  {
+                    'type': 'articles',
+                    'id': '2',
+                    'attributes': {
+                      'title': 'Jsonapi 2'
+                    }
+                  }]
+                }";
 
             var articles = json.Deserialize<Article[]>();
 
@@ -104,22 +104,22 @@ namespace JsonApi.Tests.Deserialization
         public void CanDeserializeCollections(Type type)
         {
             const string json = @"
-            {
-              'data': [{
-                'type': 'articles',
-                'id': '1',
-                'attributes': {
-                  'title': 'Jsonapi'
-                }
-              },
-              {
-                'type': 'articles',
-                'id': '2',
-                'attributes': {
-                  'title': 'Jsonapi 2'
-                }
-              }]
-            }";
+                {
+                  'data': [{
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  },
+                  {
+                    'type': 'articles',
+                    'id': '2',
+                    'attributes': {
+                      'title': 'Jsonapi 2'
+                    }
+                  }]
+                }";
 
             var articles = json.Deserialize(type) as IEnumerable<Article>;
 

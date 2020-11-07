@@ -8,13 +8,13 @@ namespace JsonApi.Tests.Deserialization
         public void JsonMustHaveRequiredMembers()
         {
             const string json = @"
-            {
-              'links': {
-                'self': 'http://example.com/articles',
-                'next': 'http://example.com/articles?page[offset]=2',
-                'last': 'http://example.com/articles?page[offset]=10'
-              }
-            }";
+                {
+                  'links': {
+                    'self': 'http://example.com/articles',
+                    'next': 'http://example.com/articles?page[offset]=2',
+                    'last': 'http://example.com/articles?page[offset]=10'
+                  }
+                }";
 
             var exception = Record.Exception(() => json.Deserialize<JsonApiDocument>());
 
@@ -26,17 +26,17 @@ namespace JsonApi.Tests.Deserialization
         public void CanDeserializeSimpleLinks()
         {
             const string json = @"
-            {
-              'links': {
-                'self': 'http://example.com/articles',
-                'next': 'http://example.com/articles?page[offset]=2',
-                'prev': 'http://example.com/articles?page[offset]=1',
-                'last': 'http://example.com/articles?page[offset]=10',
-                'first': 'http://example.com/articles?page[offset]=0',
-                'related': 'http://example.com/related'
-              },
-              'data': null
-            }";
+                {
+                  'links': {
+                    'self': 'http://example.com/articles',
+                    'next': 'http://example.com/articles?page[offset]=2',
+                    'prev': 'http://example.com/articles?page[offset]=1',
+                    'last': 'http://example.com/articles?page[offset]=10',
+                    'first': 'http://example.com/articles?page[offset]=0',
+                    'related': 'http://example.com/related'
+                  },
+                  'data': null
+                }";
 
             var document = json.Deserialize<JsonApiDocument>();
 
@@ -53,13 +53,13 @@ namespace JsonApi.Tests.Deserialization
         public void CanDeserializeSimpleNonStandardLink()
         {
             const string json = @"
-            {
-              'links': {
-                'articles': 'http://example.com/articles',
-                'blogs': 'http://example.com/blogs'
-              },
-              'data': null
-            }";
+                {
+                  'links': {
+                    'articles': 'http://example.com/articles',
+                    'blogs': 'http://example.com/blogs'
+                  },
+                  'data': null
+                }";
 
             var document = json.Deserialize<JsonApiDocument>();
 
@@ -72,25 +72,25 @@ namespace JsonApi.Tests.Deserialization
         public void CanDeserializeComplexLinks()
         {
             const string json = @"
-            {
-              'links': {
-                'self': {
-                  'href': 'http://example.com/articles',
-                  'meta': {
-                    'count': 10,
-                    'title': 'articles'
-                  }
-                },
-                'next': {
-                  'href': 'http://example.com/articles?page[offset]=2',
-                  'meta': {
-                    'count': 4,
-                    'title': 'blogs'
-                  }
-                }
-              },
-              'data': null
-            }";
+                {
+                  'links': {
+                    'self': {
+                      'href': 'http://example.com/articles',
+                      'meta': {
+                        'count': 10,
+                        'title': 'articles'
+                      }
+                    },
+                    'next': {
+                      'href': 'http://example.com/articles?page[offset]=2',
+                      'meta': {
+                        'count': 4,
+                        'title': 'blogs'
+                      }
+                    }
+                  },
+                  'data': null
+                }";
 
             var document = json.Deserialize<JsonApiDocument>();
 

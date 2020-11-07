@@ -56,16 +56,16 @@ namespace JsonApi.Tests.Deserialization
         public void CanDeserializeObjectInDocument()
         {
             const string json = @"
-            {
-              'data': null,
-              'jsonapi': {
-                'version': '1.0',
-                'meta': {
-                  'count': 10,
-                  'feature': 'something'
-                }
-              }
-            }";
+                {
+                  'data': null,
+                  'jsonapi': {
+                    'version': '1.0',
+                    'meta': {
+                      'count': 10,
+                      'feature': 'something'
+                    }
+                  }
+                }";
 
             var document = json.Deserialize<JsonApiDocument>();
 

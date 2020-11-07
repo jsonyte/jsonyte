@@ -170,15 +170,15 @@ namespace JsonApi.Tests.Deserialization
         public void SingleResourceDocumentWithNoErrorsReturnsNull()
         {
             const string json = @"
-            {
-              'data': {
-                'type': 'articles',
-                'id': '1',
-                'attributes': {
-                  'title': 'json'
-                }
-              }
-            }";
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'json'
+                    }
+                  }
+                }";
 
             var errors = json.Deserialize<JsonApiError[]>();
 
@@ -189,24 +189,24 @@ namespace JsonApi.Tests.Deserialization
         public void MultipleResourceDocumentWithNoErrorsReturnsNull()
         {
             const string json = @"
-            {
-              'data': [
                 {
-                  'type': 'articles',
-                  'id': '1',
-                  'attributes': {
-                    'title': 'json'
-                  }
-                },
-                {
-                  'type': 'articles',
-                  'id': '2',
-                  'attributes': {
-                    'title': 'api'
-                  }
-                }
-              ]
-            }";
+                  'data': [
+                    {
+                      'type': 'articles',
+                      'id': '1',
+                      'attributes': {
+                        'title': 'json'
+                      }
+                    },
+                    {
+                      'type': 'articles',
+                      'id': '2',
+                      'attributes': {
+                        'title': 'api'
+                      }
+                    }
+                  ]
+                }";
 
             var errors = json.Deserialize<JsonApiError[]>();
 
@@ -239,6 +239,48 @@ namespace JsonApi.Tests.Deserialization
 
             Assert.IsType<JsonApiException>(exception);
             Assert.Contains("must not contain both 'data' and 'errors'", exception.Message);
+        }
+
+        [Fact]
+        public void CanReadErrorsWithMetaAndLinks()
+        {
+            const string json = @"
+                {
+                  'errors': [
+                    {
+                      'id': '1',
+                      'links': {
+                        'about': 'http://example.com'
+                      },
+                      'status': '404',
+                      'code': '123',
+                      'title': 'Value is too short',
+                      'detail': 'First name must contain at least three characters.',
+                      'source': {
+                        'pointer': '/data/attributes/firstName',
+                        'parameter': 'id'
+                      },
+                      'meta': {
+                        'copyright': 'jsonapi',
+                        'authors': [
+                          'Bob Jane',
+                          'James Bond'
+                        ]
+                      }
+                    }
+                  ]
+                }";
+
+            var errors = json.Deserialize<JsonApiError[]>();
+
+            Assert.NotNull(errors);
+            Assert.NotEmpty(errors);
+            Assert.NotNull(errors[0].Links);
+
+            Assert.Equal("http://example.com", errors[0].Links.About.Href);
+            Assert.Equal("jsonapi", errors[0].Meta["copyright"].GetString());
+            Assert.Equal("Bob Jane", errors[0].Meta["authors"][0].GetString());
+            Assert.Equal("James Bond", errors[0].Meta["authors"][1].GetString());
         }
     }
 }
