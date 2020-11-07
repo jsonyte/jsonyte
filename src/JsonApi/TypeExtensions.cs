@@ -10,9 +10,9 @@ namespace JsonApi
     {
         public static bool IsResource(this Type type)
         {
-            var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var typeProperty = type.GetProperty("Type", BindingFlags.Instance | BindingFlags.Public);
 
-            return properties.Any(x => x.Name.Equals("Type", StringComparison.OrdinalIgnoreCase));
+            return typeProperty?.PropertyType == typeof(string);
         }
 
         public static bool IsDocument(this Type type)
