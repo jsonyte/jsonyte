@@ -49,8 +49,8 @@ namespace JsonApi
         [JsonPropertyName("related")]
         public JsonApiLink Related
         {
-            get => GetOrNull("self");
-            set => base["self"] = value;
+            get => GetOrNull("related");
+            set => base["related"] = value;
         }
 
         private JsonApiLink GetOrNull(string key)
