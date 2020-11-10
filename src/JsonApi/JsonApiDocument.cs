@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using JsonApi.Converters;
 
 namespace JsonApi
@@ -14,7 +12,7 @@ namespace JsonApi
         public JsonApiError[] Errors { get; set; }
 
         [JsonPropertyName("meta")]
-        public Dictionary<string, JsonElement> Meta { get; set; }
+        public JsonApiMeta Meta { get; set; }
 
         [JsonPropertyName("jsonapi")]
         public JsonApiObject JsonApi { get; set; }
@@ -37,7 +35,7 @@ namespace JsonApi
         public JsonApiError[] Errors { get; set; }
 
         [JsonPropertyName("meta")]
-        public Dictionary<string, JsonElement> Meta { get; set; }
+        public JsonApiMeta Meta { get; set; }
 
         [JsonPropertyName("jsonapi")]
         public JsonApiObject JsonApi { get; set; }

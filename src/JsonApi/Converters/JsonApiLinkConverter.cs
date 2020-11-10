@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -31,11 +30,12 @@ namespace JsonApi.Converters
                     }
                     else if (name == "meta")
                     {
-                        link.Meta = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(ref reader, options);
+                        link.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                     }
                     else
                     {
                         reader.Skip();
+
                     }
 
                     reader.Read();
