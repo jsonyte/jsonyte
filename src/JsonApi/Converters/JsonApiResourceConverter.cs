@@ -11,7 +11,7 @@ namespace JsonApi.Converters
         {
             if (reader.IsDocument())
             {
-                var document = JsonSerializer.Deserialize<JsonApiDocument<T>>(ref reader, options);
+                var document = JsonSerializer.Deserialize<JsonApiResourceDocument<T>>(ref reader, options);
 
                 if (document == null)
                 {
@@ -59,7 +59,11 @@ namespace JsonApi.Converters
 
                 reader.Read();
 
-                if (!attributesRead && name == JsonApiMembers.Attributes)
+                if (name == JsonApiMembers.Relationships)
+                {
+                    ReadRelationships(ref reader, info, resource);
+                }
+                else if (name == JsonApiMembers.Attributes && !attributesRead)
                 {
                     ReadResource(ref reader, info, resource, true);
                 }
@@ -73,6 +77,33 @@ namespace JsonApi.Converters
                 }
 
                 reader.Read();
+            }
+        }
+
+        private void ReadRelationships(ref Utf8JsonReader reader, JsonClassInfo info, object resource)
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonApiException("Invalid JSON:API relationships");
+            }
+
+            reader.Read();
+
+            while (reader.TokenType != JsonTokenType.EndObject)
+            {
+                if (reader.TokenType != JsonTokenType.PropertyName)
+                {
+                    throw new JsonApiException($"Expected top-level JSON:API property name but found '{reader.GetString()}'");
+                }
+
+                var name = reader.GetString();
+
+                reader.Read();
+
+                if (!string.IsNullOrEmpty(name) && info.Properties.TryGetValue(name, out var property))
+                {
+                    property.Read(ref reader, resource);
+                }
             }
         }
     }

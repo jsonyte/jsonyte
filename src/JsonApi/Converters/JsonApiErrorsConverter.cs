@@ -43,7 +43,29 @@ namespace JsonApi.Converters
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            var errors = GetErrors(value);
+
+            if (writer.CurrentDepth == 0)
+            {
+                var document = new JsonApiDocument
+                {
+                    Errors = errors
+                };
+
+                JsonSerializer.Serialize(writer, document, options);
+
+                return;
+            }
+
+            writer.WritePropertyName("errors");
+            writer.WriteStartArray();
+
+            foreach (var error in errors)
+            {
+                JsonSerializer.Serialize(writer, error, options);
+            }
+
+            writer.WriteEndArray();
         }
 
         private object GetInstance(JsonClassInfo info, List<JsonApiError> errors)
@@ -59,6 +81,21 @@ namespace JsonApi.Converters
             }
 
             return errors;
+        }
+
+        private JsonApiError[] GetErrors(T value)
+        {
+            if (value is JsonApiError[] array)
+            {
+                return array;
+            }
+
+            if (!(value is IEnumerable<JsonApiError> enumerable))
+            {
+                throw new JsonApiException("Expected array or list type of JsonApiError objects");
+            }
+
+            return enumerable.ToArray();
         }
     }
 }

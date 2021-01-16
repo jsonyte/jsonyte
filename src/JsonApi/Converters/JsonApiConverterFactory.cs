@@ -21,17 +21,19 @@ namespace JsonApi.Converters
                 return false;
             }
 
-            var isCollection = typeToConvert.IsCollection();
-            var collectionType = typeToConvert.GetCollectionType();
-
-            if (isCollection && collectionType == typeof(JsonApiError))
+            if (typeToConvert.IsDocument())
             {
                 return true;
             }
 
-            if (isCollection && collectionType.IsResource())
+            if (typeToConvert.IsCollection())
             {
-                return true;
+                var collectionType = typeToConvert.GetCollectionType();
+
+                if (collectionType.IsError() || collectionType.IsResource())
+                {
+                    return true;
+                }
             }
 
             return typeToConvert.IsResource();
@@ -39,17 +41,24 @@ namespace JsonApi.Converters
 
         public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
-            var isCollection = typeToConvert.IsCollection();
-            var collectionType = typeToConvert.GetCollectionType();
-
-            if (isCollection && collectionType == typeof(JsonApiError))
+            if (typeToConvert.IsDocument())
             {
-                return CreateConverter(typeof(JsonApiErrorsConverter<>), typeToConvert);
+                return CreateConverter(typeof(JsonApiDocumentConverter<>), typeToConvert);
             }
 
-            if (isCollection && collectionType.IsResource())
+            if (typeToConvert.IsCollection())
             {
-                return CreateConverter(typeof(JsonApiResourceCollectionConverter<,>), typeToConvert, collectionType);
+                var collectionType = typeToConvert.GetCollectionType();
+
+                if (collectionType.IsError())
+                {
+                    return CreateConverter(typeof(JsonApiErrorsConverter<>), typeToConvert);
+                }
+
+                if (collectionType.IsResource())
+                {
+                    return CreateConverter(typeof(JsonApiResourceCollectionConverter<,>), typeToConvert, collectionType);
+                }
             }
 
             return CreateConverter(typeof(JsonApiResourceConverter<>), typeToConvert);

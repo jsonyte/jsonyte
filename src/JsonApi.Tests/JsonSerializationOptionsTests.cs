@@ -8,7 +8,7 @@ namespace JsonApi.Tests
 {
     public class JsonSerializationOptionsTests
     {
-        const string Json = @"
+        private const string Json = @"
             {
               'data': {
                 'id': '1',

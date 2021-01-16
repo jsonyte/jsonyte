@@ -13,6 +13,11 @@ namespace JsonApi
             this.value = value;
         }
 
+        public static implicit operator JsonApiPointer(string value)
+        {
+            return new JsonApiPointer(value);
+        }
+
         public override string ToString()
         {
             return value;

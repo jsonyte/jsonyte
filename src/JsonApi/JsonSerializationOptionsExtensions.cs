@@ -8,7 +8,7 @@ namespace JsonApi
 {
     public static class JsonSerializationOptionsExtensions
     {
-        public static void AddJsonApi(this JsonSerializerOptions options)
+        public static JsonSerializerOptions AddJsonApi(this JsonSerializerOptions options)
         {
             if (!options.Converters.OfType<JsonApiStateConverter>().Any())
             {
@@ -19,6 +19,8 @@ namespace JsonApi
             {
                 options.Converters.Add(new JsonApiConverterFactory());
             }
+
+            return options;
         }
 
         internal static JsonClassInfo GetClassInfo(this JsonSerializerOptions options, Type type)

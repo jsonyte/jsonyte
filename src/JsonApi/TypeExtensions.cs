@@ -15,10 +15,29 @@ namespace JsonApi
             return typeProperty?.PropertyType == typeof(string);
         }
 
+        public static bool IsError(this Type type)
+        {
+            return type == typeof(JsonApiError);
+        }
+
         public static bool IsDocument(this Type type)
         {
-            return type == typeof(JsonApiDocument) ||
-                   type.IsGenericType && type.GetGenericTypeDefinition() == typeof(JsonApiDocument<>);
+            //if (type == typeof(JsonApiDocument))
+            //{
+            //    return true;
+            //}
+
+            if (type.IsGenericType)
+            {
+                var genericType = type.GetGenericTypeDefinition();
+
+                if (/*genericType == typeof(JsonApiDocument<>) || */genericType == typeof(JsonApiResourceDocument<>))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static bool IsCollection(this Type type)
