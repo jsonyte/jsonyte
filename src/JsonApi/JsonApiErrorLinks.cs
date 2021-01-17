@@ -12,6 +12,7 @@ namespace JsonApi
         }
 
         [JsonPropertyName("about")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink About
         {
             get => GetOrNull("about");

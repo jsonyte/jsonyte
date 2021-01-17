@@ -12,6 +12,7 @@ namespace JsonApi
         }
 
         [JsonPropertyName("first")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink First
         {
             get => GetOrNull("first");
@@ -19,6 +20,7 @@ namespace JsonApi
         }
 
         [JsonPropertyName("last")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink Last
         {
             get => GetOrNull("last");
@@ -26,6 +28,7 @@ namespace JsonApi
         }
 
         [JsonPropertyName("prev")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink Prev
         {
             get => GetOrNull("prev");
@@ -33,6 +36,7 @@ namespace JsonApi
         }
 
         [JsonPropertyName("next")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink Next
         {
             get => GetOrNull("next");
@@ -40,6 +44,7 @@ namespace JsonApi
         }
 
         [JsonPropertyName("self")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink Self
         {
             get => GetOrNull("self");
@@ -47,6 +52,7 @@ namespace JsonApi
         }
 
         [JsonPropertyName("related")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink Related
         {
             get => GetOrNull("related");

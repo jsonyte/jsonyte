@@ -7,9 +7,11 @@ namespace JsonApi
     public class JsonApiLink
     {
         [JsonPropertyName("href")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Href { get; set; }
 
         [JsonPropertyName("meta")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiMeta Meta { get; set; }
     }
 }
