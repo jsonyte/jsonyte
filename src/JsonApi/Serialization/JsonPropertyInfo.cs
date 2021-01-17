@@ -12,6 +12,8 @@ namespace JsonApi.Serialization
         public abstract object GetValue(object value);
 
         public abstract void Read(ref Utf8JsonReader reader, object resource);
+
+        public abstract void Write(Utf8JsonWriter writer, object resource);
     }
 
     internal sealed class JsonPropertyInfo<T> : JsonPropertyInfo
@@ -23,6 +25,7 @@ namespace JsonApi.Serialization
             TypedConverter = converter as JsonConverter<T>;
             Get = options.GetMemberAccessor().CreatePropertyGetter<T>(property);
             Set = options.GetMemberAccessor().CreatePropertySetter<T>(property);
+            PropertyName = GetPropertyName(property, options);
         }
 
         public override JsonConverter Converter { get; }
@@ -35,6 +38,8 @@ namespace JsonApi.Serialization
 
         public Action<object, T> Set { get; }
 
+        public string PropertyName { get; }
+
         public override object GetValue(object value)
         {
             return Get(value);
@@ -45,6 +50,31 @@ namespace JsonApi.Serialization
             var value = TypedConverter.Read(ref reader, typeof(T), Options);
 
             Set(resource, value);
+        }
+
+        public override void Write(Utf8JsonWriter writer, object resource)
+        {
+            var value = Get(resource);
+
+            writer.WritePropertyName(PropertyName);
+            TypedConverter.Write(writer, value, Options);
+        }
+
+        private string GetPropertyName(PropertyInfo property, JsonSerializerOptions options)
+        {
+            var attribute = property.GetCustomAttribute<JsonPropertyNameAttribute>(false);
+
+            if (attribute != null)
+            {
+                return attribute.Name;
+            }
+
+            if (options.PropertyNamingPolicy != null)
+            {
+                return options.PropertyNamingPolicy.ConvertName(property.Name);
+            }
+
+            return property.Name;
         }
     }
 }

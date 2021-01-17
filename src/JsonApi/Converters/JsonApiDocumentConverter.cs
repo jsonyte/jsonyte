@@ -66,6 +66,19 @@ namespace JsonApi.Converters
 
                 writer.WriteEndObject();
             }
+            else if (value is JsonApiDocument<T> typedDocument)
+            {
+                ValidateDocument(typedDocument);
+
+                writer.WriteStartObject();
+
+                if (typedDocument.Data != null)
+                {
+                    JsonSerializer.Serialize(writer, typedDocument.Data, options);
+                }
+
+                writer.WriteEndObject();
+            }
         }
 
         private void AddFlag(ref DocumentFlags flags, string name)
@@ -119,6 +132,24 @@ namespace JsonApi.Converters
         }
 
         private void ValidateDocument(JsonApiDocument document)
+        {
+            if (document.Data == null && document.Errors == null && document.Meta == null)
+            {
+                throw new JsonApiException("JSON:API document must contain 'data', 'errors' or 'meta' members");
+            }
+
+            if (document.Data != null && document.Errors != null)
+            {
+                throw new JsonApiException("JSON:API document must not contain both 'data' and 'errors' members");
+            }
+
+            if (document.Data == null && document.Included != null)
+            {
+                throw new JsonApiException("JSON:API document must contain 'data' member if 'included' member is specified");
+            }
+        }
+
+        private void ValidateDocument(JsonApiDocument<T> document)
         {
             if (document.Data == null && document.Errors == null && document.Meta == null)
             {

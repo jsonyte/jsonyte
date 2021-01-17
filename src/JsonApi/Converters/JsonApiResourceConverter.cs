@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using JsonApi.Serialization;
@@ -36,7 +37,52 @@ namespace JsonApi.Converters
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            if (writer.CurrentDepth == 0)
+            {
+                var document = new JsonApiDocument<T>
+                {
+                    Data = value
+                };
+
+                JsonSerializer.Serialize(writer, document, options);
+
+                return;
+            }
+
+            writer.WriteStartObject();
+
+            var info = options.GetClassInfo(typeof(T));
+
+            var valueKeys = info.Properties.Keys
+                .Except(new[] {JsonApiMembers.Id, JsonApiMembers.Type})
+                .ToArray();
+
+            if (info.Properties.TryGetValue("id", out var id))
+            {
+                id.Write(writer, value);
+            }
+
+            if (info.Properties.TryGetValue("type", out var type))
+            {
+                type.Write(writer, value);
+            }
+
+            if (valueKeys.Any())
+            {
+                writer.WritePropertyName(JsonApiMembers.Attributes);
+                writer.WriteStartObject();
+
+                foreach (var key in valueKeys)
+                {
+                    var property = info.Properties[key];
+
+                    property.Write(writer, value);
+                }
+
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndObject();
         }
 
         private void ReadResource(ref Utf8JsonReader reader, JsonClassInfo info, object resource, bool attributesRead)
