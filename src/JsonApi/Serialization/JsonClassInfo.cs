@@ -100,17 +100,17 @@ namespace JsonApi.Serialization
 
         private JsonClassType GetClassType(Type type)
         {
-            if (type.IsCollection())
+            if (!type.IsCollection())
             {
-                if (type.IsArray)
-                {
-                    return JsonClassType.Array;
-                }
-
-                return JsonClassType.List;
+                return JsonClassType.Object;
             }
 
-            return JsonClassType.Object;
+            if (type.IsArray)
+            {
+                return JsonClassType.Array;
+            }
+
+            return JsonClassType.List;
         }
     }
 }
