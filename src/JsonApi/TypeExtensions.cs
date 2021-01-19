@@ -22,16 +22,11 @@ namespace JsonApi
 
         public static bool IsDocument(this Type type)
         {
-            //if (type == typeof(JsonApiDocument))
-            //{
-            //    return true;
-            //}
-
             if (type.IsGenericType)
             {
                 var genericType = type.GetGenericTypeDefinition();
 
-                if (/*genericType == typeof(JsonApiDocument<>) || */genericType == typeof(JsonApiResourceDocument<>))
+                if (genericType == typeof(JsonApiResourceDocument<>))
                 {
                     return true;
                 }

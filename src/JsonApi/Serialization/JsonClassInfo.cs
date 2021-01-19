@@ -21,11 +21,11 @@ namespace JsonApi.Serialization
 
         public Func<object> Creator { get; }
 
-        public Dictionary<string, JsonPropertyInfo> Properties { get; }
+        public Dictionary<string, IJsonPropertyInfo> Properties { get; }
 
         public JsonClassType ClassType { get; }
 
-        private Dictionary<string, JsonPropertyInfo> GetProperties(Type type)
+        private Dictionary<string, IJsonPropertyInfo> GetProperties(Type type)
         {
             var comparer = Options.PropertyNameCaseInsensitive
                 ? StringComparer.OrdinalIgnoreCase
@@ -56,12 +56,12 @@ namespace JsonApi.Serialization
             return property.Name;
         }
 
-        private JsonPropertyInfo CreateProperty(PropertyInfo property)
+        private IJsonPropertyInfo CreateProperty(PropertyInfo property)
         {
             var propertyType = typeof(JsonPropertyInfo<>).MakeGenericType(property.PropertyType);
             var converter = GetConverter(property);
 
-            return Activator.CreateInstance(propertyType, property, converter, Options) as JsonPropertyInfo;
+            return Activator.CreateInstance(propertyType, property, converter, Options) as IJsonPropertyInfo;
         }
 
         private JsonConverter GetConverter(PropertyInfo property)

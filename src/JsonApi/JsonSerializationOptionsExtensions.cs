@@ -28,7 +28,7 @@ namespace JsonApi
             return GetState(options).Classes.GetOrAdd(type, x => new JsonClassInfo(x, options));
         }
 
-        internal static MemberAccessor GetMemberAccessor(this JsonSerializerOptions options)
+        internal static IMemberAccessor GetMemberAccessor(this JsonSerializerOptions options)
         {
             return GetState(options).MemberAccessor;
         }

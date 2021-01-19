@@ -2,8 +2,6 @@
 {
     internal static class JsonApiMembers
     {
-        public const string Document = "document";
-
         public const string Data = "data";
 
         public const string Errors = "errors";

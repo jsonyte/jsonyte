@@ -47,7 +47,22 @@ namespace JsonApi.Converters
 
         public override void Write(Utf8JsonWriter writer, JsonApiLink value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            if (value.Meta == null)
+            {
+                writer.WriteStringValue(value.Href);
+            }
+            else
+            {
+                writer.WriteStartObject();
+
+                writer.WritePropertyName("href");
+                writer.WriteStringValue(value.Href);
+
+                writer.WritePropertyName("meta");
+                JsonSerializer.Serialize(writer, value.Meta, options);
+
+                writer.WriteEndObject();
+            }
         }
     }
 }

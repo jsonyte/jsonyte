@@ -16,31 +16,6 @@ namespace JsonApi
                 return false;
             }
 
-            //if (!reader.Read())
-            //{
-            //    return false;
-            //}
-
-            //while (reader.TokenType == JsonTokenType.PropertyName)
-            //{
-            //    var name = reader.GetString();
-
-            //    if (name != "data" && name != "errors" && name != "meta")
-            //    {
-            //        return false;
-            //    }
-
-            //    if (!reader.TrySkip())
-            //    {
-            //        return false;
-            //    }
-
-            //    if (!reader.Read())
-            //    {
-            //        return false;
-            //    }
-            //}
-
             return true;
         }
     }

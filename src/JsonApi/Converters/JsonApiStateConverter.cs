@@ -10,7 +10,7 @@ namespace JsonApi.Converters
     {
         public ConcurrentDictionary<Type, JsonClassInfo> Classes { get; } = new ConcurrentDictionary<Type, JsonClassInfo>();
 
-        public MemberAccessor MemberAccessor { get; } = new ReflectionMemberAccessor();
+        public IMemberAccessor MemberAccessor { get; } = new ReflectionMemberAccessor();
 
         public override JsonApiStateConverter Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

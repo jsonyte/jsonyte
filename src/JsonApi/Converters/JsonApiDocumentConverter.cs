@@ -59,9 +59,30 @@ namespace JsonApi.Converters
 
                 writer.WriteStartObject();
 
+                if (document.Data != null)
+                {
+                    JsonSerializer.Serialize(writer, document.Data, options);
+                }
+                else if (document.Errors == null && document.Meta == null)
+                {
+                    writer.WriteNull(JsonApiMembers.Data);
+                }
+
                 if (document.Errors != null)
                 {
                     JsonSerializer.Serialize(writer, document.Errors, options);
+                }
+
+                if (document.Links != null)
+                {
+                    writer.WritePropertyName(JsonApiMembers.Links);
+
+                    JsonSerializer.Serialize(writer, document.Links, options);
+                }
+
+                if (document.Meta != null)
+                {
+                    JsonSerializer.Serialize(writer, document.Meta, options);
                 }
 
                 writer.WriteEndObject();
@@ -75,6 +96,21 @@ namespace JsonApi.Converters
                 if (typedDocument.Data != null)
                 {
                     JsonSerializer.Serialize(writer, typedDocument.Data, options);
+                }
+
+                if (typedDocument.Errors != null)
+                {
+                    JsonSerializer.Serialize(writer, typedDocument.Errors, options);
+                }
+
+                if (typedDocument.Links != null)
+                {
+                    JsonSerializer.Serialize(writer, typedDocument.Links, options);
+                }
+
+                if (typedDocument.Meta != null)
+                {
+                    JsonSerializer.Serialize(writer, typedDocument.Meta, options);
                 }
 
                 writer.WriteEndObject();
@@ -133,11 +169,6 @@ namespace JsonApi.Converters
 
         private void ValidateDocument(JsonApiDocument document)
         {
-            if (document.Data == null && document.Errors == null && document.Meta == null)
-            {
-                throw new JsonApiException("JSON:API document must contain 'data', 'errors' or 'meta' members");
-            }
-
             if (document.Data != null && document.Errors != null)
             {
                 throw new JsonApiException("JSON:API document must not contain both 'data' and 'errors' members");
@@ -151,11 +182,6 @@ namespace JsonApi.Converters
 
         private void ValidateDocument(JsonApiDocument<T> document)
         {
-            if (document.Data == null && document.Errors == null && document.Meta == null)
-            {
-                throw new JsonApiException("JSON:API document must contain 'data', 'errors' or 'meta' members");
-            }
-
             if (document.Data != null && document.Errors != null)
             {
                 throw new JsonApiException("JSON:API document must not contain both 'data' and 'errors' members");
