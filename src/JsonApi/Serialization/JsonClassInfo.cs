@@ -35,8 +35,15 @@ namespace JsonApi.Serialization
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                 .Where(x => !x.GetIndexParameters().Any())
                 .Where(x => x.GetMethod?.IsPublic == true || x.SetMethod?.IsPublic == true)
-                .Where(x => x.GetCustomAttribute<JsonIgnoreAttribute>() == null)
+                .Where(x => !IsAlwaysIgnored(x))
                 .ToDictionary(GetPropertyName, CreateProperty, comparer);
+        }
+
+        private bool IsAlwaysIgnored(PropertyInfo property)
+        {
+            var condition = property.GetCustomAttribute<JsonIgnoreAttribute>()?.Condition;
+
+            return condition == JsonIgnoreCondition.Always;
         }
 
         private string GetPropertyName(PropertyInfo property)
