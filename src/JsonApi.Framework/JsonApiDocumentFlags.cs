@@ -3,7 +3,7 @@
 namespace JsonApi
 {
     [Flags]
-    internal enum DocumentFlags
+    internal enum JsonApiDocumentFlags
     {
         None = 0,
         Data = 1,

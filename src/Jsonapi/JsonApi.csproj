@@ -3,6 +3,8 @@
   <PropertyGroup>
     <Version>0.1.0</Version>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+
     <Authors>Robert Coltheart</Authors>
     <Description>A thing that does something</Description>
     <Company></Company>

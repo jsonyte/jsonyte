@@ -35,9 +35,7 @@ namespace JsonApi
 
         private static JsonApiStateConverter GetState(JsonSerializerOptions options)
         {
-            var state = options.GetConverter(typeof(JsonApiStateConverter)) as JsonApiStateConverter;
-
-            if (state == null)
+            if (options.GetConverter(typeof(JsonApiStateConverter)) is not JsonApiStateConverter state)
             {
                 throw new JsonApiException("JSON:API extensions not initialized, please call use 'AddJsonApi' on 'JsonSerializerOptions' first");
             }

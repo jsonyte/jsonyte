@@ -8,7 +8,7 @@ namespace JsonApi.Converters
 {
     internal class JsonApiStateConverter : JsonConverter<JsonApiStateConverter>
     {
-        public ConcurrentDictionary<Type, JsonClassInfo> Classes { get; } = new ConcurrentDictionary<Type, JsonClassInfo>();
+        public ConcurrentDictionary<Type, JsonClassInfo> Classes { get; } = new();
 
         public IMemberAccessor MemberAccessor { get; } = new ReflectionMemberAccessor();
 

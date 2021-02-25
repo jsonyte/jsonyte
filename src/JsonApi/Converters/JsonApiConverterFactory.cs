@@ -7,7 +7,7 @@ namespace JsonApi.Converters
 {
     internal class JsonApiConverterFactory : JsonConverterFactory
     {
-        private static readonly HashSet<Type> DefaultTypes = new HashSet<Type>
+        private static readonly HashSet<Type> DefaultTypes = new()
         {
             typeof(JsonApiError),
             typeof(JsonApiResource),
@@ -52,7 +52,7 @@ namespace JsonApi.Converters
 
                 if (collectionType.IsError())
                 {
-                    return CreateConverter(typeof(JsonApiErrorsConverter<>), typeToConvert);
+                    return CreateConverter(typeof(NewJsonApiErrorsConverter<>), typeToConvert);
                 }
 
                 if (collectionType.IsResource())

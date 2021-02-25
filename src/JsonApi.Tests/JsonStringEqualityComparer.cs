@@ -5,7 +5,7 @@ namespace JsonApi.Tests
 {
     public class JsonStringEqualityComparer : IEqualityComparer<string>
     {
-        public static JsonStringEqualityComparer Default { get; } = new JsonStringEqualityComparer();
+        public static JsonStringEqualityComparer Default { get; } = new();
 
         public bool Equals(string x, string y)
         {
