@@ -7,8 +7,6 @@ A library for serializing and deserializing [JSON:API](https://jsonapi.org) docu
 ## Usage
 Install the package from NuGet with `dotnet add package Jsonapi`.
 
-Types and instances can be registered in the container, as in the example below. You can also resolve types without registering them, provided that they have only 1 constructor and all of the parameters can also be resolved. The container will throw an exception if any circular dependencies are found.
-
 ```csharp
 var options = new JsonSerializerOptions();
 options.AddJsonApi();
