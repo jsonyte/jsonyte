@@ -2,11 +2,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29609.76
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonApi", "Jsonapi\JsonApi.csproj", "{040F752B-E081-48B0-96F0-A4096B0A39DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonApi", "src\Jsonapi\JsonApi.csproj", "{040F752B-E081-48B0-96F0-A4096B0A39DC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonApi.Tests", "Jsonapi.Tests\JsonApi.Tests.csproj", "{E444615F-245F-4209-B58C-F0BEA9028D4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonApi.Tests", "src\Jsonapi.Tests\JsonApi.Tests.csproj", "{E444615F-245F-4209-B58C-F0BEA9028D4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonApi.Framework", "JsonApi.Framework\JsonApi.Framework.csproj", "{7FBE5661-1965-46E2-9F07-4451D36506A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonApi.Framework", "src\JsonApi.Framework\JsonApi.Framework.csproj", "{7FBE5661-1965-46E2-9F07-4451D36506A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
