@@ -2,15 +2,14 @@
 
   <PropertyGroup>
     <Version>0.1.0</Version>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
 
     <Authors>Robert Coltheart</Authors>
-    <Description>A thing that does something</Description>
-    <Company></Company>
-    <PackageLicenseUrl>https://github.com/robertcoltheart/Jsonapi/raw/master/LICENSE</PackageLicenseUrl>
+    <Description>A JSON:API serializer/deserializer for System.Text.Json</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/robertcoltheart/Jsonapi</PackageProjectUrl>
-    <PackageTags></PackageTags>
+    <PackageTags>jsonapi json api json:api serializer deserializer serialization deserialization</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
