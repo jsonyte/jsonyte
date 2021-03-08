@@ -8,6 +8,8 @@ namespace JsonApi.Converters
     {
         public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            // read document
+
             throw new NotImplementedException();
         }
 

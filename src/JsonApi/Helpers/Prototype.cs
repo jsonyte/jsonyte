@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace JsonApi.Helpers
 {
-    public static class Prototype
+    internal static class Prototype
     {
         public static JsonDocument JsonDocumentFromObject<TValue>(TValue value, JsonSerializerOptions options = default)
         {

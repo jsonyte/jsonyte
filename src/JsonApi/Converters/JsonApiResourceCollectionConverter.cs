@@ -8,7 +8,7 @@ namespace JsonApi.Converters
 {
     internal class JsonApiResourceCollectionConverter<T, TElement> : JsonConverter<T>
     {
-        public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.IsDocument())
             {
@@ -36,7 +36,7 @@ namespace JsonApi.Converters
             return (T) GetInstance(info, resources);
         }
 
-        public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
         }
@@ -54,7 +54,10 @@ namespace JsonApi.Converters
             {
                 var resource = JsonSerializer.Deserialize<TElement>(ref reader, options);
 
-                resources.Add(resource);
+                if (resource != null)
+                {
+                    resources.Add(resource);
+                }
 
                 reader.Read();
             }

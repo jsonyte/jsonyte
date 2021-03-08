@@ -29,8 +29,7 @@ namespace JsonApi.Tests
             if (x.ValueKind == JsonValueKind.Array)
             {
                 return x.EnumerateArray()
-                    .OrderBy(e => e)
-                    .SequenceEqual(y.EnumerateArray().OrderBy(e => e), this);
+                    .SequenceEqual(y.EnumerateArray(), this);
             }
 
             if (x.ValueKind == JsonValueKind.Object)
@@ -86,8 +85,7 @@ namespace JsonApi.Tests
             }
             else if (obj.ValueKind == JsonValueKind.Array)
             {
-                var values = obj.EnumerateArray()
-                    .OrderBy(x => x);
+                var values = obj.EnumerateArray();
 
                 foreach(var value in values)
                 {

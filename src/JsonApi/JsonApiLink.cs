@@ -16,10 +16,10 @@ namespace JsonApi
 
         [JsonPropertyName("href")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string Href { get; set; }
+        public string? Href { get; set; }
 
         [JsonPropertyName("meta")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public JsonApiMeta Meta { get; set; }
+        public JsonApiMeta? Meta { get; set; }
     }
 }

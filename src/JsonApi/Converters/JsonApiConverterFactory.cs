@@ -5,8 +5,73 @@ using System.Text.Json.Serialization;
 
 namespace JsonApi.Converters
 {
+    /// <summary>
+    /// Top level converters:
+    /// 
+    /// Error/Errors
+    /// Resource/Resource list
+    /// Document/Document of T
+    /// </summary>
     internal class JsonApiConverterFactory : JsonConverterFactory
     {
+        private static readonly HashSet<Type> DefaultTypes = new()
+        {
+
+        };
+
+        public override bool CanConvert(Type typeToConvert)
+        {
+            if (DefaultTypes.Contains(typeToConvert))
+            {
+                return false;
+            }
+
+            if (typeToConvert.IsError())
+            {
+                return true;
+            }
+
+            if (typeToConvert.IsCollection())
+            {
+                var collectionType = typeToConvert.GetCollectionType();
+
+                if (collectionType != null && collectionType.IsError())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (typeToConvert.IsError())
+            {
+                return new JsonApiErrorConverter();
+            }
+
+            if (typeToConvert.IsCollection())
+            {
+                var collectionType = typeToConvert.GetCollectionType();
+
+                if (collectionType != null && collectionType.IsError())
+                {
+                    return CreateConverter(typeof(JsonApiErrorsConverter<>), typeToConvert);
+                }
+            }
+
+            return null;
+        }
+
+        private JsonConverter? CreateConverter(Type converterType, params Type[] typesToConvert)
+        {
+            var genericType = converterType.MakeGenericType(typesToConvert);
+
+            return Activator.CreateInstance(genericType) as JsonConverter;
+        }
+
+#if false
         private static readonly HashSet<Type> DefaultTypes = new()
         {
             typeof(JsonApiError),
@@ -70,5 +135,6 @@ namespace JsonApi.Converters
 
             return Activator.CreateInstance(genericType) as JsonConverter;
         }
+#endif
     }
 }

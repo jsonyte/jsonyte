@@ -29,7 +29,63 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal("Invalid Attribute", errors.First().Title);
             Assert.Equal("First name must contain at least three characters.", errors.First().Detail);
             Assert.NotNull(errors.First().Source);
-            Assert.Equal("/data/attributes/firstName", errors.First().Source.Pointer.ToString());
+            Assert.Equal("/data/attributes/firstName", errors.First().Source?.Pointer.ToString());
+        }
+
+        [Fact]
+        public void CanConvertSingleErrorAsObject()
+        {
+            const string json = @"
+                {
+                  'errors': [
+                    {
+                      'status': '422',
+                      'source': { 'pointer': '/data/attributes/firstName' },
+                      'title':  'Invalid Attribute',
+                      'detail': 'First name must contain at least three characters.'
+                    }
+                  ]
+                }";
+
+            var error = json.Deserialize<JsonApiError>();
+
+            Assert.NotNull(error);
+            Assert.Equal("422", error.Status);
+            Assert.Equal("Invalid Attribute", error.Title);
+            Assert.Equal("First name must contain at least three characters.", error.Detail);
+            Assert.NotNull(error.Source);
+            Assert.Equal("/data/attributes/firstName", error.Source?.Pointer.ToString());
+        }
+
+        [Fact]
+        public void DeserializingMultipleErrorsWithSingleObjectReturnsFirst()
+        {
+            const string json = @"
+                {
+                  'errors': [
+                    {
+                      'status': '422',
+                      'source': { 'pointer': '/data/attributes/firstName' },
+                      'title':  'Invalid Attribute',
+                      'detail': 'First name must contain at least three characters.'
+                    },
+                    {
+                      'status': '500',
+                      'source': { 'pointer': '/data/attributes/lastName' },
+                      'title':  'Invalid last name',
+                      'detail': 'Last name must contain at least three characters.'
+                    }
+                  ]
+                }";
+
+            var error = json.Deserialize<JsonApiError>();
+
+            Assert.NotNull(error);
+            Assert.Equal("422", error.Status);
+            Assert.Equal("Invalid Attribute", error.Title);
+            Assert.Equal("First name must contain at least three characters.", error.Detail);
+            Assert.NotNull(error.Source);
+            Assert.Equal("/data/attributes/firstName", error.Source?.Pointer.ToString());
         }
 
         [Fact]
@@ -53,7 +109,8 @@ namespace JsonApi.Tests.Deserialization
             var errors = json.Deserialize<JsonApiError[]>();
 
             Assert.NotEmpty(errors);
-            Assert.NotEmpty(errors.First().Meta);
+            Assert.NotNull(errors.First().Meta);
+            Assert.NotEmpty(errors.First().Meta!);
         }
 
         [Fact]
@@ -85,7 +142,7 @@ namespace JsonApi.Tests.Deserialization
             var errors = json.Deserialize<JsonApiError[]>();
 
             Assert.NotEmpty(errors);
-            Assert.NotEmpty(errors.First().Meta);
+            Assert.NotEmpty(errors.First().Meta!);
             Assert.Equal("No permission", errors.First().Title);
         }
 
@@ -278,9 +335,9 @@ namespace JsonApi.Tests.Deserialization
             Assert.NotNull(errors[0].Links);
 
             Assert.Equal("http://example.com", errors[0].Links.About.Href);
-            Assert.Equal("jsonapi", errors[0].Meta["copyright"].GetString());
-            Assert.Equal("Bob Jane", errors[0].Meta["authors"][0].GetString());
-            Assert.Equal("James Bond", errors[0].Meta["authors"][1].GetString());
+            Assert.Equal("jsonapi", errors[0].Meta!["copyright"].GetString());
+            Assert.Equal("Bob Jane", errors[0].Meta!["authors"][0].GetString());
+            Assert.Equal("James Bond", errors[0].Meta!["authors"][1].GetString());
         }
     }
 }

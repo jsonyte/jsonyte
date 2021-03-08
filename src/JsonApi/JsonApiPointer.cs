@@ -6,9 +6,9 @@ namespace JsonApi
     [JsonConverter(typeof(JsonApiPointerConverter))]
     public class JsonApiPointer
     {
-        private readonly string value;
+        private readonly string? value;
 
-        public JsonApiPointer(string value)
+        public JsonApiPointer(string? value)
         {
             this.value = value;
         }
@@ -18,7 +18,7 @@ namespace JsonApi
             return new(value);
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
             return value;
         }

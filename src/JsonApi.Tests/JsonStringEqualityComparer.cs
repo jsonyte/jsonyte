@@ -9,10 +9,19 @@ namespace JsonApi.Tests
 
         public bool Equals(string x, string y)
         {
-            var documentX = JsonDocument.Parse(x);
-            var documentY = JsonDocument.Parse(y);
+            if (x == null && y == null)
+            {
+                return true;
+            }
 
-            return JsonElementEqualityComparer.Default.Equals(documentX.RootElement, documentY.RootElement);
+            if (x == null || y == null)
+            {
+                return false;
+            }
+
+            return JsonElementEqualityComparer.Default.Equals(
+                JsonDocument.Parse(x).RootElement,
+                JsonDocument.Parse(y).RootElement);
         }
 
         public int GetHashCode(string obj)

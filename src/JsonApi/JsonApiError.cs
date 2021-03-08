@@ -6,34 +6,34 @@ namespace JsonApi
     {
         [JsonPropertyName("id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [JsonPropertyName("links")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public JsonApiErrorLinks Links { get; set; }
+        public JsonApiErrorLinks? Links { get; set; }
 
         [JsonPropertyName("status")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         [JsonPropertyName("code")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string Code { get; set; }
+        public string? Code { get; set; }
 
         [JsonPropertyName("title")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         [JsonPropertyName("detail")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string Detail { get; set; }
+        public string? Detail { get; set; }
 
         [JsonPropertyName("source")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public JsonApiErrorSource Source { get; set; }
+        public JsonApiErrorSource? Source { get; set; }
 
         [JsonPropertyName("meta")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public JsonApiMeta Meta { get; set; }
+        public JsonApiMeta? Meta { get; set; }
     }
 }

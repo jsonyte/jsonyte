@@ -23,6 +23,18 @@ namespace JsonApi
             return options;
         }
 
+        internal static JsonApiConverter<T> GetConverter<T>(this JsonSerializerOptions options)
+        {
+            var converter = options.GetConverter(typeof(T));
+
+            if (converter is not JsonApiConverter<T> jsonApiConverter)
+            {
+                throw new JsonApiException($"Converter not found for type {typeof(T)}");
+            }
+
+            return jsonApiConverter;
+        }
+
         internal static JsonClassInfo GetClassInfo(this JsonSerializerOptions options, Type type)
         {
             return GetState(options).Classes.GetOrAdd(type, x => new JsonClassInfo(x, options));

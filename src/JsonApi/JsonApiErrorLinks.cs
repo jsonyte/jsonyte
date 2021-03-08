@@ -13,17 +13,29 @@ namespace JsonApi
 
         [JsonPropertyName("about")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public JsonApiLink About
+        public JsonApiLink? About
         {
             get => GetOrNull("about");
-            set => base["about"] = value;
+            set => SetOrRemove("about", value);
         }
 
-        private JsonApiLink GetOrNull(string key)
+        private JsonApiLink? GetOrNull(string key)
         {
             return TryGetValue(key, out var value)
                 ? value
                 : null;
+        }
+
+        private void SetOrRemove(string key, JsonApiLink? link)
+        {
+            if (link != null)
+            {
+                base[key] = link;
+            }
+            else
+            {
+                Remove(key);
+            }
         }
     }
 }

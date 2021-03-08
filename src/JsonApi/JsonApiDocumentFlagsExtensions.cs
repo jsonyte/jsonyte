@@ -2,7 +2,7 @@
 {
     internal static class JsonApiDocumentFlagsExtensions
     {
-        public static JsonApiDocumentFlags AddFlag(this JsonApiDocumentFlags flags, string name)
+        public static JsonApiDocumentFlags AddFlag(this JsonApiDocumentFlags flags, string? name)
         {
             var memberFlag = name switch
             {

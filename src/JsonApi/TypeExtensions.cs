@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using JsonApi.Serialization;
 
 namespace JsonApi
 {
@@ -45,7 +46,22 @@ namespace JsonApi
             return type.IsArray || typeof(IEnumerable).IsAssignableFrom(type);
         }
 
-        public static Type GetCollectionType(this Type type)
+        public static JsonClassType GetClassType(this Type type)
+        {
+            if (!type.IsCollection())
+            {
+                return JsonClassType.Object;
+            }
+
+            if (type.IsArray)
+            {
+                return JsonClassType.Array;
+            }
+
+            return JsonClassType.List;
+        }
+
+        public static Type? GetCollectionType(this Type type)
         {
             if (type == typeof(string))
             {
