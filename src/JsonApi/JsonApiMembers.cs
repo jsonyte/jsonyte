@@ -20,6 +20,6 @@
 
         public const string Links = "links";
 
-        public const string Version = "jsonapi";
+        public const string JsonApi = "jsonapi";
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using JetBrains.Annotations;
 
 namespace JsonApi.Converters
 {
@@ -16,9 +17,17 @@ namespace JsonApi.Converters
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name == JsonApiMembers.Errors)
+                if (name == JsonApiMembers.Data)
+                {
+                    reader.Skip();
+                }
+                else if (name == JsonApiMembers.Errors)
                 {
                     document.Errors = reader.ReadWrapped<JsonApiError[]>(options);
+                }
+                else if (name == JsonApiMembers.JsonApi)
+                {
+                    document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
                 }
                 else
                 {
@@ -37,6 +46,8 @@ namespace JsonApi.Converters
 
         public override void Write(Utf8JsonWriter writer, JsonApiDocument value, JsonSerializerOptions options)
         {
+            ValidateDocument(value);
+
             writer.WriteStartObject();
 
             if (value.Errors != null)
@@ -51,7 +62,38 @@ namespace JsonApi.Converters
                 JsonSerializer.Serialize(writer, value.Links, options);
             }
 
+            if (value.Meta != null)
+            {
+                writer.WritePropertyName("meta");
+                JsonSerializer.Serialize(writer, value.Meta, options);
+            }
+
+            if (value.JsonApi != null)
+            {
+                writer.WritePropertyName("jsonapi");
+                JsonSerializer.Serialize(writer, value.JsonApi, options);
+            }
+
+            if (value.Errors == null && value.Meta == null && value.Data == null)
+            {
+                writer.WriteNull("data");
+            }
+
             writer.WriteEndObject();
+        }
+
+        [AssertionMethod]
+        private void ValidateDocument(JsonApiDocument document)
+        {
+            if (document.Data != null && document.Errors != null)
+            {
+                throw new JsonApiException("JSON:API document must not contain both 'data' and 'errors' members");
+            }
+
+            if (document.Data == null && document.Included != null)
+            {
+                throw new JsonApiException("JSON:API document must contain 'data' member if 'included' member is specified");
+            }
         }
     }
 

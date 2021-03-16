@@ -19,7 +19,7 @@ namespace JsonApi.Serialization
 
         public JsonSerializerOptions Options { get; }
 
-        public Func<object> Creator { get; }
+        public Func<object?> Creator { get; }
 
         public Dictionary<string, IJsonPropertyInfo> Properties { get; }
 
@@ -68,10 +68,17 @@ namespace JsonApi.Serialization
             var propertyType = typeof(JsonPropertyInfo<>).MakeGenericType(property.PropertyType);
             var converter = GetConverter(property);
 
-            return Activator.CreateInstance(propertyType, property, converter, Options) as IJsonPropertyInfo;
+            var propertyInfo = Activator.CreateInstance(propertyType, property, converter, Options);
+
+            if (propertyInfo is not IJsonPropertyInfo jsonPropertyInfo)
+            {
+                throw new JsonApiException($"Cannot get property info for '{property.Name}'");
+            }
+
+            return jsonPropertyInfo;
         }
 
-        private JsonConverter GetConverter(PropertyInfo property)
+        private JsonConverter? GetConverter(PropertyInfo property)
         {
             var converter = GetConverterAttribute(property);
 

@@ -192,6 +192,7 @@ namespace JsonApi.Tests.Serialization
 
             Assert.Equal(@"
                 {
+                  'data': null,
                   'links': {
                     'self': 'http://localhost'
                   }

@@ -11,7 +11,7 @@
                 JsonApiMembers.Data => JsonApiDocumentFlags.Data,
                 JsonApiMembers.Errors => JsonApiDocumentFlags.Errors,
                 JsonApiMembers.Meta => JsonApiDocumentFlags.Meta,
-                JsonApiMembers.Version => JsonApiDocumentFlags.Jsonapi,
+                JsonApiMembers.JsonApi => JsonApiDocumentFlags.Jsonapi,
                 JsonApiMembers.Links => JsonApiDocumentFlags.Links,
                 JsonApiMembers.Included => JsonApiDocumentFlags.Included,
                 _ => JsonApiDocumentFlags.None
