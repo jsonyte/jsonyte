@@ -23,7 +23,7 @@ namespace JsonApi.Converters
                 {
                     if (reader.TokenType != JsonTokenType.StartArray)
                     {
-                        throw new JsonApiException("Invalid JSON:API errors array");
+                        throw new JsonApiException("Invalid JSON:API errors array, expected array");
                     }
 
                     var converter = options.GetConverter<JsonApiError>();

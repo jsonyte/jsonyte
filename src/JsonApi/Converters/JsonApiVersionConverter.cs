@@ -12,7 +12,7 @@ namespace JsonApi.Converters
         {
             var value = reader.GetString();
 
-            if (string.IsNullOrEmpty(value) || !Version.TryParse(value, out var version))
+            if (value == null || !Version.TryParse(value, out var version))
             {
                 throw new JsonApiException($"Invalid JSON:API version: '{value}'");
             }

@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System;
+using Xunit;
 
 namespace JsonApi.Tests.Serialization
 {
@@ -161,6 +162,20 @@ namespace JsonApi.Tests.Serialization
                     }
                   ]
                 }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeEmptyErrors()
+        {
+            var errors = Array.Empty<JsonApiError>();
+
+            var json = errors.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'errors': []
+                }
+                ".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
         }
     }
 }

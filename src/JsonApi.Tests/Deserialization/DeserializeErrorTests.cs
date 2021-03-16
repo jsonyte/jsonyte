@@ -334,10 +334,38 @@ namespace JsonApi.Tests.Deserialization
             Assert.NotEmpty(errors);
             Assert.NotNull(errors[0].Links);
 
-            Assert.Equal("http://example.com", errors[0].Links.About.Href);
-            Assert.Equal("jsonapi", errors[0].Meta!["copyright"].GetString());
-            Assert.Equal("Bob Jane", errors[0].Meta!["authors"][0].GetString());
-            Assert.Equal("James Bond", errors[0].Meta!["authors"][1].GetString());
+            Assert.Equal("http://example.com", errors[0].Links.About?.Href);
+            Assert.Equal("jsonapi", errors[0].Meta?["copyright"].GetString());
+            Assert.Equal("Bob Jane", errors[0].Meta?["authors"][0].GetString());
+            Assert.Equal("James Bond", errors[0].Meta?["authors"][1].GetString());
+        }
+
+        [Fact]
+        public void NullErrorsShouldThrowWhenDeserializingSingle()
+        {
+            const string json = @"
+                {
+                  'errors': null
+                }";
+
+            var exception = Record.Exception(() => json.Deserialize<JsonApiError>());
+
+            Assert.NotNull(exception);
+            Assert.IsType<JsonApiException>(exception);
+        }
+
+        [Fact]
+        public void NullErrorsShouldThrowWhenDeserializingMultiple()
+        {
+            const string json = @"
+                {
+                  'errors': null
+                }";
+
+            var exception = Record.Exception(() => json.Deserialize<JsonApiError[]>());
+
+            Assert.NotNull(exception);
+            Assert.IsType<JsonApiException>(exception);
         }
     }
 }

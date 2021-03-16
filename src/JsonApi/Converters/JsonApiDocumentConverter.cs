@@ -28,7 +28,7 @@ namespace JsonApi.Converters
                 }
 
                 var name = reader.GetString();
-                flags = flags.AddFlag(name);
+                //flags = flags.AddFlag(name);
 
                 reader.Read();
 
@@ -44,7 +44,7 @@ namespace JsonApi.Converters
                 reader.Read();
             }
 
-            flags.Validate();
+            //flags.Validate();
 
             return (T) resource
 ;
