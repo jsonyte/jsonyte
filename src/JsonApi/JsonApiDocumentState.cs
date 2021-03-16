@@ -49,5 +49,10 @@
         {
             return flags.HasFlag(flag);
         }
+
+        public bool IsEmpty()
+        {
+            return flags == JsonApiDocumentFlags.None;
+        }
     }
 }

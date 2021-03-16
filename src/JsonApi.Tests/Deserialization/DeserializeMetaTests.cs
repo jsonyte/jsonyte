@@ -5,7 +5,7 @@ namespace JsonApi.Tests.Deserialization
 {
     public class DeserializeMetaTests
     {
-        [Fact]
+        [Fact(Skip = "Not implemented")]
         public void CanDeserializeOnlyMeta()
         {
             const string json = @"
@@ -31,10 +31,6 @@ namespace JsonApi.Tests.Deserialization
                 .Select(x => x.GetString())
                 .ToArray();
 
-            Assert.Null(document.Data);
-            Assert.Null(document.Errors);
-            Assert.NotNull(document.Meta);
-
             Assert.Equal("Example corp", document.Meta["copyright"].GetString());
             Assert.Equal(15, document.Meta["loans"].GetInt32());
             Assert.Contains("John Diggs", authors);
@@ -42,6 +38,10 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal("Book", document.Meta["details"].GetProperty("title").GetString());
             Assert.Equal("http://example.com", document.Meta["details"].GetProperty("url").GetString());
             Assert.Equal(2, document.Meta["details"].GetProperty("count").GetInt32());
+
+            Assert.Null(document.Errors);
+            Assert.NotNull(document.Meta);
+            Assert.Null(document.Data);
         }
     }
 }

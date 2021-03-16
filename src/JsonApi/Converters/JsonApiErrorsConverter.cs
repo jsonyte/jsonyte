@@ -1,46 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using JsonApi.Serialization;
 
 namespace JsonApi.Converters
 {
-    internal class JsonApiErrorsConverter<T> : JsonConverter<T>
-        where T : class
+    internal class JsonApiErrorsConverter<T> : JsonApiConverter<T>
     {
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var state = reader.BeginDocument();
+            var errors = default(T);
 
-            var list = new List<JsonApiError>();
+            var state = reader.ReadDocument();
 
-            while (reader.TokenType != JsonTokenType.EndObject)
+            while (reader.IsObject())
             {
-                var name = reader.ReadToMember(ref state);
+                var name = reader.ReadMember(ref state);
 
                 if (name == JsonApiMembers.Errors)
                 {
-                    if (reader.TokenType != JsonTokenType.StartArray)
-                    {
-                        throw new JsonApiException("Invalid JSON:API errors array, expected array");
-                    }
-
-                    var converter = options.GetConverter<JsonApiError>();
-
-                    reader.Read();
-
-                    while (reader.TokenType != JsonTokenType.EndArray)
-                    {
-                        var error = converter.ReadWrapped(ref reader, typeof(JsonApiError), options);
-
-                        if (error != null)
-                        {
-                            list.Add(error);
-                        }
-
-                        reader.Read();
-                    }
+                    errors = ReadWrapped(ref reader, typeToConvert, options);
                 }
                 else
                 {
@@ -52,12 +31,35 @@ namespace JsonApi.Converters
 
             state.Validate();
 
-            if (!state.HasFlag(JsonApiDocumentFlags.Errors))
+            return state.HasFlag(JsonApiDocumentFlags.Errors)
+                ? errors
+                : default;
+        }
+
+        public override T? ReadWrapped(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            var errors = new List<JsonApiError>();
+            var converter = options.GetConverter<JsonApiError>();
+
+            reader.ReadArray("errors");
+
+            while (reader.IsArray())
             {
-                return default;
+                var error = converter.ReadWrapped(ref reader, typeof(JsonApiError), options);
+
+                if (error != null)
+                {
+                    errors.Add(error);
+                }
+
+                reader.Read();
             }
 
-            return GetCollection(typeToConvert, list) as T;
+            var items = GetCollection(typeToConvert, errors);
+
+            return items == null
+                ? default
+                : (T) items;
         }
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
@@ -65,6 +67,13 @@ namespace JsonApi.Converters
             writer.WriteStartObject();
             writer.WritePropertyName("errors");
 
+            WriteWrapped(writer, value, options);
+
+            writer.WriteEndObject();
+        }
+
+        public override void WriteWrapped(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        {
             writer.WriteStartArray();
 
             if (value is IEnumerable<JsonApiError> errors)
@@ -73,13 +82,16 @@ namespace JsonApi.Converters
 
                 foreach (var error in errors)
                 {
+                    if (error == null)
+                    {
+                        throw new JsonApiException("Invalid JSON:API errors, error item cannot be null");
+                    }
+
                     converter.WriteWrapped(writer, error, options);
                 }
             }
 
             writer.WriteEndArray();
-
-            writer.WriteEndObject();
         }
 
         private object? GetCollection(Type typeToConvert, List<JsonApiError>? errors)

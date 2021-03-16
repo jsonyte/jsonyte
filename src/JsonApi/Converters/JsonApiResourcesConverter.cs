@@ -20,12 +20,12 @@ namespace JsonApi.Converters
 
             if (reader.TokenType == JsonTokenType.StartObject)
             {
-                var resource = reader.ReadWithConverter<JsonApiResource>(options);
+                var resource = reader.Read<JsonApiResource>(options);
 
                 return new[] {resource};
             }
 
-            return reader.ReadWithConverter<JsonApiResource[]>(options);
+            return reader.Read<JsonApiResource[]>(options);
         }
 
         public override void Write(Utf8JsonWriter writer, JsonApiResource[] value, JsonSerializerOptions options)

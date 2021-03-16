@@ -4,6 +4,58 @@ using System.Text.Json.Serialization;
 
 namespace JsonApi.Converters
 {
+    internal class JsonApiDocumentConverter : JsonConverter<JsonApiDocument>
+    {
+        public override JsonApiDocument? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            var document = new JsonApiDocument();
+
+            var state = reader.ReadDocument();
+
+            while (reader.IsObject())
+            {
+                var name = reader.ReadMember(ref state);
+
+                if (name == JsonApiMembers.Errors)
+                {
+                    document.Errors = reader.ReadWrapped<JsonApiError[]>(options);
+                }
+                else
+                {
+                    reader.Skip();
+                }
+
+                reader.Read();
+            }
+
+            state.Validate();
+
+            return state.IsEmpty()
+                ? null
+                : document;
+        }
+
+        public override void Write(Utf8JsonWriter writer, JsonApiDocument value, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+
+            if (value.Errors != null)
+            {
+                writer.WritePropertyName("errors");
+                writer.WriteWrapped(value.Errors, options);
+            }
+
+            if (value.Links != null)
+            {
+                writer.WritePropertyName("links");
+                JsonSerializer.Serialize(writer, value.Links, options);
+            }
+
+            writer.WriteEndObject();
+        }
+    }
+
+#if false
     internal class JsonApiDocumentConverter<T> : JsonConverter<T>
     {
         public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -195,4 +247,5 @@ namespace JsonApi.Converters
     //        }
     //    }
     //}
+#endif
 }

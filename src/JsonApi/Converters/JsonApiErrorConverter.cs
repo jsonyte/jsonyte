@@ -7,24 +7,19 @@ namespace JsonApi.Converters
     {
         public override JsonApiError? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var state = reader.BeginDocument();
-
             JsonApiError? firstError = null;
 
-            while (reader.TokenType != JsonTokenType.EndObject)
+            var state = reader.ReadDocument();
+
+            while (reader.IsObject())
             {
-                var name = reader.ReadToMember(ref state);
+                var name = reader.ReadMember(ref state);
 
                 if (name == JsonApiMembers.Errors)
                 {
-                    if (reader.TokenType != JsonTokenType.StartArray)
-                    {
-                        throw new JsonApiException("Invalid JSON:API errors array, expected array");
-                    }
+                    reader.ReadArray("errors");
 
-                    reader.Read();
-
-                    while (reader.TokenType != JsonTokenType.EndArray)
+                    while (reader.IsArray())
                     {
                         if (firstError == null)
                         {
@@ -48,33 +43,20 @@ namespace JsonApi.Converters
 
             state.Validate();
 
-            if (!state.HasFlag(JsonApiDocumentFlags.Errors))
-            {
-                return default;
-            }
-
-            return firstError;
+            return state.HasFlag(JsonApiDocumentFlags.Errors)
+                ? firstError
+                : default;
         }
 
         public override JsonApiError ReadWrapped(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType != JsonTokenType.StartObject)
-            {
-                throw new JsonApiException("Invalid JSON:API error object, expected JSON object");
-            }
-
             var error = new JsonApiError();
 
-            reader.Read();
+            reader.ReadObject("error");
 
-            while (reader.TokenType != JsonTokenType.EndObject)
+            while (reader.IsObject())
             {
-                if (reader.TokenType != JsonTokenType.PropertyName)
-                {
-                    throw new JsonApiException($"Expected JSON:API error object property but found '{reader.GetString()}'");
-                }
-
-                var name = reader.GetString();
+                var name = reader.ReadMember("error object");
 
                 switch (name)
                 {

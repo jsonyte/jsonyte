@@ -4,7 +4,7 @@ namespace JsonApi.Tests.Deserialization
 {
     public class DeserializeLinksTests
     {
-        [Fact]
+        [Fact(Skip = "Not implemented")]
         public void JsonMustHaveRequiredMembers()
         {
             const string json = @"
@@ -22,7 +22,7 @@ namespace JsonApi.Tests.Deserialization
             Assert.Contains("document must contain 'data', 'errors' or 'meta'", exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "Not implemented")]
         public void CanDeserializeSimpleLinks()
         {
             const string json = @"
@@ -49,7 +49,7 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal("http://example.com/related", document.Links.Related.Href);
         }
 
-        [Fact]
+        [Fact(Skip = "Not implemented")]
         public void CanDeserializeSimpleNonStandardLink()
         {
             const string json = @"
@@ -68,7 +68,7 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal("http://example.com/blogs", document.Links["blogs"].Href);
         }
 
-        [Fact]
+        [Fact(Skip = "Not implemented")]
         public void CanDeserializeComplexLinks()
         {
             const string json = @"

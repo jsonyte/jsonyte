@@ -9,7 +9,7 @@ namespace JsonApi.Serialization
     {
         private static readonly Type ObjectType = typeof(object);
 
-        public Func<object> CreateCreator(Type type)
+        public Func<object?> CreateCreator(Type type)
         {
             var constructor = type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
 
@@ -41,7 +41,7 @@ namespace JsonApi.Serialization
             return method.CreateDelegate<Func<object>>();
         }
 
-        public Func<object, T> CreatePropertyGetter<T>(PropertyInfo property)
+        public Func<object, T?> CreatePropertyGetter<T>(PropertyInfo property)
         {
             var declaringType = property.DeclaringType;
 
@@ -72,7 +72,7 @@ namespace JsonApi.Serialization
             return method.CreateDelegate<Func<object, T>>();
         }
 
-        public Action<object, T> CreatePropertySetter<T>(PropertyInfo property)
+        public Action<object, T?> CreatePropertySetter<T>(PropertyInfo property)
         {
             var declaringType = property.DeclaringType;
 
@@ -109,7 +109,7 @@ namespace JsonApi.Serialization
 
             generator.Emit(OpCodes.Ret);
 
-            return method.CreateDelegate<Action<object, T>>();
+            return method.CreateDelegate<Action<object, T?>>();
         }
     }
 #endif

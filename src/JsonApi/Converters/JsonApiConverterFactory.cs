@@ -31,6 +31,11 @@ namespace JsonApi.Converters
                 return true;
             }
 
+            if (typeToConvert.IsDocument())
+            {
+                return true;
+            }
+
             if (typeToConvert.IsCollection())
             {
                 var collectionType = typeToConvert.GetCollectionType();
@@ -49,6 +54,11 @@ namespace JsonApi.Converters
             if (typeToConvert.IsError())
             {
                 return new JsonApiErrorConverter();
+            }
+
+            if (typeToConvert.IsDocument())
+            {
+                return new JsonApiDocumentConverter();
             }
 
             if (typeToConvert.IsCollection())

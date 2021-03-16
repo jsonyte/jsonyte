@@ -6,7 +6,7 @@ namespace JsonApi.Tests.Serialization
     public class SerializeErrorTests
     {
         [Fact]
-        public void CanSerializeSingleErrorAsArray()
+        public void CanSerializeSingleErrorFromArray()
         {
             var errors = new[]
             {
@@ -40,7 +40,7 @@ namespace JsonApi.Tests.Serialization
         }
 
         [Fact]
-        public void CanSerializerSingleErrorAsObject()
+        public void CanSerializerSingleErrorFromObject()
         {
             var error = new JsonApiError
             {
@@ -71,7 +71,7 @@ namespace JsonApi.Tests.Serialization
         }
 
         [Fact]
-        public void CanSerializeMultipleErrorsAsArray()
+        public void CanSerializeMultipleErrorsFromArray()
         {
             var errors = new[]
             {
@@ -174,8 +174,58 @@ namespace JsonApi.Tests.Serialization
             Assert.Equal(@"
                 {
                   'errors': []
+                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeMissingErrorsAsDocument()
+        {
+            var document = new JsonApiDocument
+            {
+                Links = new JsonApiLinks
+                {
+                    Self = "http://localhost"
                 }
-                ".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+            };
+
+            var json = document.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'links': {
+                    'self': 'http://localhost'
+                  }
+                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeEmptyErrorsAsDocument()
+        {
+            var document = new JsonApiDocument
+            {
+                Errors = Array.Empty<JsonApiError>()
+            };
+
+            var json = document.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'errors': []
+                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void SerializingNullErrorInArrayThrows()
+        {
+            var errors = new JsonApiError[]
+            {
+                null
+            };
+
+            var exception = Record.Exception(() => errors.Serialize());
+
+            Assert.NotNull(exception);
+            Assert.IsType<JsonApiException>(exception);
         }
     }
 }

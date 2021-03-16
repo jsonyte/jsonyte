@@ -367,5 +367,143 @@ namespace JsonApi.Tests.Deserialization
             Assert.NotNull(exception);
             Assert.IsType<JsonApiException>(exception);
         }
+
+        [Fact]
+        public void EmptyErrorsShouldReturnEmptyArray()
+        {
+            const string json = @"
+                {
+                  'errors': []
+                }";
+
+            var errors = json.Deserialize<JsonApiError[]>();
+
+            Assert.Empty(errors);
+        }
+
+        [Fact]
+        public void EmptyErrorsShouldReturnNullWhenDeserializingSingle()
+        {
+            const string json = @"
+                {
+                  'errors': []
+                }";
+
+            var error = json.Deserialize<JsonApiError>();
+
+            Assert.Null(error);
+        }
+
+        [Fact]
+        public void CanDeserializeErrorsInDocument()
+        {
+            const string json = @"
+                {
+                  'errors': [
+                    {
+                      'status': '422',
+                      'source': { 'pointer': '/data/attributes/firstName' },
+                      'title':  'Invalid Attribute',
+                      'detail': 'First name must contain at least three characters.'
+                    }
+                  ]
+                }";
+
+            var document = json.Deserialize<JsonApiDocument>();
+
+            Assert.Single(document.Errors!);
+            Assert.Equal("422", document.Errors.First().Status);
+            Assert.Equal("Invalid Attribute", document.Errors.First().Title);
+            Assert.Equal("First name must contain at least three characters.", document.Errors.First().Detail);
+            Assert.NotNull(document.Errors.First().Source);
+            Assert.Equal("/data/attributes/firstName", document.Errors.First().Source?.Pointer.ToString());
+        }
+
+        [Fact]
+        public void NullErrorsShouldThrowWhenDeserializingDocument()
+        {
+            const string json = @"
+                {
+                  'errors': null
+                }";
+
+            var exception = Record.Exception(() => json.Deserialize<JsonApiDocument>());
+
+            Assert.NotNull(exception);
+            Assert.IsType<JsonApiException>(exception);
+        }
+
+        [Fact]
+        public void EmptyErrorsShouldBeEmptyInDocument()
+        {
+            const string json = @"
+                {
+                  'errors': []
+                }";
+
+            var document = json.Deserialize<JsonApiDocument>();
+
+            Assert.NotNull(document.Errors);
+            Assert.Empty(document.Errors);
+        }
+
+        [Fact]
+        public void MissingErrorsShouldBeNullInDocument()
+        {
+            const string json = @"
+                {
+                  'meta': {
+                    'copyright': 'Example corp'
+                  }
+                }";
+
+            var document = json.Deserialize<JsonApiDocument>();
+
+            Assert.Null(document.Errors);
+        }
+
+        [Fact]
+        public void DuplicateErrorsWhenDeserializingArrayThrows()
+        {
+            const string json = @"
+                {
+                  'errors': [
+                    {
+                      'status': '422',
+                      'source': { 'pointer': '/data/attributes/firstName' },
+                      'title':  'Invalid Attribute',
+                      'detail': 'First name must contain at least three characters.'
+                    }
+                  ],
+                  'errors': []
+                }";
+
+            var exception = Record.Exception(() => json.Deserialize<JsonApiError[]>());
+
+            Assert.NotNull(exception);
+            Assert.IsType<JsonApiException>(exception);
+        }
+
+        [Fact]
+        public void DuplicateErrorsWhenDeserializingDocumentThrows()
+        {
+            const string json = @"
+                {
+                  'errors': [
+                    {
+                      'status': '422',
+                      'source': { 'pointer': '/data/attributes/firstName' },
+                      'title':  'Invalid Attribute',
+                      'detail': 'First name must contain at least three characters.'
+                    }
+                  ],
+                  'errors': []
+                }";
+
+            var exception = Record.Exception(() => json.Deserialize<JsonApiDocument>());
+
+            Assert.NotNull(exception);
+            Assert.IsType<JsonApiException>(exception);
+        }
     }
 }
