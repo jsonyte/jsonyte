@@ -29,6 +29,10 @@ namespace JsonApi.Converters
                 {
                     document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
                 }
+                else if (name == JsonApiMembers.Meta)
+                {
+                    document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
+                }
                 else
                 {
                     reader.Skip();
