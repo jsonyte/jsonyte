@@ -6,57 +6,69 @@ namespace JsonApi
 {
     public class JsonApiLinks : Dictionary<string, JsonApiLink>
     {
+        private const string FirstKey = "first";
+
+        private const string LastKey = "last";
+
+        private const string PrevKey = "prev";
+
+        private const string NextKey = "next";
+
+        private const string SelfKey = "self";
+
+        private const string RelatedKey = "related";
+
         public JsonApiLinks()
             : base(StringComparer.OrdinalIgnoreCase)
         {
         }
 
-        [JsonPropertyName("first")]
+        [JsonPropertyName(FirstKey)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink? First
         {
-            get => GetOrNull("first");
-            set => SetOrRemove("first", value);
+            get => GetOrNull(FirstKey);
+            set => SetOrRemove(FirstKey, value);
         }
 
-        [JsonPropertyName("last")]
+        [JsonPropertyName(LastKey)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink? Last
         {
-            get => GetOrNull("last");
-            set => SetOrRemove("last", value);
+            get => GetOrNull(LastKey);
+            set => SetOrRemove(LastKey, value);
         }
 
-        [JsonPropertyName("prev")]
+        [JsonPropertyName(PrevKey)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink? Prev
         {
-            get => GetOrNull("prev");
-            set => SetOrRemove("pref", value);
+            get => GetOrNull(PrevKey);
+            set => SetOrRemove(PrevKey, value);
         }
 
-        [JsonPropertyName("next")]
+        [JsonPropertyName(NextKey)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink? Next
         {
-            get => GetOrNull("next");
-            set => SetOrRemove("next", value);
+            get => GetOrNull(NextKey);
+            set => SetOrRemove(NextKey, value);
         }
 
-        [JsonPropertyName("self")]
+        [JsonPropertyName(SelfKey)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink? Self
         {
-            get => GetOrNull("self");
-            set => SetOrRemove("self", value);
+            get => GetOrNull(SelfKey);
+            set => SetOrRemove(SelfKey, value);
         }
 
-        [JsonPropertyName("related")]
+        [JsonPropertyName(RelatedKey)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink? Related
         {
-            get => GetOrNull("related");
-            set => SetOrRemove("related", value);
+            get => GetOrNull(RelatedKey);
+            set => SetOrRemove(RelatedKey, value);
         }
 
         private JsonApiLink? GetOrNull(string key)

@@ -18,7 +18,11 @@ namespace JsonApi.Tests.Serialization
                         Pointer = "/data/attributes/firstName"
                     },
                     Title = "Invalid Attribute",
-                    Detail = "First name must contain at least three characters."
+                    Detail = "First name must contain at least three characters.",
+                    Links = new JsonApiErrorLinks
+                    {
+                        About = "about error"
+                    }
                 }
             };
 
@@ -33,6 +37,9 @@ namespace JsonApi.Tests.Serialization
                       'detail': 'First name must contain at least three characters.',
                       'source': {
                         'pointer': '/data/attributes/firstName'
+                      },
+                      'links': {
+                        'about': 'about error'
                       }
                     }
                   ]

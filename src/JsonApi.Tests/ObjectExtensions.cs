@@ -20,6 +20,7 @@ namespace JsonApi.Tests
         private static JsonSerializerOptions CreateOptions()
         {
             var options = new JsonSerializerOptions();
+            options.WriteIndented = true;
             options.AddJsonApi();
 
             return options;

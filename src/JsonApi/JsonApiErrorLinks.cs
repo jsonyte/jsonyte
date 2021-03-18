@@ -6,17 +6,19 @@ namespace JsonApi
 {
     public class JsonApiErrorLinks : Dictionary<string, JsonApiLink>
     {
+        private const string AboutKey = "about";
+
         public JsonApiErrorLinks()
             : base(StringComparer.OrdinalIgnoreCase)
         {
         }
 
-        [JsonPropertyName("about")]
+        [JsonPropertyName(AboutKey)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiLink? About
         {
-            get => GetOrNull("about");
-            set => SetOrRemove("about", value);
+            get => GetOrNull(AboutKey);
+            set => SetOrRemove(AboutKey, value);
         }
 
         private JsonApiLink? GetOrNull(string key)

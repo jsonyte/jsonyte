@@ -33,6 +33,10 @@ namespace JsonApi.Converters
                 {
                     document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                 }
+                else if (name == JsonApiMembers.Links)
+                {
+                    document.Links = JsonSerializer.Deserialize<JsonApiLinks>(ref reader, options);
+                }
                 else
                 {
                     reader.Skip();

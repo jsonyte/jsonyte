@@ -4,7 +4,7 @@ namespace JsonApi.Tests.Serialization
 {
     public class SerializeLinksTests
     {
-        [Fact(Skip = "Not implemented")]
+        [Fact]
         public void CanSerializeSimpleLinks()
         {
             var document = new JsonApiDocument
@@ -36,7 +36,7 @@ namespace JsonApi.Tests.Serialization
                 }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact(Skip = "Not implemented")]
+        [Fact]
         public void CanSerializeSimpleNonStandardLink()
         {
             var document = new JsonApiDocument
@@ -60,7 +60,7 @@ namespace JsonApi.Tests.Serialization
                 }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact(Skip = "Not implemented")]
+        [Fact]
         public void CanSerializeComplexLinks()
         {
             var document = new JsonApiDocument
