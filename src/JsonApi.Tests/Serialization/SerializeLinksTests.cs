@@ -1,13 +1,17 @@
-﻿using Xunit;
+﻿using System;
+using JsonApi.Tests.Models;
+using Xunit;
 
 namespace JsonApi.Tests.Serialization
 {
     public class SerializeLinksTests
     {
-        [Fact]
-        public void CanSerializeSimpleLinks()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeSimpleLinks(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Links = new JsonApiLinks
                 {
@@ -20,7 +24,7 @@ namespace JsonApi.Tests.Serialization
                 }
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
@@ -33,13 +37,15 @@ namespace JsonApi.Tests.Serialization
                     'related': 'http://example.com/related'
                   },
                   'data': null
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact]
-        public void CanSerializeSimpleNonStandardLink()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeSimpleNonStandardLink(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Links = new JsonApiLinks
                 {
@@ -48,7 +54,7 @@ namespace JsonApi.Tests.Serialization
                 }
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
@@ -57,13 +63,15 @@ namespace JsonApi.Tests.Serialization
                     'blogs': 'http://example.com/blogs'
                   },
                   'data': null
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact]
-        public void CanSerializeComplexLinks()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeComplexLinks(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Links = new JsonApiLinks
                 {
@@ -88,7 +96,7 @@ namespace JsonApi.Tests.Serialization
                 }
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
@@ -109,7 +117,7 @@ namespace JsonApi.Tests.Serialization
                     }
                   },
                   'data': null
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
     }
 }

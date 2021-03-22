@@ -1,4 +1,5 @@
 ﻿using System;
+using JsonApi.Tests.Models;
 using Xunit;
 
 namespace JsonApi.Tests.Serialization
@@ -43,7 +44,7 @@ namespace JsonApi.Tests.Serialization
                       }
                     }
                   ]
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
         [Fact]
@@ -74,7 +75,7 @@ namespace JsonApi.Tests.Serialization
                       }
                     }
                   ]
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
         [Fact]
@@ -168,7 +169,7 @@ namespace JsonApi.Tests.Serialization
                       }
                     }
                   ]
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
         [Fact]
@@ -181,13 +182,15 @@ namespace JsonApi.Tests.Serialization
             Assert.Equal(@"
                 {
                   'errors': []
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact]
-        public void CanSerializeMissingErrorsAsDocument()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeMissingErrorsAsDocument(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Links = new JsonApiLinks
                 {
@@ -195,7 +198,7 @@ namespace JsonApi.Tests.Serialization
                 }
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
@@ -203,23 +206,25 @@ namespace JsonApi.Tests.Serialization
                   'links': {
                     'self': 'http://localhost'
                   }
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact]
-        public void CanSerializeEmptyErrorsAsDocument()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeEmptyErrorsAsDocument(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Errors = Array.Empty<JsonApiError>()
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
                   'errors': []
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
         [Fact]

@@ -6,7 +6,7 @@ namespace JsonApi.Converters
 {
     internal class JsonApiResourcesConverter : JsonConverter<JsonApiResource[]>
     {
-        public override JsonApiResource[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override JsonApiResource[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
@@ -15,12 +15,17 @@ namespace JsonApi.Converters
 
             if (reader.TokenType != JsonTokenType.StartObject && reader.TokenType != JsonTokenType.StartArray)
             {
-                throw new JsonApiException("Expected single resource or array of resources for this data");
+                throw new JsonApiException("Expected single JSON:API resource or array of resources for this data");
             }
 
             if (reader.TokenType == JsonTokenType.StartObject)
             {
                 var resource = reader.Read<JsonApiResource>(options);
+
+                if (resource == null)
+                {
+                    throw new JsonApiException("JSON:API resource must not be empty");
+                }
 
                 return new[] {resource};
             }
@@ -30,7 +35,14 @@ namespace JsonApi.Converters
 
         public override void Write(Utf8JsonWriter writer, JsonApiResource[] value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            if (value.Length == 1)
+            {
+                JsonSerializer.Serialize(writer, value[0], options);
+            }
+            else
+            {
+                JsonSerializer.Serialize(writer, value, options);
+            }
         }
     }
 }

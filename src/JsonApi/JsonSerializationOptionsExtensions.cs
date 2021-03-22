@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using JsonApi.Converters;
 using JsonApi.Serialization;
 
@@ -23,7 +24,7 @@ namespace JsonApi
             return options;
         }
 
-        internal static JsonApiConverter<T> GetConverter<T>(this JsonSerializerOptions options)
+        internal static JsonApiConverter<T> GetWrappedConverter<T>(this JsonSerializerOptions options)
         {
             var converter = options.GetConverter(typeof(T));
 

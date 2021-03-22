@@ -1,13 +1,17 @@
-﻿using Xunit;
+﻿using System;
+using JsonApi.Tests.Models;
+using Xunit;
 
 namespace JsonApi.Tests.Serialization
 {
     public class SerializeMetaTests
     {
-        [Fact]
-        public void CanSerializeOnlyMeta()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeOnlyMeta(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Meta = new JsonApiMeta
                 {
@@ -18,7 +22,7 @@ namespace JsonApi.Tests.Serialization
                 }
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
@@ -36,13 +40,15 @@ namespace JsonApi.Tests.Serialization
                       'count': 2
                     }
                   }
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact]
-        public void CanSerializeMetaWithData()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeMetaWithData(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Data = null,
                 Meta = new JsonApiMeta
@@ -54,7 +60,7 @@ namespace JsonApi.Tests.Serialization
                 }
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
@@ -72,13 +78,15 @@ namespace JsonApi.Tests.Serialization
                       'count': 2
                     }
                   }
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact]
-        public void CanSerializeMetaWithErrors()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeMetaWithErrors(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Errors = new[]
                 {
@@ -97,7 +105,7 @@ namespace JsonApi.Tests.Serialization
                 }
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
@@ -121,7 +129,7 @@ namespace JsonApi.Tests.Serialization
                       'count': 2
                     }
                   }
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
     }
 }

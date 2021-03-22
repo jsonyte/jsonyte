@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
+using JsonApi.Tests.Models;
 
 namespace JsonApi.Tests
 {
@@ -6,7 +8,41 @@ namespace JsonApi.Tests
     {
         public static string Serialize<T>(this T value)
         {
-            return JsonSerializer.Serialize(value, CreateOptions());
+            return Environment.NewLine + JsonSerializer.Serialize(value, CreateOptions());
+        }
+
+        public static string SerializeDocument<T>(this T value, Type documentType)
+            where T : MockJsonApiDocument
+        {
+            var document = Activator.CreateInstance(documentType);
+
+            document.SetValue(nameof(JsonApiDocument.Data), value.Data);
+            document.SetValue(nameof(JsonApiDocument.Errors), value.Errors);
+            document.SetValue(nameof(JsonApiDocument.Meta), value.Meta);
+            document.SetValue(nameof(JsonApiDocument.JsonApi), value.JsonApi);
+            document.SetValue(nameof(JsonApiDocument.Links), value.Links);
+            document.SetValue(nameof(JsonApiDocument.Included), value.Included);
+
+            return Environment.NewLine + JsonSerializer.Serialize(document, CreateOptions());
+        }
+
+        public static object GetValue(this object resource, string name)
+        {
+            var property = resource?.GetType().GetProperty(name);
+
+            return property?.GetValue(resource);
+        }
+
+        public static T GetValue<T>(this object resource, string name)
+        {
+            return (T) GetValue(resource, name);
+        }
+
+        public static void SetValue(this object resource, string name, object value)
+        {
+            var property = resource.GetType().GetProperty(name);
+
+            property.SetValue(resource, value);
         }
 
         public static JsonElement ToElement<T>(this T value)

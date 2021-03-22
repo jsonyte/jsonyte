@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
+using JsonApi.Tests.Models;
 using Xunit;
 
 namespace JsonApi.Tests.Deserialization
@@ -21,14 +23,16 @@ namespace JsonApi.Tests.Deserialization
         [InlineData("2.0.1")]
         public void CanConvertJsonApiVersions(string version)
         {
-            var document = Json.Format(version).Deserialize<Document>();
+            var document = string.Format(Json, version).Deserialize<Document>();
 
             Assert.NotNull(document.JsonApi);
             Assert.Equal(document.JsonApi.Version, version);
         }
 
-        [Fact]
-        public void CanDeserializeObjectInDocument()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeObjectInDocument(Type documentType)
         {
             const string json = @"
                 {
@@ -42,7 +46,7 @@ namespace JsonApi.Tests.Deserialization
                   }
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document);
             Assert.NotNull(document.JsonApi);
@@ -51,8 +55,10 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal("something", document.JsonApi.Meta?["feature"].GetString());
         }
 
-        [Fact]
-        public void DeserializingJsonApiWithNoMembersHasDefaultVersion()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void DeserializingJsonApiWithNoMembersHasDefaultVersion(Type documentType)
         {
             const string json = @"
                 {
@@ -61,7 +67,7 @@ namespace JsonApi.Tests.Deserialization
                   }
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document);
             Assert.NotNull(document.JsonApi);
@@ -69,8 +75,10 @@ namespace JsonApi.Tests.Deserialization
             Assert.Null(document.JsonApi.Meta);
         }
 
-        [Fact]
-        public void CanDeserializeJsonApiWithOnlyMetaAndDefaultVersion()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeJsonApiWithOnlyMetaAndDefaultVersion(Type documentType)
         {
             const string json = @"
                 {
@@ -83,7 +91,7 @@ namespace JsonApi.Tests.Deserialization
                   }
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document);
             Assert.NotNull(document.JsonApi);

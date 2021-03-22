@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -16,7 +17,8 @@ namespace JsonApi.Converters
     {
         private static readonly HashSet<Type> DefaultTypes = new()
         {
-
+            typeof(JsonApiResource),
+            typeof(JsonApiResourceIdentifier)
         };
 
         public override bool CanConvert(Type typeToConvert)
@@ -44,9 +46,14 @@ namespace JsonApi.Converters
                 {
                     return true;
                 }
+
+                if (collectionType != null && collectionType == typeof(JsonApiResource))
+                {
+                    return true;
+                }
             }
 
-            return false;
+            return typeToConvert.IsResource();
         }
 
         public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
@@ -58,7 +65,9 @@ namespace JsonApi.Converters
 
             if (typeToConvert.IsDocument())
             {
-                return new JsonApiDocumentConverter();
+                return typeToConvert.IsGenericType
+                    ? CreateConverter(typeof(JsonApiDocumentConverter<>), typeToConvert.GenericTypeArguments.First())
+                    : new JsonApiDocumentConverter();
             }
 
             if (typeToConvert.IsCollection())
@@ -69,6 +78,16 @@ namespace JsonApi.Converters
                 {
                     return CreateConverter(typeof(JsonApiErrorsConverter<>), typeToConvert);
                 }
+
+                if (collectionType != null && collectionType == typeof(JsonApiResource))
+                {
+                    return new JsonApiResourcesConverter();
+                }
+            }
+
+            if (typeToConvert.IsResource())
+            {
+                return CreateConverter(typeof(JsonApiResourceConverter<>), typeToConvert);
             }
 
             return null;

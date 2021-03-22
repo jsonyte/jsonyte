@@ -1,13 +1,17 @@
-﻿using Xunit;
+﻿using System;
+using JsonApi.Tests.Models;
+using Xunit;
 
 namespace JsonApi.Tests.Serialization
 {
     public class SerializeJsonApiObjectTests
     {
-        [Fact]
-        public void CanSerializeJsonApiWithSimpleVersion()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeJsonApiWithSimpleVersion(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Data = null,
                 JsonApi = new JsonApiObject
@@ -16,7 +20,7 @@ namespace JsonApi.Tests.Serialization
                 }
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
@@ -24,13 +28,15 @@ namespace JsonApi.Tests.Serialization
                   'jsonapi': {
                     'version': '1.1'
                   }
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact]
-        public void CanSerializeJsonApiWithVersionAndMeta()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeJsonApiWithVersionAndMeta(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Data = null,
                 JsonApi = new JsonApiObject
@@ -43,7 +49,7 @@ namespace JsonApi.Tests.Serialization
                 }
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
@@ -54,19 +60,21 @@ namespace JsonApi.Tests.Serialization
                       'count': 5
                     }
                   }
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact]
-        public void SerializesWithDefaultJsonApiVersion()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void SerializesWithDefaultJsonApiVersion(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Data = null,
                 JsonApi = new JsonApiObject()
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
@@ -74,13 +82,15 @@ namespace JsonApi.Tests.Serialization
                   'jsonapi': {
                     'version': '1.0'
                   }
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact]
-        public void CanSerializeJsonApiObjectWithNoMembers()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeJsonApiObjectWithNoMembers(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Data = null,
                 JsonApi = new JsonApiObject
@@ -89,20 +99,22 @@ namespace JsonApi.Tests.Serialization
                 }
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
                   'data': null,
                   'jsonapi': {
                   }
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact]
-        public void CanSerializeJsonApiWithNoVersion()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanSerializeJsonApiWithNoVersion(Type documentType)
         {
-            var document = new JsonApiDocument
+            var document = new MockJsonApiDocument
             {
                 Data = null,
                 JsonApi = new JsonApiObject
@@ -115,7 +127,7 @@ namespace JsonApi.Tests.Serialization
                 }
             };
 
-            var json = document.Serialize();
+            var json = document.SerializeDocument(documentType);
 
             Assert.Equal(@"
                 {
@@ -125,7 +137,16 @@ namespace JsonApi.Tests.Serialization
                       'count': 5
                     }
                   }
-                }".ToDoubleQuoted(), json, JsonStringEqualityComparer.Default);
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void JsonApiTypesAreTheSameForBothDocuments()
+        {
+            var document = new JsonApiDocument();
+            var genericDocument = new JsonApiDocument<Article>();
+
+            Assert.Equal(document.JsonApi?.GetType(), genericDocument.JsonApi?.GetType());
         }
     }
 }

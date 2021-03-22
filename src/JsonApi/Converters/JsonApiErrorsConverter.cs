@@ -39,7 +39,7 @@ namespace JsonApi.Converters
         public override T? ReadWrapped(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var errors = new List<JsonApiError>();
-            var converter = options.GetConverter<JsonApiError>();
+            var converter = options.GetWrappedConverter<JsonApiError>();
 
             reader.ReadArray("errors");
 
@@ -78,7 +78,7 @@ namespace JsonApi.Converters
 
             if (value is IEnumerable<JsonApiError> errors)
             {
-                var converter = options.GetConverter<JsonApiError>();
+                var converter = options.GetWrappedConverter<JsonApiError>();
 
                 foreach (var error in errors)
                 {

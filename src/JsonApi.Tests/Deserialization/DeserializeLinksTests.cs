@@ -1,11 +1,15 @@
-﻿using Xunit;
+﻿using System;
+using JsonApi.Tests.Models;
+using Xunit;
 
 namespace JsonApi.Tests.Deserialization
 {
     public class DeserializeLinksTests
     {
-        [Fact]
-        public void JsonMustHaveRequiredMembers()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void JsonMustHaveRequiredMembers(Type documentType)
         {
             const string json = @"
                 {
@@ -16,14 +20,16 @@ namespace JsonApi.Tests.Deserialization
                   }
                 }";
 
-            var exception = Record.Exception(() => json.Deserialize<JsonApiDocument>());
+            var exception = Record.Exception(() => json.Deserialize(documentType));
 
             Assert.NotNull(exception);
             Assert.Contains("document must contain 'data', 'errors' or 'meta'", exception.Message);
         }
 
-        [Fact]
-        public void CanDeserializeSimpleLinks()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeSimpleLinks(Type documentType)
         {
             const string json = @"
                 {
@@ -38,7 +44,7 @@ namespace JsonApi.Tests.Deserialization
                   'data': null
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document.Links);
             Assert.Equal("http://example.com/articles", document.Links.Self?.Href);
@@ -49,8 +55,10 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal("http://example.com/related", document.Links.Related?.Href);
         }
 
-        [Fact]
-        public void CanDeserializeSimpleNonStandardLink()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeSimpleNonStandardLink(Type documentType)
         {
             const string json = @"
                 {
@@ -61,15 +69,17 @@ namespace JsonApi.Tests.Deserialization
                   'data': null
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document.Links);
             Assert.Equal("http://example.com/articles", document.Links["articles"].Href);
             Assert.Equal("http://example.com/blogs", document.Links["blogs"].Href);
         }
 
-        [Fact]
-        public void CanDeserializeComplexLinks()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeComplexLinks(Type documentType)
         {
             const string json = @"
                 {
@@ -92,7 +102,7 @@ namespace JsonApi.Tests.Deserialization
                   'data': null
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document.Links);
 

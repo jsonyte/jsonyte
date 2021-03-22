@@ -1,12 +1,16 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using JsonApi.Tests.Models;
 using Xunit;
 
 namespace JsonApi.Tests.Deserialization
 {
     public class DeserializeMetaTests
     {
-        [Fact]
-        public void CanDeserializeOnlyMeta()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeOnlyMeta(Type documentType)
         {
             const string json = @"
                 {
@@ -25,7 +29,7 @@ namespace JsonApi.Tests.Deserialization
                   }
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             var authors = document.Meta?["authors"].EnumerateArray()
                 .Select(x => x.GetString())
@@ -45,8 +49,10 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal(2, document.Meta?["details"].GetProperty("count").GetInt32());
         }
 
-        [Fact]
-        public void CanDeserializeErrorsWithMeta()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeErrorsWithMeta(Type documentType)
         {
             const string json = @"
                 {
@@ -62,7 +68,7 @@ namespace JsonApi.Tests.Deserialization
                   }
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document.Errors);
             Assert.NotNull(document.Meta);
@@ -72,8 +78,10 @@ namespace JsonApi.Tests.Deserialization
             Assert.True(document.Meta["active"].GetBoolean());
         }
 
-        [Fact]
-        public void CanDeserializeDataWithMeta()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeDataWithMeta(Type documentType)
         {
             const string json = @"
                 {
@@ -84,7 +92,7 @@ namespace JsonApi.Tests.Deserialization
                   }
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.Null(document.Errors);
             Assert.NotNull(document.Meta);

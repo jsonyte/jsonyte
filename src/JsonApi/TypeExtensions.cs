@@ -11,9 +11,9 @@ namespace JsonApi
     {
         public static bool IsResource(this Type type)
         {
-            var typeProperty = type.GetProperty("Type", BindingFlags.Instance | BindingFlags.Public);
+            var property = type.GetProperty("Type", BindingFlags.Instance | BindingFlags.Public);
 
-            return typeProperty?.PropertyType == typeof(string);
+            return property?.PropertyType == typeof(string);
         }
 
         public static bool IsError(this Type type)
@@ -32,7 +32,7 @@ namespace JsonApi
             {
                 var genericType = type.GetGenericTypeDefinition();
 
-                if (genericType == typeof(JsonApiResourceDocument<>))
+                if (genericType == typeof(JsonApiDocument<>))
                 {
                     return true;
                 }

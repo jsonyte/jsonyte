@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JsonApi.Tests.Models;
 using Xunit;
 
 namespace JsonApi.Tests.Deserialization
@@ -394,8 +395,10 @@ namespace JsonApi.Tests.Deserialization
             Assert.Null(error);
         }
 
-        [Fact]
-        public void CanDeserializeErrorsInDocument()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeErrorsInDocument(Type documentType)
         {
             const string json = @"
                 {
@@ -409,9 +412,10 @@ namespace JsonApi.Tests.Deserialization
                   ]
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
-            Assert.Single(document.Errors!);
+            Assert.NotNull(document.Errors);
+            Assert.Single(document.Errors);
             Assert.Equal("422", document.Errors.First().Status);
             Assert.Equal("Invalid Attribute", document.Errors.First().Title);
             Assert.Equal("First name must contain at least three characters.", document.Errors.First().Detail);
@@ -419,36 +423,42 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal("/data/attributes/firstName", document.Errors.First().Source?.Pointer.ToString());
         }
 
-        [Fact]
-        public void NullErrorsShouldThrowWhenDeserializingDocument()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void NullErrorsShouldThrowWhenDeserializingDocument(Type documentType)
         {
             const string json = @"
                 {
                   'errors': null
                 }";
 
-            var exception = Record.Exception(() => json.Deserialize<JsonApiDocument>());
+            var exception = Record.Exception(() => json.Deserialize(documentType));
 
             Assert.NotNull(exception);
             Assert.IsType<JsonApiException>(exception);
         }
 
-        [Fact]
-        public void EmptyErrorsShouldBeEmptyInDocument()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void EmptyErrorsShouldBeEmptyInDocument(Type documentType)
         {
             const string json = @"
                 {
                   'errors': []
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document.Errors);
             Assert.Empty(document.Errors);
         }
 
-        [Fact]
-        public void MissingErrorsShouldBeNullInDocument()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void MissingErrorsShouldBeNullInDocument(Type documentType)
         {
             const string json = @"
                 {
@@ -457,7 +467,7 @@ namespace JsonApi.Tests.Deserialization
                   }
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.Null(document.Errors);
         }
@@ -484,8 +494,10 @@ namespace JsonApi.Tests.Deserialization
             Assert.IsType<JsonApiException>(exception);
         }
 
-        [Fact]
-        public void DuplicateErrorsWhenDeserializingDocumentThrows()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void DuplicateErrorsWhenDeserializingDocumentThrows(Type documentType)
         {
             const string json = @"
                 {
@@ -500,7 +512,7 @@ namespace JsonApi.Tests.Deserialization
                   'errors': []
                 }";
 
-            var exception = Record.Exception(() => json.Deserialize<JsonApiDocument>());
+            var exception = Record.Exception(() => json.Deserialize(documentType));
 
             Assert.NotNull(exception);
             Assert.IsType<JsonApiException>(exception);
