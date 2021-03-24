@@ -50,6 +50,30 @@ namespace JsonApi.Tests.Deserialization
         }
 
         [Fact]
+        public void CanDeserializeResourceWithTypedMeta()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'meta': {
+                      'count': 10,
+                      'title': 'Jsonapi'
+                    }
+                  }
+                }";
+
+            var article = json.Deserialize<ArticleWithTypedMeta>();
+
+            Assert.NotNull(article);
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal(10, article.Meta.Count);
+            Assert.Equal("Jsonapi", article.Meta.Title);
+        }
+
+        [Fact]
         public void CanDeserializeNullResourceObject()
         {
             const string json = @"

@@ -90,5 +90,63 @@ namespace JsonApi.Tests.Serialization
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void ResourceIdMustBeAString()
+        {
+            var resource = new
+            {
+                id = 1,
+                type = "articles",
+                title = "Jsonapi"
+            };
+
+            var exception = Record.Exception(() => resource.Serialize());
+
+            Assert.NotNull(exception);
+            Assert.IsType<JsonApiException>(exception);
+        }
+
+        [Fact]
+        public void ResourceWithoutTypeIgnored()
+        {
+            var article = new ModelWithNoType
+            {
+                Id = "1",
+                Title = "Jsonapi"
+            };
+
+            var json = article.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'id': '1',
+                  'title': 'Jsonapi'
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeAnonymousResource()
+        {
+            var resource = new
+            {
+                id = "1",
+                type = "articles",
+                title = "Jsonapi"
+            };
+
+            var json = resource.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

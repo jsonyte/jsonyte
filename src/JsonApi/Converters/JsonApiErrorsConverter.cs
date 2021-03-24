@@ -101,7 +101,7 @@ namespace JsonApi.Converters
                 return null;
             }
 
-            if (typeToConvert.GetClassType() == JsonClassType.Array)
+            if (typeToConvert.GetTypeCategory() == JsonTypeCategory.Array)
             {
                 return errors.ToArray();
             }

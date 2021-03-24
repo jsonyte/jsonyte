@@ -3,6 +3,7 @@ using System.Reflection;
 
 namespace JsonApi.Serialization
 {
+#if !NETCOREAPP && !NETFRAMEWORK
     internal class ReflectionMemberAccessor : IMemberAccessor
     {
         public Func<object?> CreateCreator(Type type)
@@ -10,21 +11,15 @@ namespace JsonApi.Serialization
             return () => Activator.CreateInstance(type, false);
         }
 
-        public Func<object, T?> CreatePropertyGetter<T>(PropertyInfo property)
+        public Func<object, T> CreatePropertyGetter<T>(PropertyInfo property)
         {
-            return resource =>
-            {
-                var result = property.GetMethod?.Invoke(resource, null);
-
-                return result == null
-                    ? default
-                    : (T) result;
-            };
+            return resource => (T) property.GetMethod.Invoke(resource, null);
         }
 
-        public Action<object, T?> CreatePropertySetter<T>(PropertyInfo property)
+        public Action<object, T> CreatePropertySetter<T>(PropertyInfo property)
         {
-            return (resource, value) => property.SetMethod?.Invoke(resource, new object?[] {value});
+            return (resource, value) => property.SetMethod.Invoke(resource, new object[] {value!});
         }
     }
+#endif
 }

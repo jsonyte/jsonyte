@@ -1,6 +1,6 @@
 ﻿namespace JsonApi.Serialization
 {
-    internal enum JsonClassType
+    internal enum JsonTypeCategory
     {
         Object,
         List,

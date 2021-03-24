@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text.Json;
-using JsonApi.Tests.Models;
 
 namespace JsonApi.Tests
 {
@@ -42,7 +41,7 @@ namespace JsonApi.Tests
         {
             var property = resource.GetType().GetProperty(name);
 
-            property.SetValue(resource, value);
+            property?.SetValue(resource, value);
         }
 
         public static JsonElement ToElement<T>(this T value)

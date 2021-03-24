@@ -1,12 +1,24 @@
 ﻿using System;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using JsonApi.Converters;
 using JsonApi.Serialization;
 
 namespace JsonApi
 {
+    /*
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public bool IgnoreNullValues { get; set; }
+
+        public JsonIgnoreCondition DefaultIgnoreCondition { get; set; }
+
+        public bool IgnoreReadOnlyProperties { get; set; }
+
+        public bool IgnoreReadOnlyFields { get; set; }
+
+        public bool IncludeFields { get; set; }
+
+     */
     public static class JsonSerializationOptionsExtensions
     {
         public static JsonSerializerOptions AddJsonApi(this JsonSerializerOptions options)
@@ -36,9 +48,9 @@ namespace JsonApi
             return jsonApiConverter;
         }
 
-        internal static JsonClassInfo GetClassInfo(this JsonSerializerOptions options, Type type)
+        internal static JsonTypeInfo GetClassInfo(this JsonSerializerOptions options, Type type)
         {
-            return GetState(options).Classes.GetOrAdd(type, x => new JsonClassInfo(x, options));
+            return GetState(options).Classes.GetOrAdd(type, x => new JsonTypeInfo(x, options));
         }
 
         internal static IMemberAccessor GetMemberAccessor(this JsonSerializerOptions options)

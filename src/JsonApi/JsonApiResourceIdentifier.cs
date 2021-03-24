@@ -9,7 +9,7 @@ namespace JsonApi
         public string? Id { get; set; }
 
         [JsonPropertyName("type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         [JsonPropertyName("meta")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

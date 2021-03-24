@@ -7,8 +7,8 @@ namespace JsonApi.Serialization
     {
         Func<object?> CreateCreator(Type type);
 
-        Func<object, T?> CreatePropertyGetter<T>(PropertyInfo property);
+        Func<object, T> CreatePropertyGetter<T>(PropertyInfo property);
 
-        Action<object, T?> CreatePropertySetter<T>(PropertyInfo property);
+        Action<object, T> CreatePropertySetter<T>(PropertyInfo property);
     }
 }

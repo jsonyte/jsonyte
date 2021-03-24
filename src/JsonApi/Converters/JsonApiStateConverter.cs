@@ -8,7 +8,7 @@ namespace JsonApi.Converters
 {
     internal class JsonApiStateConverter : JsonConverter<JsonApiStateConverter>
     {
-        public ConcurrentDictionary<Type, JsonClassInfo> Classes { get; } = new();
+        public ConcurrentDictionary<Type, JsonTypeInfo> Classes { get; } = new();
 
 #if NETCOREAPP || NETFRAMEWORK
         public IMemberAccessor MemberAccessor { get; } = new EmitMemberAccessor();

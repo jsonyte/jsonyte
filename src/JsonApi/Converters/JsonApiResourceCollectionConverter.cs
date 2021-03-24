@@ -63,9 +63,9 @@ namespace JsonApi.Converters
             }
         }
 
-        private object GetInstance(JsonClassInfo info, List<TElement> resources)
+        private object GetInstance(JsonTypeInfo info, List<TElement> resources)
         {
-            if (info.ClassType == JsonClassType.Array)
+            if (info.TypeCategory == JsonTypeCategory.Array)
             {
                 return resources.ToArray();
             }

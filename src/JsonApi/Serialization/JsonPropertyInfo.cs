@@ -5,57 +5,105 @@ using System.Text.Json.Serialization;
 
 namespace JsonApi.Serialization
 {
-    internal sealed class JsonPropertyInfo<T> : IJsonPropertyInfo
+    internal sealed class JsonPropertyInfo<T> : IJsonMemberInfo
     {
-        public JsonPropertyInfo(PropertyInfo property, JsonConverter converter, JsonSerializerOptions options)
+        public JsonPropertyInfo(PropertyInfo property, JsonIgnoreCondition? ignoreCondition, JsonConverter converter, JsonSerializerOptions options)
         {
             Options = options;
-            TypedConverter = converter as JsonConverter<T>;
-            Get = options.GetMemberAccessor().CreatePropertyGetter<T>(property);
-            Set = options.GetMemberAccessor().CreatePropertySetter<T>(property);
-            PropertyName = GetPropertyName(property, options);
+            TypedConverter = (JsonConverter<T>) converter;
+            IgnoreCondition = ignoreCondition;
+            Get = CreateGetter(property);
+            Set = CreateSetter(property);
+            PropertyName = GetName(property);
+            PropertyType = property.PropertyType;
         }
 
         public JsonSerializerOptions Options { get; }
 
         public JsonConverter<T> TypedConverter { get; }
 
-        public Func<object, T> Get { get; }
+        public JsonIgnoreCondition? IgnoreCondition { get; }
 
-        public Action<object, T> Set { get; }
+        public Func<object, T>? Get { get; }
+
+        public Action<object, T>? Set { get; }
 
         public string PropertyName { get; }
 
+        public Type PropertyType { get; }
+
         public void Read(ref Utf8JsonReader reader, object resource)
         {
-            var value = TypedConverter.Read(ref reader, typeof(T), Options);
+            if (Set == null)
+            {
+                return;
+            }
 
-            Set(resource, value);
+            var value = TypedConverter.Read(ref reader, PropertyType, Options);
+
+            Set(resource, value!);
         }
 
         public void Write(Utf8JsonWriter writer, object resource)
         {
+            if (Get == null)
+            {
+                return;
+            }
+
             var value = Get(resource);
 
             writer.WritePropertyName(PropertyName);
             TypedConverter.Write(writer, value, Options);
         }
 
-        private string GetPropertyName(PropertyInfo property, JsonSerializerOptions options)
+        private string GetName(MemberInfo member)
         {
-            var attribute = property.GetCustomAttribute<JsonPropertyNameAttribute>(false);
+            var nameAttribute = member.GetCustomAttribute<JsonPropertyNameAttribute>(false);
 
-            if (attribute != null)
+            if (nameAttribute != null)
             {
-                return attribute.Name;
+                return nameAttribute.Name;
             }
 
-            if (options.PropertyNamingPolicy != null)
+            if (Options.PropertyNamingPolicy != null)
             {
-                return options.PropertyNamingPolicy.ConvertName(property.Name);
+                return Options.PropertyNamingPolicy.ConvertName(member.Name);
             }
 
-            return property.Name;
+            return member.Name;
+        }
+
+        private Func<object, T>? CreateGetter(PropertyInfo property)
+        {
+            if (!IsPublic(property.GetMethod))
+            {
+                return null;
+            }
+
+            var ignoreReadOnly = Options.IgnoreReadOnlyProperties;
+
+            return Options.GetMemberAccessor().CreatePropertyGetter<T>(property);
+        }
+
+        private Action<object, T>? CreateSetter(PropertyInfo property)
+        {
+            if (!IsPublic(property.SetMethod))
+            {
+                return null;
+            }
+
+            return Options.GetMemberAccessor().CreatePropertySetter<T>(property);
+        }
+
+        private bool IsPublic(MethodInfo? method)
+        {
+            return method != null && method.IsPublic;
+        }
+
+        private bool IsReadOnly(PropertyInfo property)
+        {
+            return IsPublic(property.GetMethod) && !IsPublic(property.SetMethod);
         }
     }
 }

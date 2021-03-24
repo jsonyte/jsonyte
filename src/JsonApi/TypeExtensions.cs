@@ -11,7 +11,7 @@ namespace JsonApi
     {
         public static bool IsResource(this Type type)
         {
-            var property = type.GetProperty("Type", BindingFlags.Instance | BindingFlags.Public);
+            var property = type.GetProperty("Type", BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
 
             return property?.PropertyType == typeof(string);
         }
@@ -51,19 +51,19 @@ namespace JsonApi
             return type.IsArray || typeof(IEnumerable).IsAssignableFrom(type);
         }
 
-        public static JsonClassType GetClassType(this Type type)
+        public static JsonTypeCategory GetTypeCategory(this Type type)
         {
             if (!type.IsCollection())
             {
-                return JsonClassType.Object;
+                return JsonTypeCategory.Object;
             }
 
             if (type.IsArray)
             {
-                return JsonClassType.Array;
+                return JsonTypeCategory.Array;
             }
 
-            return JsonClassType.List;
+            return JsonTypeCategory.List;
         }
 
         public static Type? GetCollectionType(this Type type)

@@ -41,7 +41,7 @@ namespace JsonApi.Serialization
             return method.CreateDelegate<Func<object>>();
         }
 
-        public Func<object, T?> CreatePropertyGetter<T>(PropertyInfo property)
+        public Func<object, T> CreatePropertyGetter<T>(PropertyInfo property)
         {
             var declaringType = property.DeclaringType;
 
@@ -72,7 +72,7 @@ namespace JsonApi.Serialization
             return method.CreateDelegate<Func<object, T>>();
         }
 
-        public Action<object, T?> CreatePropertySetter<T>(PropertyInfo property)
+        public Action<object, T> CreatePropertySetter<T>(PropertyInfo property)
         {
             var declaringType = property.DeclaringType;
 

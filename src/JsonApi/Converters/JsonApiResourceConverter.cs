@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text.Json;
+using JsonApi.Serialization;
 
 namespace JsonApi.Converters
 {
@@ -45,6 +46,8 @@ namespace JsonApi.Converters
             var info = options.GetClassInfo(typeToConvert);
             var resource = info.Creator();
 
+            ValidateResource(info);
+
             if (resource == null)
             {
                 return default;
@@ -56,10 +59,7 @@ namespace JsonApi.Converters
 
                 if (name == JsonApiMembers.Id || name == JsonApiMembers.Type || name == JsonApiMembers.Meta || name == JsonApiMembers.Links)
                 {
-                    if (info.Properties.TryGetValue(name, out var property))
-                    {
-                        property.Read(ref reader, resource);
-                    }
+                    info.GetProperty(name).Read(ref reader, resource);
                 }
                 else if (name == JsonApiMembers.Relationships)
                 {
@@ -72,14 +72,7 @@ namespace JsonApi.Converters
                     {
                         var attribute = reader.ReadMember("resource object");
 
-                        if (attribute != null && info.Properties.TryGetValue(attribute, out var property))
-                        {
-                            property.Read(ref reader, resource);
-                        }
-                        else
-                        {
-                            reader.Skip();
-                        }
+                        info.GetProperty(attribute).Read(ref reader, resource);
 
                         reader.Read();
                     }
@@ -116,21 +109,16 @@ namespace JsonApi.Converters
 
             var info = options.GetClassInfo(typeof(T));
 
-            var valueKeys = info.Properties.Keys
+            ValidateResource(info);
+
+            var valueKeys = info.GetPropertyKeys()
                 .Except(new[] {JsonApiMembers.Id, JsonApiMembers.Type})
                 .ToArray();
 
             writer.WriteStartObject();
 
-            if (info.Properties.TryGetValue(JsonApiMembers.Id, out var idProperty))
-            {
-                idProperty.Write(writer, value);
-            }
-
-            if (info.Properties.TryGetValue(JsonApiMembers.Type, out var typeProperty))
-            {
-                typeProperty.Write(writer, value);
-            }
+            info.GetProperty(JsonApiMembers.Id).Write(writer, value);
+            info.GetProperty(JsonApiMembers.Type).Write(writer, value);
 
             if (valueKeys.Any())
             {
@@ -139,7 +127,7 @@ namespace JsonApi.Converters
 
                 foreach (var key in valueKeys)
                 {
-                    var property = info.Properties[key];
+                    var property = info.GetProperty(key);
 
                     property.Write(writer, value);
                 }
@@ -148,6 +136,16 @@ namespace JsonApi.Converters
             }
 
             writer.WriteEndObject();
+        }
+
+        private void ValidateResource(JsonTypeInfo info)
+        {
+            var idProperty = info.GetProperty(JsonApiMembers.Id);
+
+            if (idProperty.PropertyType != typeof(string))
+            {
+                throw new JsonApiException("JSON:API resource id must be a string");
+            }
         }
     }
 

@@ -1,9 +1,14 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
 
 namespace JsonApi.Serialization
 {
-    internal interface IJsonPropertyInfo
+    internal interface IJsonMemberInfo
     {
+        string PropertyName { get; }
+
+        Type PropertyType { get; }
+
         void Read(ref Utf8JsonReader reader, object resource);
 
         void Write(Utf8JsonWriter writer, object resource);

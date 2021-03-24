@@ -1,8 +1,6 @@
-﻿using System;
-using System.Text.Json;
-
-namespace JsonApi.Helpers
+﻿namespace JsonApi.Helpers
 {
+#if false
     internal static class Prototype
     {
         public static JsonDocument JsonDocumentFromObject<TValue>(TValue value, JsonSerializerOptions options = default)
@@ -29,4 +27,5 @@ namespace JsonApi.Helpers
             return doc.RootElement.Clone();
         }
     }
+#endif
 }
