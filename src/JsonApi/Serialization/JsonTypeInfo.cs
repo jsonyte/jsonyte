@@ -9,6 +9,8 @@ namespace JsonApi.Serialization
 {
     internal class JsonTypeInfo
     {
+        private const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
         private static readonly EmptyJsonMemberInfo EmptyMember = new();
 
         private readonly Dictionary<string, IJsonMemberInfo> properties;
@@ -19,8 +21,8 @@ namespace JsonApi.Serialization
         {
             Creator = options.GetMemberAccessor().CreateCreator(type);
             TypeCategory = type.GetTypeCategory();
-
-            properties = GetProperties(type, options);
+            
+            properties = GetMemberCache(type, options);
             keys = properties.Keys.ToArray();
         }
 
@@ -28,7 +30,7 @@ namespace JsonApi.Serialization
 
         public JsonTypeCategory TypeCategory { get; }
 
-        public IJsonMemberInfo GetProperty(string? name)
+        public IJsonMemberInfo GetMember(string? name)
         {
             if (name == null)
             {
@@ -40,21 +42,29 @@ namespace JsonApi.Serialization
                 : EmptyMember;
         }
 
-        public string[] GetPropertyKeys()
+        public string[] GetMemberKeys()
         {
             return keys;
         }
 
-        private Dictionary<string, IJsonMemberInfo> GetProperties(Type type, JsonSerializerOptions options)
+        private Dictionary<string, IJsonMemberInfo> GetMemberCache(Type type, JsonSerializerOptions options)
         {
             var comparer = options.PropertyNameCaseInsensitive
                 ? StringComparer.OrdinalIgnoreCase
                 : StringComparer.Ordinal;
 
-            var jsonProperties = new Dictionary<string, IJsonMemberInfo>(comparer);
+            var members = new Dictionary<string, IJsonMemberInfo>(comparer);
 
+            GetProperties(members, type, options);
+            GetFields(members, type, options);
+
+            return members;
+        }
+
+        private void GetProperties(Dictionary<string, IJsonMemberInfo> members, Type type, JsonSerializerOptions options)
+        {
             var typeProperties = type
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .GetProperties(Flags)
                 .Where(x => !x.GetIndexParameters().Any())
                 .Where(x => x.GetMethod?.IsPublic == true || x.SetMethod?.IsPublic == true);
 
@@ -66,11 +76,33 @@ namespace JsonApi.Serialization
                 {
                     var jsonProperty = CreateProperty(property, ignoreCondition, options);
 
-                    jsonProperties[jsonProperty.PropertyName] = jsonProperty;
+                    members[jsonProperty.MemberName] = jsonProperty;
                 }
             }
+        }
 
-            return jsonProperties;
+        private void GetFields(Dictionary<string, IJsonMemberInfo> members, Type type, JsonSerializerOptions options)
+        {
+            if (!options.IncludeFields)
+            {
+                return;
+            }
+
+            var typeFields = type
+                .GetFields(Flags)
+                .Where(x => x.IsPublic);
+
+            foreach (var field in typeFields)
+            {
+                var ignoreCondition = GetIgnoreCondition(field);
+
+                if (ignoreCondition != JsonIgnoreCondition.Always)
+                {
+                    var jsonProperty = CreateField(field, ignoreCondition, options);
+
+                    members[jsonProperty.MemberName] = jsonProperty;
+                }
+            }
         }
 
         private JsonIgnoreCondition? GetIgnoreCondition(MemberInfo member)
@@ -81,38 +113,53 @@ namespace JsonApi.Serialization
         private IJsonMemberInfo CreateProperty(PropertyInfo property, JsonIgnoreCondition? ignoreCondition, JsonSerializerOptions options)
         {
             var propertyType = typeof(JsonPropertyInfo<>).MakeGenericType(property.PropertyType);
-            var converter = GetConverter(property, options);
+            var converter = GetConverter(property, property.PropertyType, options);
 
             var propertyInfo = Activator.CreateInstance(propertyType, property, ignoreCondition, converter, options);
 
-            if (propertyInfo is not IJsonMemberInfo jsonPropertyInfo)
+            if (propertyInfo is not IJsonMemberInfo jsonMemberInfo)
             {
                 throw new JsonApiException($"Cannot get property info for '{property.Name}'");
             }
 
-            return jsonPropertyInfo;
+            return jsonMemberInfo;
         }
 
-        private JsonConverter? GetConverter(PropertyInfo property, JsonSerializerOptions options)
+        private IJsonMemberInfo CreateField(FieldInfo field, JsonIgnoreCondition? ignoreCondition, JsonSerializerOptions options)
         {
-            var converter = GetConverterAttribute(property);
+            var fieldType = typeof(JsonFieldInfo<>).MakeGenericType(field.FieldType);
+            var converter = GetConverter(field, field.FieldType, options);
+
+            var fieldInfo = Activator.CreateInstance(fieldType, field, ignoreCondition, converter, options);
+
+            if (fieldInfo is not IJsonMemberInfo jsonMemberInfo)
+            {
+                throw new JsonApiException($"Cannot get field info for '{field.Name}'");
+            }
+
+            return jsonMemberInfo;
+        }
+
+        private JsonConverter? GetConverter(MemberInfo member, Type memberType, JsonSerializerOptions options)
+        {
+            var converter = GetConverterAttribute(member);
 
             if (converter == null)
             {
-                return options.GetConverter(property.PropertyType);
+                return options.GetConverter(memberType);
             }
 
             if (converter.ConverterType == null)
             {
-                return converter.CreateConverter(property.PropertyType);
+                return converter.CreateConverter(memberType);
             }
 
             return Activator.CreateInstance(converter.ConverterType) as JsonConverter;
         }
 
-        private JsonConverterAttribute? GetConverterAttribute(MemberInfo property)
+        private JsonConverterAttribute? GetConverterAttribute(MemberInfo member)
         {
-            var converters = property.GetCustomAttributes<JsonConverterAttribute>(false).ToArray();
+            var converters = member.GetCustomAttributes<JsonConverterAttribute>(false).ToArray();
 
             if (!converters.Any())
             {
@@ -121,7 +168,7 @@ namespace JsonApi.Serialization
 
             if (converters.Length > 1)
             {
-                throw new InvalidOperationException($"The attribute 'JsonConverterAttribute' cannot exist more than once on '{property}'.");
+                throw new InvalidOperationException($"The attribute 'JsonConverterAttribute' cannot exist more than once on '{member}'.");
             }
 
             return converters.First();

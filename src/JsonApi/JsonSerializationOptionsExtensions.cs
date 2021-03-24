@@ -8,7 +8,7 @@ namespace JsonApi
 {
     /*
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool IgnoreNullValues { get; set; }
+        DONE public bool IgnoreNullValues { get; set; }
 
         public JsonIgnoreCondition DefaultIgnoreCondition { get; set; }
 

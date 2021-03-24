@@ -5,9 +5,9 @@ namespace JsonApi.Serialization
 {
     internal interface IJsonMemberInfo
     {
-        string PropertyName { get; }
+        string MemberName { get; }
 
-        Type PropertyType { get; }
+        Type MemberType { get; }
 
         bool Ignored { get; }
 

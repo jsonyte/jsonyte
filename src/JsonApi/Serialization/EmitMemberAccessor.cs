@@ -111,6 +111,79 @@ namespace JsonApi.Serialization
 
             return method.CreateDelegate<Action<object, T?>>();
         }
+
+        public Func<object, T> CreateFieldGetter<T>(FieldInfo field)
+        {
+            var declaringType = field.DeclaringType;
+
+            var method = new DynamicMethod(
+                field.Name + "Getter",
+                field.FieldType,
+                new[] {ObjectType},
+                typeof(EmitMemberAccessor).Module,
+                true);
+
+            var generator = method.GetILGenerator();
+
+            generator.Emit(OpCodes.Ldarg_0);
+
+            if (declaringType.IsValueType)
+            {
+                generator.Emit(OpCodes.Unbox, declaringType);
+            }
+            else
+            {
+                generator.Emit(OpCodes.Castclass, declaringType);
+            }
+
+            generator.Emit(OpCodes.Ldfld, field);
+
+            if (field.FieldType.IsValueType && field.FieldType != typeof(T))
+            {
+                generator.Emit(OpCodes.Box, field.FieldType);
+            }
+
+            generator.Emit(OpCodes.Ret);
+
+            return method.CreateDelegate<Func<object, T>>();
+        }
+
+        public Action<object, T> CreateFieldSetter<T>(FieldInfo field)
+        {
+            var declaringType = field.DeclaringType;
+
+            var method = new DynamicMethod(
+                field.Name + "Setter",
+                typeof(void),
+                new[] {ObjectType, field.FieldType},
+                typeof(EmitMemberAccessor).Module,
+                true);
+
+            var generator = method.GetILGenerator();
+
+            generator.Emit(OpCodes.Ldarg_0);
+
+            if (declaringType.IsValueType)
+            {
+                generator.Emit(OpCodes.Unbox, declaringType);
+            }
+            else
+            {
+                generator.Emit(OpCodes.Castclass, declaringType);
+            }
+
+            generator.Emit(OpCodes.Ldarg_1);
+
+            if (field.FieldType.IsValueType && field.FieldType != typeof(T))
+            {
+                generator.Emit(OpCodes.Unbox_Any, field.FieldType);
+            }
+
+            generator.Emit(OpCodes.Stfld, field);
+            generator.Emit(OpCodes.Ret);
+
+            return method.CreateDelegate<Action<object, T?>>();
+        }
     }
 #endif
 }

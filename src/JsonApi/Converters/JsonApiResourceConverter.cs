@@ -61,7 +61,7 @@ namespace JsonApi.Converters
 
                 state.AddFlag(name);
 
-                var property = info.GetProperty(name);
+                var property = info.GetMember(name);
 
                 if (name == JsonApiMembers.Attributes)
                 {
@@ -71,7 +71,7 @@ namespace JsonApi.Converters
                     {
                         var attributeName = reader.ReadMember("resource object");
 
-                        info.GetProperty(attributeName).Read(ref reader, resource);
+                        info.GetMember(attributeName).Read(ref reader, resource);
 
                         reader.Read();
                     }
@@ -112,14 +112,14 @@ namespace JsonApi.Converters
 
             ValidateResource(info);
 
-            var valueKeys = info.GetPropertyKeys()
+            var valueKeys = info.GetMemberKeys()
                 .Except(new[] {JsonApiMembers.Id, JsonApiMembers.Type})
                 .ToArray();
 
             writer.WriteStartObject();
 
-            info.GetProperty(JsonApiMembers.Id).Write(writer, value);
-            info.GetProperty(JsonApiMembers.Type).Write(writer, value);
+            info.GetMember(JsonApiMembers.Id).Write(writer, value);
+            info.GetMember(JsonApiMembers.Type).Write(writer, value);
 
             if (valueKeys.Any())
             {
@@ -128,7 +128,7 @@ namespace JsonApi.Converters
 
                 foreach (var key in valueKeys)
                 {
-                    var property = info.GetProperty(key);
+                    var property = info.GetMember(key);
 
                     if (!property.Ignored)
                     {
@@ -144,21 +144,21 @@ namespace JsonApi.Converters
 
         private void ValidateResource(JsonTypeInfo info)
         {
-            var idProperty = info.GetProperty(JsonApiMembers.Id);
+            var idProperty = info.GetMember(JsonApiMembers.Id);
 
-            if (idProperty.PropertyType != typeof(string))
+            if (idProperty.MemberType != typeof(string))
             {
                 throw new JsonApiException("JSON:API resource id must be a string");
             }
 
-            var typeProperty = info.GetProperty(JsonApiMembers.Type);
+            var typeProperty = info.GetMember(JsonApiMembers.Type);
 
-            if (typeProperty.PropertyName != JsonApiMembers.Type)
+            if (typeProperty.MemberName != JsonApiMembers.Type)
             {
                 throw new JsonApiException("JSON:API resource must have a 'type' member");
             }
 
-            if (typeProperty.PropertyType != typeof(string))
+            if (typeProperty.MemberType != typeof(string))
             {
                 throw new JsonApiException("JSON:API resource type must be a string");
             }

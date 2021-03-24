@@ -5,9 +5,9 @@ namespace JsonApi.Serialization
 {
     internal class EmptyJsonMemberInfo : IJsonMemberInfo
     {
-        public string PropertyName { get; } = string.Empty;
+        public string MemberName { get; } = string.Empty;
 
-        public Type PropertyType { get; } = typeof(object);
+        public Type MemberType { get; } = typeof(object);
 
         public bool Ignored { get; } = true;
 

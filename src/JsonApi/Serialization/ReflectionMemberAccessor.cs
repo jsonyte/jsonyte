@@ -20,6 +20,16 @@ namespace JsonApi.Serialization
         {
             return (resource, value) => property.SetMethod.Invoke(resource, new object[] {value!});
         }
+
+        public Func<object, T> CreateFieldGetter<T>(FieldInfo field)
+        {
+            return resource => (T) field.GetValue(resource);
+        }
+
+        public Action<object, T> CreateFieldSetter<T>(FieldInfo field)
+        {
+            return (resource, value) => field.SetValue(resource, value);
+        }
     }
 #endif
 }
