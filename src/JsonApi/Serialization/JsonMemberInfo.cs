@@ -41,6 +41,11 @@ namespace JsonApi.Serialization
 
             var value = TypedConverter.Read(ref reader, MemberType, Options);
 
+            if (Options.IgnoreNullValues && value == null)
+            {
+                return;
+            }
+
             Set(resource, value!);
         }
 

@@ -251,8 +251,8 @@ namespace JsonApi.Tests.Reflection
             var writeOnlyTitle = model.GetValue<string>(nameof(ModelWithPropertyVisibilities.WriteOnlyTitle));
             var writeOnlyCount = model.GetValue<int>(nameof(ModelWithPropertyVisibilities.WriteOnlyCount));
 
-            Assert.Equal("4", model.Id);
-            Assert.Equal("newType", model.Type);
+            Assert.Equal("1", model.Id);
+            Assert.Equal("model", model.Type);
             Assert.Equal("value", model.Title);
             Assert.Equal("value", model.ReadOnlyTitle);
             Assert.Equal("value", writeOnlyTitle);

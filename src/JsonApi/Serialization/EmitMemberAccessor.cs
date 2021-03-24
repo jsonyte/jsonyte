@@ -38,7 +38,7 @@ namespace JsonApi.Serialization
 
             generator.Emit(OpCodes.Ret);
 
-            return method.CreateDelegate<Func<object>>();
+            return (Func<object>) method.CreateDelegate(typeof(Func<object>));
         }
 
         public Func<object, T> CreatePropertyGetter<T>(PropertyInfo property)
@@ -56,20 +56,20 @@ namespace JsonApi.Serialization
 
             generator.Emit(OpCodes.Ldarg_0);
 
-            if (declaringType.IsValueType)
+            if (declaringType!.IsValueType)
             {
                 generator.Emit(OpCodes.Unbox, declaringType);
-                generator.Emit(OpCodes.Call, property.GetMethod);
+                generator.Emit(OpCodes.Call, property.GetMethod!);
             }
             else
             {
                 generator.Emit(OpCodes.Castclass, declaringType);
-                generator.Emit(OpCodes.Callvirt, property.GetMethod);
+                generator.Emit(OpCodes.Callvirt, property.GetMethod!);
             }
 
             generator.Emit(OpCodes.Ret);
 
-            return method.CreateDelegate<Func<object, T>>();
+            return (Func<object, T>) method.CreateDelegate(typeof(Func<object, T>));
         }
 
         public Action<object, T> CreatePropertySetter<T>(PropertyInfo property)
@@ -87,7 +87,7 @@ namespace JsonApi.Serialization
 
             generator.Emit(OpCodes.Ldarg_0);
 
-            if (declaringType.IsValueType)
+            if (declaringType!.IsValueType)
             {
                 generator.Emit(OpCodes.Unbox, declaringType);
             }
@@ -100,16 +100,16 @@ namespace JsonApi.Serialization
 
             if (declaringType.IsValueType)
             {
-                generator.Emit(OpCodes.Call, property.SetMethod);
+                generator.Emit(OpCodes.Call, property.SetMethod!);
             }
             else
             {
-                generator.Emit(OpCodes.Callvirt, property.SetMethod);
+                generator.Emit(OpCodes.Callvirt, property.SetMethod!);
             }
 
             generator.Emit(OpCodes.Ret);
 
-            return method.CreateDelegate<Action<object, T?>>();
+            return (Action<object, T?>) method.CreateDelegate(typeof(Action<object, T?>));
         }
 
         public Func<object, T> CreateFieldGetter<T>(FieldInfo field)
@@ -127,7 +127,7 @@ namespace JsonApi.Serialization
 
             generator.Emit(OpCodes.Ldarg_0);
 
-            if (declaringType.IsValueType)
+            if (declaringType!.IsValueType)
             {
                 generator.Emit(OpCodes.Unbox, declaringType);
             }
@@ -145,7 +145,7 @@ namespace JsonApi.Serialization
 
             generator.Emit(OpCodes.Ret);
 
-            return method.CreateDelegate<Func<object, T>>();
+            return (Func<object, T>) method.CreateDelegate(typeof(Func<object, T>));
         }
 
         public Action<object, T> CreateFieldSetter<T>(FieldInfo field)
@@ -163,7 +163,7 @@ namespace JsonApi.Serialization
 
             generator.Emit(OpCodes.Ldarg_0);
 
-            if (declaringType.IsValueType)
+            if (declaringType!.IsValueType)
             {
                 generator.Emit(OpCodes.Unbox, declaringType);
             }
@@ -182,7 +182,7 @@ namespace JsonApi.Serialization
             generator.Emit(OpCodes.Stfld, field);
             generator.Emit(OpCodes.Ret);
 
-            return method.CreateDelegate<Action<object, T?>>();
+            return (Action<object, T?>) method.CreateDelegate(typeof(Action<object, T?>));
         }
     }
 #endif
