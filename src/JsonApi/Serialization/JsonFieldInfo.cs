@@ -33,7 +33,7 @@ namespace JsonApi.Serialization
 
         private bool IsIgnored(FieldInfo field)
         {
-            return IsReadOnly(field) && Options.IgnoreReadOnlyProperties;
+            return IsReadOnly(field) && Options.IgnoreReadOnlyFields;
         }
 
         private bool IsReadOnly(FieldInfo field)

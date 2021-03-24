@@ -20,8 +20,4 @@
     <ProjectReference Include="..\JsonApi\JsonApi.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Reflection\" />
-  </ItemGroup>
-
 </Project>

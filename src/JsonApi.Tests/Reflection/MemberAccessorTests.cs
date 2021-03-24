@@ -4,7 +4,7 @@ using Xunit;
 
 namespace JsonApi.Tests.Reflection
 {
-    public class ResourceAccessorTests
+    public class MemberAccessorTests
     {
         [Fact]
         public void ReadOnlyPropertiesAreNotSerialized()
@@ -193,6 +193,7 @@ namespace JsonApi.Tests.Reflection
             {
                 IgnoreNullValues = true
             };
+            options.AddJsonApi();
 
             var model = new ModelWithPropertyVisibilities
             {
@@ -222,40 +223,28 @@ namespace JsonApi.Tests.Reflection
         [Fact]
         public void IgnoresNullValuesWhenDeserializingUsingOptions()
         {
-            //const string json = @"
-            //    {
-            //      'data': {
-            //        'id': '1',
-            //        'type': 'model',
-            //        'attributes': {
-            //          'title': null,
-            //          'readOnlyTitle': 'value',
-            //          'writeOnlyTitle': null,
-            //          'count': 0,
-            //          'nullableCount': null,
-            //          'readOnlyCount': 5,
-            //          'writeOnlyCount': 0
-            //        }
-            //      }
-            //    }";
-
             const string json = @"
                 {
-                    'id': '4',
-                    'type': 'newType',
-                    'title': null,
-                    'readOnlyTitle': null,
-                    'writeOnlyTitle': null,
-                    'count': 0,
-                    'nullableCount': null,
-                    'readOnlyCount': 10,
-                    'writeOnlyCount': 0
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'title': null,
+                      'readOnlyTitle': 'value',
+                      'writeOnlyTitle': null,
+                      'count': 0,
+                      'nullableCount': null,
+                      'readOnlyCount': 5,
+                      'writeOnlyCount': 0
+                    }
+                  }
                 }";
 
             var options = new JsonSerializerOptions
             {
                 IgnoreNullValues = true
             };
+            options.AddJsonApi();
 
             var model = json.Deserialize<ModelWithPropertyVisibilities>(options);
 
@@ -271,6 +260,62 @@ namespace JsonApi.Tests.Reflection
             Assert.Equal(5, model.NullableCount);
             Assert.Equal(5, model.ReadOnlyCount);
             Assert.Equal(0, writeOnlyCount);
+        }
+
+        [Fact]
+        public void CanSerializeFields()
+        {
+            var options = new JsonSerializerOptions
+            {
+                IncludeFields = true
+            };
+            options.AddJsonApi();
+
+            var model = new ModelWithFields();
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'type': 'type',
+                    'attributes': {
+                      'publicTitle': 'title',
+                      'publicReadOnlyTitle': 'title',
+                      'publicCount': 5,
+                      'publicNullableCount': 5,
+                      'publicReadOnlyCount': 5,
+                      'publicReadOnlyNullableCount': 5
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void IgnoresReadOnlyFieldsUsingOptions()
+        {
+            var options = new JsonSerializerOptions
+            {
+                IncludeFields = true,
+                IgnoreReadOnlyFields = true
+            };
+            options.AddJsonApi();
+
+            var model = new ModelWithFields();
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'type': 'type',
+                    'attributes': {
+                      'publicTitle': 'title',
+                      'publicCount': 5,
+                      'publicNullableCount': 5
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
     }
 }

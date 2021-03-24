@@ -146,14 +146,14 @@ namespace JsonApi.Converters
         {
             var idProperty = info.GetMember(JsonApiMembers.Id);
 
-            if (idProperty.MemberType != typeof(string))
+            if (!string.IsNullOrEmpty(idProperty.MemberName) && idProperty.MemberType != typeof(string))
             {
                 throw new JsonApiException("JSON:API resource id must be a string");
             }
 
             var typeProperty = info.GetMember(JsonApiMembers.Type);
 
-            if (typeProperty.MemberName != JsonApiMembers.Type)
+            if (string.IsNullOrEmpty(typeProperty.MemberName))
             {
                 throw new JsonApiException("JSON:API resource must have a 'type' member");
             }

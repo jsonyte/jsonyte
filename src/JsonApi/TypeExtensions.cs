@@ -9,11 +9,20 @@ namespace JsonApi
 {
     internal static class TypeExtensions
     {
+        private const BindingFlags MemberFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase;
+
         public static bool IsResource(this Type type)
         {
-            var property = type.GetProperty("Type", BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            var property = type.GetProperty("type", MemberFlags);
 
-            return property?.PropertyType == typeof(string);
+            if (property != null && property.PropertyType == typeof(string))
+            {
+                return true;
+            }
+
+            var field = type.GetField("type", MemberFlags);
+
+            return field != null && field.FieldType == typeof(string);
         }
 
         public static bool IsError(this Type type)

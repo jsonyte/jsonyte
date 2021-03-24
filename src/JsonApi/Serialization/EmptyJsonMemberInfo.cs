@@ -7,7 +7,7 @@ namespace JsonApi.Serialization
     {
         public string MemberName { get; } = string.Empty;
 
-        public Type MemberType { get; } = typeof(object);
+        public Type MemberType { get; } = typeof(string);
 
         public bool Ignored { get; } = true;
 
