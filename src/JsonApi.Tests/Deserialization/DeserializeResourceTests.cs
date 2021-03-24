@@ -164,5 +164,44 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal("articles", article.Data.Type);
             Assert.Equal("Jsonapi", article.Data.Title);
         }
+
+        [Fact]
+        public void ResourceIdMustBeAString()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': 1,
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  }
+                }";
+
+            var exception = Record.Exception(() => json.Deserialize<ModelWithIntId>());
+
+            Assert.IsType<JsonApiException>(exception);
+            Assert.Contains("id must be a string", exception.Message);
+        }
+
+        [Fact]
+        public void ResourceWithoutTypeThrows()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  }
+                }";
+
+            var exception = Record.Exception(() => json.Deserialize<Article>());
+
+            Assert.IsType<JsonApiException>(exception);
+            Assert.Contains("must contain a 'type' member", exception.Message);
+        }
     }
 }

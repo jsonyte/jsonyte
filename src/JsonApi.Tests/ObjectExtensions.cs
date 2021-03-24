@@ -5,12 +5,12 @@ namespace JsonApi.Tests
 {
     public static class ObjectExtensions
     {
-        public static string Serialize<T>(this T value)
+        public static string Serialize<T>(this T value, JsonSerializerOptions options = null)
         {
-            return Environment.NewLine + JsonSerializer.Serialize(value, CreateOptions());
+            return Environment.NewLine + JsonSerializer.Serialize(value, CreateOptions(options));
         }
 
-        public static string SerializeDocument<T>(this T value, Type documentType)
+        public static string SerializeDocument<T>(this T value, Type documentType, JsonSerializerOptions options = null)
             where T : MockJsonApiDocument
         {
             var document = Activator.CreateInstance(documentType);
@@ -22,7 +22,7 @@ namespace JsonApi.Tests
             document.SetValue(nameof(JsonApiDocument.Links), value.Links);
             document.SetValue(nameof(JsonApiDocument.Included), value.Included);
 
-            return Environment.NewLine + JsonSerializer.Serialize(document, CreateOptions());
+            return Environment.NewLine + JsonSerializer.Serialize(document, CreateOptions(options));
         }
 
         public static object GetValue(this object resource, string name)
@@ -52,9 +52,9 @@ namespace JsonApi.Tests
             return document.RootElement.Clone();
         }
 
-        private static JsonSerializerOptions CreateOptions()
+        private static JsonSerializerOptions CreateOptions(JsonSerializerOptions options)
         {
-            var options = new JsonSerializerOptions();
+            options ??= new JsonSerializerOptions();
             options.WriteIndented = true;
             options.AddJsonApi();
 

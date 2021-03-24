@@ -9,6 +9,8 @@ namespace JsonApi.Serialization
 
         Type PropertyType { get; }
 
+        bool Ignored { get; }
+
         void Read(ref Utf8JsonReader reader, object resource);
 
         void Write(Utf8JsonWriter writer, object resource);

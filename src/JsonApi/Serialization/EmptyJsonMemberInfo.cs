@@ -7,7 +7,9 @@ namespace JsonApi.Serialization
     {
         public string PropertyName { get; } = string.Empty;
 
-        public Type PropertyType { get; } = typeof(string);
+        public Type PropertyType { get; } = typeof(object);
+
+        public bool Ignored { get; } = true;
 
         public void Read(ref Utf8JsonReader reader, object resource)
         {

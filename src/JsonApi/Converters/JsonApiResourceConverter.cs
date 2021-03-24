@@ -48,6 +48,8 @@ namespace JsonApi.Converters
 
             ValidateResource(info);
 
+            var state = new JsonApiResourceState();
+
             if (resource == null)
             {
                 return default;
@@ -57,33 +59,32 @@ namespace JsonApi.Converters
             {
                 var name = reader.ReadMember("resource object");
 
-                if (name == JsonApiMembers.Id || name == JsonApiMembers.Type || name == JsonApiMembers.Meta || name == JsonApiMembers.Links)
-                {
-                    info.GetProperty(name).Read(ref reader, resource);
-                }
-                else if (name == JsonApiMembers.Relationships)
-                {
-                }
-                else if (name == JsonApiMembers.Attributes)
+                state.AddFlag(name);
+
+                var property = info.GetProperty(name);
+
+                if (name == JsonApiMembers.Attributes)
                 {
                     reader.ReadObject("resource attributes");
 
                     while (reader.IsObject())
                     {
-                        var attribute = reader.ReadMember("resource object");
+                        var attributeName = reader.ReadMember("resource object");
 
-                        info.GetProperty(attribute).Read(ref reader, resource);
+                        info.GetProperty(attributeName).Read(ref reader, resource);
 
                         reader.Read();
                     }
                 }
                 else
                 {
-                    reader.Skip();
+                    property.Read(ref reader, resource);
                 }
 
                 reader.Read();
             }
+
+            state.Validate();
 
             return (T) resource;
         }
@@ -129,7 +130,10 @@ namespace JsonApi.Converters
                 {
                     var property = info.GetProperty(key);
 
-                    property.Write(writer, value);
+                    if (!property.Ignored)
+                    {
+                        property.Write(writer, value);
+                    }
                 }
 
                 writer.WriteEndObject();
@@ -145,6 +149,18 @@ namespace JsonApi.Converters
             if (idProperty.PropertyType != typeof(string))
             {
                 throw new JsonApiException("JSON:API resource id must be a string");
+            }
+
+            var typeProperty = info.GetProperty(JsonApiMembers.Type);
+
+            if (typeProperty.PropertyName != JsonApiMembers.Type)
+            {
+                throw new JsonApiException("JSON:API resource must have a 'type' member");
+            }
+
+            if (typeProperty.PropertyType != typeof(string))
+            {
+                throw new JsonApiException("JSON:API resource type must be a string");
             }
         }
     }

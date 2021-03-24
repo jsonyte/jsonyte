@@ -16,6 +16,7 @@ namespace JsonApi.Serialization
             Set = CreateSetter(property);
             PropertyName = GetName(property);
             PropertyType = property.PropertyType;
+            Ignored = IsIgnored(property);
         }
 
         public JsonSerializerOptions Options { get; }
@@ -31,6 +32,8 @@ namespace JsonApi.Serialization
         public string PropertyName { get; }
 
         public Type PropertyType { get; }
+
+        public bool Ignored { get; }
 
         public void Read(ref Utf8JsonReader reader, object resource)
         {
@@ -81,8 +84,6 @@ namespace JsonApi.Serialization
                 return null;
             }
 
-            var ignoreReadOnly = Options.IgnoreReadOnlyProperties;
-
             return Options.GetMemberAccessor().CreatePropertyGetter<T>(property);
         }
 
@@ -99,6 +100,11 @@ namespace JsonApi.Serialization
         private bool IsPublic(MethodInfo? method)
         {
             return method != null && method.IsPublic;
+        }
+
+        private bool IsIgnored(PropertyInfo property)
+        {
+            return IsReadOnly(property) && Options.IgnoreReadOnlyProperties;
         }
 
         private bool IsReadOnly(PropertyInfo property)

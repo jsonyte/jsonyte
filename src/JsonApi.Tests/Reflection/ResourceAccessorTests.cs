@@ -1,4 +1,5 @@
-﻿using JsonApi.Tests.Models;
+﻿using System.Text.Json;
+using JsonApi.Tests.Models;
 using Xunit;
 
 namespace JsonApi.Tests.Reflection
@@ -151,5 +152,38 @@ namespace JsonApi.Tests.Reflection
             Assert.Equal("value", model.InitTitle);
         }
 #endif
+
+        [Fact]
+        public void IgnoresReadOnlyProperties()
+        {
+            var options = new JsonSerializerOptions
+            {
+                IgnoreReadOnlyProperties = true
+            };
+
+            var model = new ModelWithPropertyVisibilities
+            {
+                WriteOnlyTitle = null,
+                Count = default,
+                NullableCount = null,
+                WriteOnlyCount = default,
+                Title = null
+            };
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'title': null,
+                      'count': 0,
+                      'nullableCount': null
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }
