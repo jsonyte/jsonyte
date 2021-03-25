@@ -90,7 +90,7 @@ namespace JsonApi.Serialization
 
             var typeFields = type
                 .GetFields(Flags)
-                .Where(x => x.IsPublic);
+                .Where(x => x.IsPublic && !x.IsInitOnly);
 
             foreach (var field in typeFields)
             {

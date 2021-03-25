@@ -29,7 +29,7 @@ namespace JsonApi.Tests.Models
         private int? readWriteNullableCount = 5;
 
         [JsonPropertyName("publicNullableCount")]
-        public int PublicNullableCount = 5;
+        public int? PublicNullableCount = 5;
 
         [JsonPropertyName("publicReadOnlyCount")]
         public readonly int PublicReadOnlyCount = 5;

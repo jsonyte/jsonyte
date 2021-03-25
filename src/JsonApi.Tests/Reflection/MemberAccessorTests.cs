@@ -317,5 +317,79 @@ namespace JsonApi.Tests.Reflection
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void IgnoresNullValuesInFieldsWhenSerializingUsingOptions()
+        {
+            var options = new JsonSerializerOptions
+            {
+                IncludeFields = true,
+                IgnoreNullValues = true
+            };
+            options.AddJsonApi();
+
+            var model = new ModelWithFields
+            {
+                PublicCount = 0,
+                PublicNullableCount = null,
+                PublicTitle = null,
+                Type = "type"
+            };
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'type': 'type',
+                    'attributes': {
+                      'publicReadOnlyTitle': 'title',
+                      'publicCount': 0,
+                      'publicReadOnlyCount': 5,
+                      'publicReadOnlyNullableCount': 5
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void IgnoresNullValuesInFieldsWhenDeserializingUsingOptions()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'model',
+                    'attributes': {
+                      'readOnlyTitle': null,
+                      'readWriteTitle': null,
+                      'publicTitle': null,
+                      'publicReadOnlyTitle': null,
+                      'readWriteCount': 0,
+                      'publicCount': 0,
+                      'readWriteNullableCount': null,
+                      'publicNullableCount': null,
+                      'publicReadOnlyCount': 0,
+                      'publicReadOnlyNullableCount': null
+                    }
+                  }
+                }";
+
+            var options = new JsonSerializerOptions
+            {
+                IncludeFields = true,
+                IgnoreNullValues = true
+            };
+            options.AddJsonApi();
+
+            var model = json.Deserialize<ModelWithFields>(options);
+
+            Assert.Equal("model", model.Type);
+            Assert.Equal("title", model.PublicTitle);
+            Assert.Equal("title", model.PublicReadOnlyTitle);
+            Assert.Equal(0, model.PublicCount);
+            Assert.Equal(5, model.PublicReadOnlyCount);
+            Assert.Equal(5, model.PublicNullableCount);
+            Assert.Equal(5, model.PublicReadOnlyNullableCount);
+        }
     }
 }
