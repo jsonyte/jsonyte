@@ -13,22 +13,45 @@ namespace JsonApi.Serialization
 
         private static readonly EmptyJsonMemberInfo EmptyMember = new();
 
-        private readonly Dictionary<string, IJsonMemberInfo> properties;
+        private static readonly EmptyJsonParameterInfo EmptyParameter = new(-1);
+
+        private static readonly Type PropertyType = typeof(JsonPropertyInfo<>);
+
+        private static readonly Type FieldType = typeof(JsonFieldInfo<>);
+
+        private readonly Dictionary<string, IJsonMemberInfo> nameCache;
+
+        private readonly Dictionary<string, IJsonParameterInfo> parameterCache;
 
         private readonly string[] keys;
 
         public JsonTypeInfo(Type type, JsonSerializerOptions options)
         {
+            var constructor = GetConstructor(type);
+
             Creator = options.GetMemberAccessor().CreateCreator(type);
+            CreatorWithArguments = options.GetMemberAccessor().CreateParameterizedCreator(constructor);
             TypeCategory = type.GetTypeCategory();
-            
-            properties = GetMemberCache(type, options);
-            keys = properties.Keys.ToArray();
+
+            var members = GetProperties(type, options)
+                .Concat(GetFields(type, options))
+                .ToArray();
+
+            var memberCache = GetMemberCache(members, options);
+
+            nameCache = GetNameCache(members);
+            parameterCache = GetParameters(constructor, memberCache, options);
+
+            keys = memberCache.Keys.ToArray();
         }
 
         public Func<object?> Creator { get; }
 
+        public Func<object[], object?> CreatorWithArguments { get; }
+
         public JsonTypeCategory TypeCategory { get; }
+
+        public int ParameterCount => parameterCache.Count;
 
         public IJsonMemberInfo GetMember(string? name)
         {
@@ -37,9 +60,21 @@ namespace JsonApi.Serialization
                 return EmptyMember;
             }
 
-            return properties.TryGetValue(name, out var property)
-                ? property
+            return nameCache.TryGetValue(name, out var member)
+                ? member
                 : EmptyMember;
+        }
+
+        public IJsonParameterInfo? GetParameter(string? name)
+        {
+            if (name == null)
+            {
+                return null;
+            }
+
+            parameterCache.TryGetValue(name, out var parameter);
+
+            return parameter;
         }
 
         public string[] GetMemberKeys()
@@ -47,21 +82,17 @@ namespace JsonApi.Serialization
             return keys;
         }
 
-        private Dictionary<string, IJsonMemberInfo> GetMemberCache(Type type, JsonSerializerOptions options)
+        private Dictionary<string, IJsonMemberInfo> GetMemberCache(IJsonMemberInfo[] members, JsonSerializerOptions options)
         {
-            var comparer = options.PropertyNameCaseInsensitive
-                ? StringComparer.OrdinalIgnoreCase
-                : StringComparer.Ordinal;
-
-            var members = new Dictionary<string, IJsonMemberInfo>(comparer);
-
-            GetProperties(members, type, options);
-            GetFields(members, type, options);
-
-            return members;
+            return members.ToDictionary(x => x.Name, options.GetPropertyComparer());
         }
 
-        private void GetProperties(Dictionary<string, IJsonMemberInfo> members, Type type, JsonSerializerOptions options)
+        private Dictionary<string, IJsonMemberInfo> GetNameCache(IJsonMemberInfo[] members)
+        {
+            return members.ToDictionary(x => x.MemberName, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private IEnumerable<IJsonMemberInfo> GetProperties(Type type, JsonSerializerOptions options)
         {
             var typeProperties = type
                 .GetProperties(Flags)
@@ -74,23 +105,21 @@ namespace JsonApi.Serialization
 
                 if (ignoreCondition != JsonIgnoreCondition.Always)
                 {
-                    var jsonProperty = CreateProperty(property, ignoreCondition, options);
-
-                    members[jsonProperty.MemberName] = jsonProperty;
+                    yield return CreateMemberInfo(PropertyType, property, property.PropertyType, ignoreCondition, options);
                 }
             }
         }
 
-        private void GetFields(Dictionary<string, IJsonMemberInfo> members, Type type, JsonSerializerOptions options)
+        private IEnumerable<IJsonMemberInfo> GetFields(Type type, JsonSerializerOptions options)
         {
             if (!options.IncludeFields)
             {
-                return;
+                yield break;
             }
 
             var typeFields = type
                 .GetFields(Flags)
-                .Where(x => x.IsPublic && !x.IsInitOnly);
+                .Where(x => x.IsPublic);
 
             foreach (var field in typeFields)
             {
@@ -98,9 +127,7 @@ namespace JsonApi.Serialization
 
                 if (ignoreCondition != JsonIgnoreCondition.Always)
                 {
-                    var jsonProperty = CreateField(field, ignoreCondition, options);
-
-                    members[jsonProperty.MemberName] = jsonProperty;
+                    yield return CreateMemberInfo(FieldType, field, field.FieldType, ignoreCondition, options);
                 }
             }
         }
@@ -109,32 +136,17 @@ namespace JsonApi.Serialization
         {
             return member.GetCustomAttribute<JsonIgnoreAttribute>()?.Condition;
         }
-
-        private IJsonMemberInfo CreateProperty(PropertyInfo property, JsonIgnoreCondition? ignoreCondition, JsonSerializerOptions options)
+        
+        private IJsonMemberInfo CreateMemberInfo(Type memberInfoType, MemberInfo member, Type memberType, JsonIgnoreCondition? ignoreCondition, JsonSerializerOptions options)
         {
-            var propertyType = typeof(JsonPropertyInfo<>).MakeGenericType(property.PropertyType);
-            var converter = GetConverter(property, property.PropertyType, options);
+            var fieldType = memberInfoType.MakeGenericType(memberType);
+            var converter = GetConverter(member, memberType, options);
 
-            var propertyInfo = Activator.CreateInstance(propertyType, property, ignoreCondition, converter, options);
-
-            if (propertyInfo is not IJsonMemberInfo jsonMemberInfo)
-            {
-                throw new JsonApiException($"Cannot get property info for '{property.Name}'");
-            }
-
-            return jsonMemberInfo;
-        }
-
-        private IJsonMemberInfo CreateField(FieldInfo field, JsonIgnoreCondition? ignoreCondition, JsonSerializerOptions options)
-        {
-            var fieldType = typeof(JsonFieldInfo<>).MakeGenericType(field.FieldType);
-            var converter = GetConverter(field, field.FieldType, options);
-
-            var fieldInfo = Activator.CreateInstance(fieldType, field, ignoreCondition, converter, options);
+            var fieldInfo = Activator.CreateInstance(fieldType, member, ignoreCondition, converter, options);
 
             if (fieldInfo is not IJsonMemberInfo jsonMemberInfo)
             {
-                throw new JsonApiException($"Cannot get field info for '{field.Name}'");
+                throw new JsonApiException($"Cannot get type member info for '{member.Name}'");
             }
 
             return jsonMemberInfo;
@@ -172,6 +184,76 @@ namespace JsonApi.Serialization
             }
 
             return converters.First();
+        }
+
+        private ConstructorInfo GetConstructor(Type type)
+        {
+            var constructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            var marked = constructors
+                .Where(x => x.GetCustomAttribute<JsonConstructorAttribute>() != null)
+                .ToArray();
+
+            if (marked.Length > 1)
+            {
+                throw new JsonException($"Cannot have multiple constructors marked with JsonConstructorAttribute for type '{type}'");
+            }
+
+            var markedConstructor = marked.FirstOrDefault(x => x.IsPublic);
+
+            if (markedConstructor != null)
+            {
+                return markedConstructor;
+            }
+
+            var publicConstructors = constructors
+                .Where(x => x.IsPublic)
+                .ToArray();
+
+            var defaultConstructor = publicConstructors.FirstOrDefault(x => x.GetParameters().Length == 0);
+
+            if (defaultConstructor != null)
+            {
+                return defaultConstructor;
+            }
+
+            if (publicConstructors.Length > 1)
+            {
+                throw new JsonException($"Cannot have multiple constructors with parameters for type '{type}'");
+            }
+
+            return publicConstructors.First();
+        }
+
+        private Dictionary<string, IJsonParameterInfo> GetParameters(ConstructorInfo constructor, Dictionary<string, IJsonMemberInfo> members, JsonSerializerOptions options)
+        {
+            var parameters = constructor.GetParameters();
+
+            var jsonParameters = new Dictionary<string, IJsonParameterInfo>(parameters.Length, options.GetPropertyComparer());
+
+            foreach (var parameter in parameters)
+            {
+                var property = members.GetValueOrDefault(parameter.Name!, EmptyMember);
+
+                if (property.Ignored)
+                {
+                    jsonParameters[property.Name] = EmptyParameter;
+                }
+                else
+                {
+                    var type = typeof(JsonParameterInfo<>).MakeGenericType(parameter.ParameterType);
+                    var parameterInfo = Activator.CreateInstance(type, parameter, property, options);
+
+                    if (parameterInfo is not IJsonParameterInfo jsonParameter)
+                    {
+                        throw new JsonApiException($"Cannot get constructor parameter '{parameter.Name}' for '{constructor.DeclaringType}'");
+                    }
+
+                    jsonParameters[property.Name] = jsonParameter;
+                }
+            }
+
+            return jsonParameters;
         }
     }
 }

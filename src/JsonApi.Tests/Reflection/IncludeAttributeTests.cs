@@ -1,6 +1,6 @@
 ﻿namespace JsonApi.Tests.Reflection
 {
-    public class SerializationAttributesTests
+    public class IncludeAttributeTests
     {
         
     }

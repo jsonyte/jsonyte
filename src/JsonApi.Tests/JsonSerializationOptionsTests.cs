@@ -22,10 +22,9 @@ namespace JsonApi.Tests
         [Fact(Skip = "Not implemented")]
         public void AppendedResourceConverterNeverCalled()
         {
-            var options = new JsonSerializerOptions();
-            options.AddJsonApi();
-
             var converter = new ResourceConverter();
+
+            var options = new JsonSerializerOptions();
             options.Converters.Add(converter);
 
             Json.Deserialize<Article>(options);
@@ -36,10 +35,9 @@ namespace JsonApi.Tests
         [Fact]
         public void InsertedResourceConverterIsCalled()
         {
-            var options = new JsonSerializerOptions();
-            options.AddJsonApi();
-
             var converter = new ResourceConverter();
+
+            var options = new JsonSerializerOptions();
             options.Converters.Insert(0, converter);
 
             Json.Deserialize<Article>(options);

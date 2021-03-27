@@ -151,6 +151,51 @@ namespace JsonApi.Tests.Reflection
             Assert.Equal("newType", model.Type);
             Assert.Equal("value", model.InitTitle);
         }
+
+        [Fact]
+        public void CanSerializeRecordTypes()
+        {
+            var model = new ModelRecord("1", "article", "Jsonapi");
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'article',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanDeserializeRecordTypes()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'article',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  }
+                }";
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            var model = json.Deserialize<ModelRecord>(options);
+
+            Assert.Equal("1", model.Id);
+            Assert.Equal("article", model.Type);
+            Assert.Equal("Jsonapi", model.Title);
+        }
 #endif
 
         [Fact]
@@ -193,7 +238,6 @@ namespace JsonApi.Tests.Reflection
             {
                 IgnoreNullValues = true
             };
-            options.AddJsonApi();
 
             var model = new ModelWithPropertyVisibilities
             {
@@ -244,7 +288,6 @@ namespace JsonApi.Tests.Reflection
             {
                 IgnoreNullValues = true
             };
-            options.AddJsonApi();
 
             var model = json.Deserialize<ModelWithPropertyVisibilities>(options);
 
@@ -269,7 +312,6 @@ namespace JsonApi.Tests.Reflection
             {
                 IncludeFields = true
             };
-            options.AddJsonApi();
 
             var model = new ModelWithFields();
 
@@ -299,7 +341,6 @@ namespace JsonApi.Tests.Reflection
                 IncludeFields = true,
                 IgnoreReadOnlyFields = true
             };
-            options.AddJsonApi();
 
             var model = new ModelWithFields();
 
@@ -326,7 +367,6 @@ namespace JsonApi.Tests.Reflection
                 IncludeFields = true,
                 IgnoreNullValues = true
             };
-            options.AddJsonApi();
 
             var model = new ModelWithFields
             {
@@ -379,7 +419,6 @@ namespace JsonApi.Tests.Reflection
                 IncludeFields = true,
                 IgnoreNullValues = true
             };
-            options.AddJsonApi();
 
             var model = json.Deserialize<ModelWithFields>(options);
 

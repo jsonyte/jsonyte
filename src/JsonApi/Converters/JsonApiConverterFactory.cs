@@ -53,7 +53,7 @@ namespace JsonApi.Converters
                 }
             }
 
-            return typeToConvert.IsResource();
+            return false;
         }
 
         public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
@@ -85,15 +85,10 @@ namespace JsonApi.Converters
                 }
             }
 
-            if (typeToConvert.IsResource())
-            {
-                return CreateConverter(typeof(JsonApiResourceConverter<>), typeToConvert);
-            }
-
             return null;
         }
 
-        private JsonConverter? CreateConverter(Type converterType, params Type[] typesToConvert)
+        protected JsonConverter? CreateConverter(Type converterType, params Type[] typesToConvert)
         {
             var genericType = converterType.MakeGenericType(typesToConvert);
 

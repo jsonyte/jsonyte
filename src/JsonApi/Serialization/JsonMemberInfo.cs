@@ -10,9 +10,11 @@ namespace JsonApi.Serialization
         protected JsonMemberInfo(MemberInfo member, Type memberType, JsonIgnoreCondition? ignoreCondition, JsonConverter converter, JsonSerializerOptions options)
         {
             Options = options;
+            Converter = converter;
             TypedConverter = (JsonConverter<T>) converter;
             IgnoreCondition = ignoreCondition;
-            MemberName = GetName(member);
+            Name = GetName(member);
+            MemberName = member.Name;
             MemberType = memberType;
         }
 
@@ -25,12 +27,16 @@ namespace JsonApi.Serialization
         public abstract Func<object, T>? Get { get; }
 
         public abstract Action<object, T>? Set { get; }
+        
+        public string Name { get; }
 
         public string MemberName { get; }
 
         public Type MemberType { get; }
 
         public abstract bool Ignored { get; }
+
+        public JsonConverter Converter { get; }
 
         public void Read(ref Utf8JsonReader reader, object resource)
         {
@@ -63,7 +69,7 @@ namespace JsonApi.Serialization
                 return;
             }
 
-            writer.WritePropertyName(MemberName);
+            writer.WritePropertyName(Name);
             TypedConverter.Write(writer, value, Options);
         }
 

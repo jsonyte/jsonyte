@@ -41,6 +41,33 @@ namespace JsonApi.Serialization
             return (Func<object>) method.CreateDelegate(typeof(Func<object>));
         }
 
+        public Func<object[], object?> CreateParameterizedCreator(ConstructorInfo constructor)
+        {
+            var parameters = constructor.GetParameters();
+
+            var method = new DynamicMethod(
+                ConstructorInfo.ConstructorName,
+                constructor.DeclaringType,
+                new[] {typeof(object[])},
+                typeof(EmitMemberAccessor).Module,
+                true);
+
+            var generator = method.GetILGenerator();
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                generator.Emit(OpCodes.Ldarg_0);
+                generator.Emit(OpCodes.Ldc_I4_S, i);
+                generator.Emit(OpCodes.Ldelem_Ref);
+                generator.Emit(OpCodes.Unbox_Any, parameters[i].ParameterType);
+            }
+
+            generator.Emit(OpCodes.Newobj, constructor);
+            generator.Emit(OpCodes.Ret);
+
+            return (Func<object[], object?>) method.CreateDelegate(typeof(Func<object[], object?>));
+        }
+
         public Func<object, T> CreatePropertyGetter<T>(PropertyInfo property)
         {
             var declaringType = property.DeclaringType;

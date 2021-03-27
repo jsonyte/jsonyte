@@ -11,6 +11,11 @@ namespace JsonApi.Serialization
             return () => Activator.CreateInstance(type, false);
         }
 
+        public Func<object[], object?> CreateParameterizedCreator(ConstructorInfo constructor)
+        {
+            return constructor.Invoke;
+        }
+
         public Func<object, T> CreatePropertyGetter<T>(PropertyInfo property)
         {
             return resource => (T) property.GetMethod.Invoke(resource, null);

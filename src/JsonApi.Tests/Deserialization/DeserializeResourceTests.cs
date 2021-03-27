@@ -203,5 +203,26 @@ namespace JsonApi.Tests.Deserialization
             Assert.IsType<JsonApiException>(exception);
             Assert.Contains("must contain a 'type' member", exception.Message);
         }
+
+        [Fact]
+        public void CanDeserializeResourceWithNoAttributes()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'article',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  }
+                }";
+
+            var model = json.Deserialize<ArticleWithNoAttributes>();
+
+            Assert.Equal("1", model.Id);
+            Assert.Equal("article", model.Type);
+            Assert.Equal("Jsonapi", model.Title);
+        }
     }
 }

@@ -28,6 +28,11 @@ namespace JsonApi.Serialization
 
         private Action<object, T>? CreateSetter(FieldInfo field)
         {
+            if (IsReadOnly(field))
+            {
+                return null;
+            }
+
             return Options.GetMemberAccessor().CreateFieldSetter<T>(field);
         }
 

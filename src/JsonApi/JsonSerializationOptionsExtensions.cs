@@ -7,6 +7,8 @@ using JsonApi.Serialization;
 namespace JsonApi
 {
     /*
+        https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-ignore-properties?pivots=dotnet-5-0
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         DONE public bool IgnoreNullValues { get; set; }
 
@@ -33,7 +35,21 @@ namespace JsonApi
                 options.Converters.Add(new JsonApiConverterFactory());
             }
 
+            if (!options.Converters.OfType<JsonApiResourceConverterFactory>().Any())
+            {
+                options.Converters.Add(new JsonApiResourceConverterFactory());
+            }
+
+            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
             return options;
+        }
+
+        internal static StringComparer GetPropertyComparer(this JsonSerializerOptions options)
+        {
+            return options.PropertyNameCaseInsensitive
+                ? StringComparer.OrdinalIgnoreCase
+                : StringComparer.Ordinal;
         }
 
         internal static JsonApiConverter<T> GetWrappedConverter<T>(this JsonSerializerOptions options)

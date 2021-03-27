@@ -112,8 +112,12 @@ namespace JsonApi.Converters
 
             ValidateResource(info);
 
+            var comparer = options.PropertyNameCaseInsensitive
+                ? StringComparer.OrdinalIgnoreCase
+                : StringComparer.Ordinal;
+
             var valueKeys = info.GetMemberKeys()
-                .Except(new[] {JsonApiMembers.Id, JsonApiMembers.Type})
+                .Except(new[] {JsonApiMembers.Id, JsonApiMembers.Type}, comparer)
                 .ToArray();
 
             writer.WriteStartObject();
@@ -146,14 +150,14 @@ namespace JsonApi.Converters
         {
             var idProperty = info.GetMember(JsonApiMembers.Id);
 
-            if (!string.IsNullOrEmpty(idProperty.MemberName) && idProperty.MemberType != typeof(string))
+            if (!string.IsNullOrEmpty(idProperty.Name) && idProperty.MemberType != typeof(string))
             {
                 throw new JsonApiException("JSON:API resource id must be a string");
             }
 
             var typeProperty = info.GetMember(JsonApiMembers.Type);
 
-            if (string.IsNullOrEmpty(typeProperty.MemberName))
+            if (string.IsNullOrEmpty(typeProperty.Name))
             {
                 throw new JsonApiException("JSON:API resource must have a 'type' member");
             }

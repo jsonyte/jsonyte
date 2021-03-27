@@ -43,12 +43,12 @@ namespace JsonApi.Tests
 
         public static T Deserialize<T>(this string value, JsonSerializerOptions options = null)
         {
-            return JsonSerializer.Deserialize<T>(value.ReplaceQuotes(), options ?? CreateOptions());
+            return JsonSerializer.Deserialize<T>(value.ReplaceQuotes(), CreateOptions(options));
         }
 
         public static object Deserialize(this string value, Type type, JsonSerializerOptions options = null)
         {
-            return JsonSerializer.Deserialize(value.ReplaceQuotes(), type, options ?? CreateOptions());
+            return JsonSerializer.Deserialize(value.ReplaceQuotes(), type, CreateOptions(options));
         }
 
         public static MockJsonApiDocument DeserializeDocument(this string value, Type type, JsonSerializerOptions options = null)
@@ -69,9 +69,9 @@ namespace JsonApi.Tests
                 : document;
         }
 
-        private static JsonSerializerOptions CreateOptions()
+        private static JsonSerializerOptions CreateOptions(JsonSerializerOptions options)
         {
-            var options = new JsonSerializerOptions();
+            options ??= new JsonSerializerOptions();
             options.AddJsonApi();
 
             return options;
