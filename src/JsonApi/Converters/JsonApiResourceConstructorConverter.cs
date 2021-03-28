@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Linq;
 using System.Text.Json;
 using JsonApi.Serialization;
 
@@ -107,12 +108,59 @@ namespace JsonApi.Converters
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            writer.WriteStartObject();
+            writer.WritePropertyName("data");
+
+            WriteWrapped(writer, value, options);
+
+            writer.WriteEndObject();
         }
 
         public override void WriteWrapped(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            if (value == null)
+            {
+                writer.WriteNullValue();
+
+                return;
+            }
+
+            var info = options.GetClassInfo(typeof(T));
+
+            ValidateResource(info);
+
+            var comparer = options.PropertyNameCaseInsensitive
+                ? StringComparer.OrdinalIgnoreCase
+                : StringComparer.Ordinal;
+
+            var valueKeys = info.GetMemberKeys()
+                .Except(new[] {JsonApiMembers.Id, JsonApiMembers.Type}, comparer)
+                .ToArray();
+
+            writer.WriteStartObject();
+
+            info.GetMember(JsonApiMembers.Id).Write(writer, value);
+            info.GetMember(JsonApiMembers.Type).Write(writer, value);
+
+            if (valueKeys.Any())
+            {
+                writer.WritePropertyName(JsonApiMembers.Attributes);
+                writer.WriteStartObject();
+
+                foreach (var key in valueKeys)
+                {
+                    var property = info.GetMember(key);
+
+                    if (!property.Ignored)
+                    {
+                        property.Write(writer, value);
+                    }
+                }
+
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndObject();
         }
 
         private void ValidateResource(JsonTypeInfo info)

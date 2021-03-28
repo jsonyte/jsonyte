@@ -8,6 +8,11 @@ namespace JsonApi.Converters
     {
         public override bool CanConvert(Type typeToConvert)
         {
+            if (IsDefaultType(typeToConvert))
+            {
+                return false;
+            }
+
             return typeToConvert.IsResource();
         }
 

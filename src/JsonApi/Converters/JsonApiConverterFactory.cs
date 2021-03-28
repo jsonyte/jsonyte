@@ -21,9 +21,14 @@ namespace JsonApi.Converters
             typeof(JsonApiResourceIdentifier)
         };
 
+        protected bool IsDefaultType(Type typeToConvert)
+        {
+            return DefaultTypes.Contains(typeToConvert);
+        }
+
         public override bool CanConvert(Type typeToConvert)
         {
-            if (DefaultTypes.Contains(typeToConvert))
+            if (IsDefaultType(typeToConvert))
             {
                 return false;
             }
