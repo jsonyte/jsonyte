@@ -5,17 +5,17 @@ namespace JsonApi
 {
     public class JsonApiMeta : Dictionary<string, JsonElement>
     {
-        public static JsonElement Create(object value, JsonSerializerOptions? options = null)
+        public static JsonElement Value(object value, JsonSerializerOptions? options = null)
         {
-            return Create(JsonSerializer.SerializeToUtf8Bytes(value, options));
+            return Value(JsonSerializer.SerializeToUtf8Bytes(value, options));
         }
 
-        public static JsonElement Create<T>(T value, JsonSerializerOptions? options = null)
+        public static JsonElement Value<T>(T value, JsonSerializerOptions? options = null)
         {
-            return Create(JsonSerializer.SerializeToUtf8Bytes(value, options));
+            return Value(JsonSerializer.SerializeToUtf8Bytes(value, options));
         }
 
-        private static JsonElement Create(byte[] value)
+        private static JsonElement Value(byte[] value)
         {
             using var document = JsonDocument.Parse(value);
 

@@ -15,10 +15,10 @@ namespace JsonApi.Tests.Serialization
             {
                 Meta = new JsonApiMeta
                 {
-                    {"name", JsonApiMeta.Create("Bloggs")},
-                    {"count", JsonApiMeta.Create(4)},
-                    {"authors", JsonApiMeta.Create(new[] {"Tom", "Dick", "Harry"})},
-                    {"details", JsonApiMeta.Create(new {title = "book", active = true, count = 2})}
+                    {"name", JsonApiMeta.Value("Bloggs")},
+                    {"count", JsonApiMeta.Value(4)},
+                    {"authors", JsonApiMeta.Value(new[] {"Tom", "Dick", "Harry"})},
+                    {"details", JsonApiMeta.Value(new {title = "book", active = true, count = 2})}
                 }
             };
 
@@ -53,10 +53,10 @@ namespace JsonApi.Tests.Serialization
                 Data = null,
                 Meta = new JsonApiMeta
                 {
-                    {"name", JsonApiMeta.Create("Bloggs")},
-                    {"count", JsonApiMeta.Create(4)},
-                    {"authors", JsonApiMeta.Create(new[] {"Tom", "Dick", "Harry"})},
-                    {"details", JsonApiMeta.Create(new {title = "book", active = true, count = 2})}
+                    {"name", JsonApiMeta.Value("Bloggs")},
+                    {"count", JsonApiMeta.Value(4)},
+                    {"authors", JsonApiMeta.Value(new[] {"Tom", "Dick", "Harry"})},
+                    {"details", JsonApiMeta.Value(new {title = "book", active = true, count = 2})}
                 }
             };
 
@@ -98,10 +98,10 @@ namespace JsonApi.Tests.Serialization
                 },
                 Meta = new JsonApiMeta
                 {
-                    {"name", JsonApiMeta.Create("Bloggs")},
-                    {"count", JsonApiMeta.Create(4)},
-                    {"authors", JsonApiMeta.Create(new[] {"Tom", "Dick", "Harry"})},
-                    {"details", JsonApiMeta.Create(new {title = "book", active = true, count = 2})}
+                    {"name", JsonApiMeta.Value("Bloggs")},
+                    {"count", JsonApiMeta.Value(4)},
+                    {"authors", JsonApiMeta.Value(new[] {"Tom", "Dick", "Harry"})},
+                    {"details", JsonApiMeta.Value(new {title = "book", active = true, count = 2})}
                 }
             };
 
