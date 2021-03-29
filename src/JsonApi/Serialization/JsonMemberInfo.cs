@@ -74,7 +74,7 @@ namespace JsonApi.Serialization
 
         public void Write(Utf8JsonWriter writer, object resource)
         {
-            if (Get == null)
+            if (Get == null || Ignored)
             {
                 return;
             }

@@ -128,12 +128,7 @@ namespace JsonApi.Converters
 
                 foreach (var key in valueKeys)
                 {
-                    var property = info.GetMember(key);
-
-                    if (!property.Ignored)
-                    {
-                        property.Write(writer, value);
-                    }
+                    info.GetMember(key).Write(writer, value);
                 }
 
                 writer.WriteEndObject();
