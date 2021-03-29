@@ -60,7 +60,14 @@ namespace JsonApi.Converters
             }
             else
             {
-                JsonSerializer.Serialize(writer, value, options);
+                writer.WriteStartArray();
+
+                foreach (var resource in value)
+                {
+                    JsonSerializer.Serialize(writer, resource, options);
+                }
+
+                writer.WriteEndArray();
             }
         }
     }
