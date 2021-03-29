@@ -113,14 +113,14 @@ namespace JsonApi.Converters
                 : StringComparer.Ordinal;
 
             var valueKeys = info.GetMemberKeys()
-                .Except(new[] {JsonApiMembers.Id, JsonApiMembers.Type}, comparer)
+                .Except(new[] {JsonApiMembers.Id, JsonApiMembers.Type, JsonApiMembers.Meta}, comparer)
                 .ToArray();
 
             writer.WriteStartObject();
 
             info.GetMember(JsonApiMembers.Id).Write(writer, value);
             info.GetMember(JsonApiMembers.Type).Write(writer, value);
-
+            
             if (valueKeys.Any())
             {
                 writer.WritePropertyName(JsonApiMembers.Attributes);
@@ -138,6 +138,8 @@ namespace JsonApi.Converters
 
                 writer.WriteEndObject();
             }
+
+            info.GetMember(JsonApiMembers.Meta).Write(writer, value);
 
             writer.WriteEndObject();
         }

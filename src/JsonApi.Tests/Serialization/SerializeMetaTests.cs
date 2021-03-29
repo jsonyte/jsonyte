@@ -131,5 +131,81 @@ namespace JsonApi.Tests.Serialization
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeMetaFromAnonymousObject()
+        {
+            var model = new
+            {
+                id = "1",
+                type = "articles",
+                title = "Jsonapi",
+                meta = new
+                {
+                    name = "Joe",
+                    count = 4,
+                    authors = new[] {"Tom", "Dick"},
+                    details = new
+                    {
+                        title = "book",
+                        active = true
+                    }
+                }
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'meta': {
+                      'name': 'Joe',
+                      'count': 4,
+                      'authors': [
+                        'Tom',
+                        'Dick'
+                      ],
+                      'details': {
+                        'title': 'book',
+                        'active': true
+                      }
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void SerializesModelWithMeta()
+        {
+            var model = new ArticleWithTypedMeta
+            {
+                Id = "1",
+                Type = "articles",
+                Meta = new ArticleMeta
+                {
+                    Count = 4,
+                    Title = "Jsonapi"
+                }
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'meta': {
+                      'count': 4,
+                      'title': 'Jsonapi'
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }
