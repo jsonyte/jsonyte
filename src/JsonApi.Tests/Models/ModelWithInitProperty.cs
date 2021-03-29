@@ -11,7 +11,7 @@ namespace JsonApi.Tests.Models
         [JsonPropertyName("type")]
         public string Type { get; set; } = "model";
 
-        [JsonPropertyName("title")]
+        [JsonPropertyName("initTitle")]
         public string InitTitle { get; init; } = "value";
     }
 #endif

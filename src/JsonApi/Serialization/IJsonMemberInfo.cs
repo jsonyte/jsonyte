@@ -18,6 +18,10 @@ namespace JsonApi.Serialization
 
         void Read(ref Utf8JsonReader reader, object resource);
 
+        object? Read(ref Utf8JsonReader reader);
+
         void Write(Utf8JsonWriter writer, object resource);
+
+        void Write(object resource, object? value);
     }
 }

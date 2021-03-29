@@ -55,6 +55,23 @@ namespace JsonApi.Serialization
             Set(resource, value!);
         }
 
+        public object? Read(ref Utf8JsonReader reader)
+        {
+            if (Set == null)
+            {
+                return null;
+            }
+
+            var value = TypedConverter.Read(ref reader, MemberType, Options);
+
+            if (Options.IgnoreNullValues && value == null)
+            {
+                return null;
+            }
+
+            return value;
+        }
+
         public void Write(Utf8JsonWriter writer, object resource)
         {
             if (Get == null)
@@ -71,6 +88,21 @@ namespace JsonApi.Serialization
 
             writer.WritePropertyName(Name);
             TypedConverter.Write(writer, value, Options);
+        }
+
+        public void Write(object resource, object? value)
+        {
+            if (Set == null)
+            {
+                return;
+            }
+
+            if (Options.IgnoreNullValues && value == null)
+            {
+                return;
+            }
+
+            Set(resource, (T) value!);
         }
 
         protected bool IsPublic(MethodInfo? method)

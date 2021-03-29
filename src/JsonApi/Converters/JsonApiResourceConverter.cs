@@ -41,14 +41,12 @@ namespace JsonApi.Converters
                 return default;
             }
 
-            reader.ReadObject("resource");
+            var state = reader.ReadResource();
 
             var info = options.GetClassInfo(typeToConvert);
             var resource = info.Creator();
 
             ValidateResource(info);
-
-            var state = new JsonApiResourceState();
 
             if (resource == null)
             {
@@ -57,9 +55,7 @@ namespace JsonApi.Converters
 
             while (reader.IsObject())
             {
-                var name = reader.ReadMember("resource object");
-
-                state.AddFlag(name);
+                var name = reader.ReadMember(ref state);
 
                 var property = info.GetMember(name);
 
@@ -146,7 +142,7 @@ namespace JsonApi.Converters
             writer.WriteEndObject();
         }
 
-        private void ValidateResource(JsonTypeInfo info)
+        protected void ValidateResource(JsonTypeInfo info)
         {
             var idProperty = info.GetMember(JsonApiMembers.Id);
 

@@ -21,8 +21,18 @@ namespace JsonApi.Serialization
             reader.Skip();
         }
 
+        public object? Read(ref Utf8JsonReader reader)
+        {
+            return null;
+        }
+
         public void Write(Utf8JsonWriter writer, object resource)
         {
+        }
+
+        public void Write(object resource, object? value)
+        {
+            throw new NotImplementedException();
         }
     }
 }

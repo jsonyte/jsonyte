@@ -33,6 +33,13 @@ namespace JsonApi
             return new JsonApiDocumentState();
         }
 
+        public static JsonApiResourceState ReadResource(this ref Utf8JsonReader reader)
+        {
+            reader.ReadObject("resource");
+
+            return new JsonApiResourceState();
+        }
+
         public static void ReadObject(this ref Utf8JsonReader reader, string description)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
@@ -46,6 +53,15 @@ namespace JsonApi
         public static string? ReadMember(this ref Utf8JsonReader reader, ref JsonApiDocumentState state)
         {
             var name = reader.ReadMember("top-level");
+
+            state.AddFlag(name);
+
+            return name;
+        }
+
+        public static string? ReadMember(this ref Utf8JsonReader reader, ref JsonApiResourceState state)
+        {
+            var name = reader.ReadMember("resource object");
 
             state.AddFlag(name);
 

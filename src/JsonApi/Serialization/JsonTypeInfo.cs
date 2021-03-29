@@ -53,6 +53,8 @@ namespace JsonApi.Serialization
 
         public int ParameterCount => parameterCache.Count;
 
+        public int MemberCount => nameCache.Count;
+
         public IJsonMemberInfo GetMember(string? name)
         {
             if (name == null)

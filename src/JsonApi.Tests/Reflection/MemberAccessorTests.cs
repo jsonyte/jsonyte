@@ -132,7 +132,7 @@ namespace JsonApi.Tests.Reflection
 
 #if NET5_0_OR_GREATER
         [Fact]
-        public void InitOnlyPropertiesAreNotDeserialized()
+        public void InitOnlyPropertiesAreDeserialized()
         {
             const string json = @"
                 {
@@ -149,7 +149,7 @@ namespace JsonApi.Tests.Reflection
 
             Assert.Equal("4", model.Id);
             Assert.Equal("newType", model.Type);
-            Assert.Equal("value", model.InitTitle);
+            Assert.Equal("newTitle", model.InitTitle);
         }
 
         [Fact]
