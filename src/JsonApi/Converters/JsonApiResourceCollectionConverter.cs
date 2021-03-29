@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using JsonApi.Serialization;
 
 namespace JsonApi.Converters
 {
-    internal class JsonApiResourceCollectionConverter<T, TElement> : JsonConverter<T>
+    internal class JsonApiResourceCollectionConverter<T, TElement> : JsonApiConverter<T>
     {
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -20,7 +19,7 @@ namespace JsonApi.Converters
 
                 if (name == JsonApiMembers.Data)
                 {
-                    resources = ReadResources(ref reader, options);
+                    resources = ReadWrapped(ref reader, typeToConvert, options);
                 }
                 else
                 {
@@ -33,7 +32,7 @@ namespace JsonApi.Converters
             return resources;
         }
 
-        private T? ReadResources(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
@@ -61,11 +60,18 @@ namespace JsonApi.Converters
             return (T) GetInstance(resources);
         }
 
-        public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
             writer.WritePropertyName("data");
 
+            WriteWrapped(writer, value, options);
+
+            writer.WriteEndObject();
+        }
+
+        public override void WriteWrapped(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        {
             if (value == null)
             {
                 writer.WriteNullValue();
@@ -87,8 +93,6 @@ namespace JsonApi.Converters
             {
                 throw new JsonApiException("JSON:API resources collection must be an enumerable");
             }
-
-            writer.WriteEndObject();
         }
 
         private object GetInstance(List<TElement> resources)

@@ -83,6 +83,41 @@ namespace JsonApi.Tests.Deserialization
         }
 
         [Fact]
+        public void CanDeserializeArrayWithTypedDocument()
+        {
+            const string json = @"
+                {
+                  'data': [{
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  },
+                  {
+                    'type': 'articles',
+                    'id': '2',
+                    'attributes': {
+                      'title': 'Jsonapi 2'
+                    }
+                  }]
+                }";
+
+            var document = json.Deserialize<JsonApiDocument<Article[]>>();
+
+            Assert.NotNull(document.Data);
+            Assert.Equal(2, document.Data.Length);
+
+            Assert.Equal("1", document.Data[0].Id);
+            Assert.Equal("articles", document.Data[0].Type);
+            Assert.Equal("Jsonapi", document.Data[0].Title);
+
+            Assert.Equal("2", document.Data[1].Id);
+            Assert.Equal("articles", document.Data[1].Type);
+            Assert.Equal("Jsonapi 2", document.Data[1].Title);
+        }
+
+        [Fact]
         public void CanDeserializeResourcesWithMetaArray()
         {
             const string json = @"
