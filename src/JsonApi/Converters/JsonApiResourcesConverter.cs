@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -30,7 +31,25 @@ namespace JsonApi.Converters
                 return new[] {resource};
             }
 
-            return reader.Read<JsonApiResource[]>(options);
+            var resources = new List<JsonApiResource>();
+
+            reader.ReadArray("resources");
+
+            while (reader.IsArray())
+            {
+                var resource = reader.Read<JsonApiResource>(options);
+
+                if (resource == null)
+                {
+                    throw new JsonApiException("JSON:API resource must not be empty");
+                }
+
+                resources.Add(resource);
+
+                reader.Read();
+            }
+
+            return resources.ToArray();
         }
 
         public override void Write(Utf8JsonWriter writer, JsonApiResource[] value, JsonSerializerOptions options)

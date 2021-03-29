@@ -32,7 +32,6 @@ namespace JsonApi.Serialization
 
         public void Write(object resource, object? value)
         {
-            throw new NotImplementedException();
         }
     }
 }

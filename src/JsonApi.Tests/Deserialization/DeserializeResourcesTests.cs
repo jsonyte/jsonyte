@@ -8,8 +8,7 @@ namespace JsonApi.Tests.Deserialization
 {
     public class DeserializeResourcesTests
     {
-        
-        [Fact(Skip = "Not implemented")]
+        [Fact]
         public void CanDeserializeResourceObjectArray()
         {
             const string json = @"
@@ -44,7 +43,46 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal("Jsonapi 2", articles[1].Title);
         }
 
-        [Fact(Skip = "Not implemented")]
+        [Fact]
+        public void CanDeserializeArrayWithPlainDocument()
+        {
+            const string json = @"
+                {
+                  'data': [{
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  },
+                  {
+                    'type': 'articles',
+                    'id': '2',
+                    'attributes': {
+                      'title': 'Jsonapi 2'
+                    }
+                  }]
+                }";
+
+            var document = json.Deserialize<JsonApiDocument>();
+
+            Assert.NotNull(document.Data);
+            Assert.Equal(2, document.Data.Length);
+
+            Assert.Equal("1", document.Data[0].Id);
+            Assert.Equal("articles", document.Data[0].Type);
+            Assert.NotNull(document.Data[0].Attributes);
+            Assert.Single(document.Data[0].Attributes);
+            Assert.Equal("Jsonapi", document.Data[0].Attributes?["title"].GetString());
+
+            Assert.Equal("2", document.Data[1].Id);
+            Assert.Equal("articles", document.Data[1].Type);
+            Assert.NotNull(document.Data[1].Attributes);
+            Assert.Single(document.Data[1].Attributes);
+            Assert.Equal("Jsonapi 2", document.Data[1].Attributes?["title"].GetString());
+        }
+
+        [Fact]
         public void CanDeserializeResourcesWithMetaArray()
         {
             const string json = @"
@@ -79,7 +117,7 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal(5, articles[1].Meta["count"].GetInt32());
         }
 
-        [Fact(Skip = "Not implemented")]
+        [Fact]
         public void CanDeserializeEmptyResourceArray()
         {
             const string json = @"
@@ -93,7 +131,20 @@ namespace JsonApi.Tests.Deserialization
             Assert.Empty(articles);
         }
 
-        [Theory(Skip = "Not implemented")]
+        [Fact]
+        public void CanDeserializeNullResourceArray()
+        {
+            const string json = @"
+                {
+                  'data': null
+                }";
+
+            var articles = json.Deserialize<Article[]>();
+
+            Assert.Null(articles);
+        }
+
+        [Theory]
         [InlineData(typeof(List<Article>))]
         [InlineData(typeof(Article[]))]
         [InlineData(typeof(IList<Article>))]

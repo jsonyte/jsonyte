@@ -10,49 +10,45 @@ namespace JsonApi.Converters
     {
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.IsDocument())
-            {
-                var document = JsonSerializer.Deserialize<JsonApiDocument<T>>(ref reader, options);
+            var resources = default(T);
 
-                if (document == null)
+            var state = reader.ReadDocument();
+
+            while (reader.IsObject())
+            {
+                var name = reader.ReadMember(ref state);
+
+                if (name == JsonApiMembers.Data)
                 {
-                    throw new JsonApiException("Invalid JSON:API document");
+                    resources = ReadResources(ref reader, options);
+                }
+                else
+                {
+                    reader.Skip();
                 }
 
-                return document.Data;
+                reader.Read();
             }
 
+            return resources;
+        }
+
+        private T? ReadResources(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        {
             if (reader.TokenType == JsonTokenType.Null)
             {
                 return default;
             }
 
-            var info = options.GetClassInfo(typeof(T));
+            reader.ReadArray("resources");
 
             var resources = new List<TElement>();
 
-            ReadResources(ref reader, options, resources);
+            var converter = options.GetWrappedConverter<TElement>();
 
-            return (T) GetInstance(info, resources);
-        }
-
-        public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void ReadResources(ref Utf8JsonReader reader, JsonSerializerOptions options, List<TElement> resources)
-        {
-            if (reader.TokenType != JsonTokenType.StartArray)
+            while (reader.IsArray())
             {
-                throw new JsonApiException("Invalid JSON:API resource");
-            }
-
-            reader.Read();
-
-            while (reader.TokenType != JsonTokenType.EndArray)
-            {
-                var resource = JsonSerializer.Deserialize<TElement>(ref reader, options);
+                var resource = converter.ReadWrapped(ref reader, typeof(TElement), options);
 
                 if (resource != null)
                 {
@@ -61,11 +57,45 @@ namespace JsonApi.Converters
 
                 reader.Read();
             }
+
+            return (T) GetInstance(resources);
         }
 
-        private object GetInstance(JsonTypeInfo info, List<TElement> resources)
+        public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
         {
-            if (info.TypeCategory == JsonTypeCategory.Array)
+            writer.WriteStartObject();
+            writer.WritePropertyName("data");
+
+            if (value == null)
+            {
+                writer.WriteNullValue();
+            }
+            else if (value is IEnumerable<TElement> collection)
+            {
+                var converter = options.GetWrappedConverter<TElement>();
+
+                writer.WriteStartArray();
+
+                foreach (var element in collection)
+                {
+                    converter.WriteWrapped(writer, element, options);
+                }
+
+                writer.WriteEndArray();
+            }
+            else
+            {
+                throw new JsonApiException("JSON:API resources collection must be an enumerable");
+            }
+
+            writer.WriteEndObject();
+        }
+
+        private object GetInstance(List<TElement> resources)
+        {
+            var category = typeof(T).GetTypeCategory();
+
+            if (category == JsonTypeCategory.Array)
             {
                 return resources.ToArray();
             }
