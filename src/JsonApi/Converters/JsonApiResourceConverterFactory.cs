@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using JsonApi.Converters.Collections;
+using JsonApi.Converters.Objects;
 
 namespace JsonApi.Converters
 {
@@ -8,7 +10,7 @@ namespace JsonApi.Converters
     {
         public override bool CanConvert(Type typeToConvert)
         {
-            if (IsDefaultType(typeToConvert))
+            if (IsIgnoredType(typeToConvert))
             {
                 return false;
             }

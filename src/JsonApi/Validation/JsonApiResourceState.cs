@@ -1,4 +1,4 @@
-﻿namespace JsonApi
+﻿namespace JsonApi.Validation
 {
     internal ref struct JsonApiResourceState
     {

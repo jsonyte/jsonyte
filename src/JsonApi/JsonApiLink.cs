@@ -1,10 +1,8 @@
 ﻿using System.Text.Json.Serialization;
-using JsonApi.Converters;
 
 namespace JsonApi
 {
-    [JsonConverter(typeof(JsonApiLinkConverter))]
-    public class JsonApiLink
+    public sealed class JsonApiLink
     {
         public static implicit operator JsonApiLink(string href)
         {
@@ -12,6 +10,11 @@ namespace JsonApi
             {
                 Href = href
             };
+        }
+
+        public static implicit operator string?(JsonApiLink value)
+        {
+            return value.Href;
         }
 
         [JsonPropertyName("href")]

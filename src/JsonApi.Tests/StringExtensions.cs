@@ -61,7 +61,7 @@ namespace JsonApi.Tests
             document.Errors = frameworkDocument.GetValue<JsonApiError[]>(nameof(JsonApiDocument.Errors));
             document.Meta = frameworkDocument.GetValue<JsonApiMeta>(nameof(JsonApiDocument.Meta));
             document.JsonApi = frameworkDocument.GetValue<JsonApiObject>(nameof(JsonApiDocument.JsonApi));
-            document.Links = frameworkDocument.GetValue<JsonApiLinks>(nameof(JsonApiDocument.Links));
+            document.Links = frameworkDocument.GetValue<JsonApiDocumentLinks>(nameof(JsonApiDocument.Links));
             document.Included = frameworkDocument.GetValue<JsonApiResource[]>(nameof(JsonApiDocument.Included));
 
             return frameworkDocument == null

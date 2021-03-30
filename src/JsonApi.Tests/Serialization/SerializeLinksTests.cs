@@ -13,7 +13,7 @@ namespace JsonApi.Tests.Serialization
         {
             var document = new MockJsonApiDocument
             {
-                Links = new JsonApiLinks
+                Links = new JsonApiDocumentLinks
                 {
                     Self = "http://example.com/articles",
                     Next = "http://example.com/articles?page[offset]=2",
@@ -47,7 +47,7 @@ namespace JsonApi.Tests.Serialization
         {
             var document = new MockJsonApiDocument
             {
-                Links = new JsonApiLinks
+                Links = new JsonApiDocumentLinks
                 {
                     {"articles", "http://example.com/articles"},
                     {"blogs", "http://example.com/blogs"}
@@ -73,7 +73,7 @@ namespace JsonApi.Tests.Serialization
         {
             var document = new MockJsonApiDocument
             {
-                Links = new JsonApiLinks
+                Links = new JsonApiDocumentLinks
                 {
                     Self = new JsonApiLink
                     {

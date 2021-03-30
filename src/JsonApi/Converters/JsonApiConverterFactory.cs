@@ -3,30 +3,62 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using JsonApi.Converters.Collections;
+using JsonApi.Converters.Objects;
 
 namespace JsonApi.Converters
 {
     internal class JsonApiConverterFactory : JsonConverterFactory
     {
-        private static readonly HashSet<Type> DefaultTypes = new()
+        private static readonly HashSet<Type> IgnoredTypes = new()
         {
+            typeof(JsonApiDocumentLinks),
+            typeof(JsonApiErrorLinks),
+            typeof(JsonApiErrorSource),
+            typeof(JsonApiLinks),
+            typeof(JsonApiMeta),
+            typeof(JsonApiObject),
+            typeof(JsonApiRelationshipLinks),
             typeof(JsonApiResource),
-            typeof(JsonApiResourceIdentifier)
+            typeof(JsonApiResourceIdentifier),
+            typeof(JsonApiResourceLinks),
+            typeof(JsonApiResourceIdentifier[]),
+            typeof(JsonElement),
+            typeof(string),
+            typeof(Dictionary<string, JsonElement>),
+            typeof(Dictionary<string, JsonApiRelationship>)
         };
 
-        protected bool IsDefaultType(Type typeToConvert)
+        private static readonly Dictionary<Type, JsonConverter> JsonApiConverters = new()
         {
-            return DefaultTypes.Contains(typeToConvert);
+            {typeof(JsonApiError), new JsonApiErrorConverter()},
+            {typeof(JsonApiDocument), new JsonApiDocumentConverter()},
+            {typeof(JsonApiLink), new JsonApiLinkConverter()},
+            {typeof(JsonApiPointer), new JsonApiPointerConverter()},
+            {typeof(JsonApiRelationship), new JsonApiRelationshipConverter()},
+            {typeof(JsonApiResource[]), new JsonApiResourcesConverter()},
+            {typeof(JsonApiError[]), new JsonApiErrorsConverter<JsonApiError[]>()},
+            {typeof(List<JsonApiError>), new JsonApiErrorsConverter<List<JsonApiError>>()}
+        };
+
+        protected bool IsIgnoredType(Type typeToConvert)
+        {
+            if (typeToConvert.IsPrimitive)
+            {
+                return true;
+            }
+
+            return IgnoredTypes.Contains(typeToConvert);
         }
 
         public override bool CanConvert(Type typeToConvert)
         {
-            if (IsDefaultType(typeToConvert))
+            if (IsIgnoredType(typeToConvert))
             {
                 return false;
             }
 
-            if (typeToConvert.IsError())
+            if (JsonApiConverters.ContainsKey(typeToConvert))
             {
                 return true;
             }
@@ -41,11 +73,6 @@ namespace JsonApi.Converters
                 var collectionType = typeToConvert.GetCollectionType();
 
                 if (collectionType != null && collectionType.IsError())
-                {
-                    return true;
-                }
-
-                if (collectionType != null && collectionType == typeof(JsonApiResource))
                 {
                     return true;
                 }
@@ -56,16 +83,14 @@ namespace JsonApi.Converters
 
         public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
-            if (typeToConvert.IsError())
+            if (JsonApiConverters.TryGetValue(typeToConvert, out var converter))
             {
-                return new JsonApiErrorConverter();
+                return converter;
             }
 
             if (typeToConvert.IsDocument())
             {
-                return typeToConvert.IsGenericType
-                    ? CreateConverter(typeof(JsonApiDocumentConverter<>), typeToConvert.GenericTypeArguments.First())
-                    : new JsonApiDocumentConverter();
+                return CreateConverter(typeof(JsonApiDocumentConverter<>), typeToConvert.GenericTypeArguments.First());
             }
 
             if (typeToConvert.IsCollection())
@@ -75,11 +100,6 @@ namespace JsonApi.Converters
                 if (collectionType != null && collectionType.IsError())
                 {
                     return CreateConverter(typeof(JsonApiErrorsConverter<>), typeToConvert);
-                }
-
-                if (collectionType != null && collectionType == typeof(JsonApiResource))
-                {
-                    return new JsonApiResourcesConverter();
                 }
             }
 

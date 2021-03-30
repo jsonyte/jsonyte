@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonApi
+namespace JsonApi.Validation
 {
     [Flags]
     internal enum JsonApiDocumentFlags

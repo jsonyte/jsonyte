@@ -3,7 +3,7 @@ using System.Buffers;
 using System.Text.Json;
 using JsonApi.Serialization;
 
-namespace JsonApi.Converters
+namespace JsonApi.Converters.Objects
 {
     internal class JsonApiResourceConstructorConverter<T> : JsonApiResourceConverter<T>
     {
@@ -24,7 +24,7 @@ namespace JsonApi.Converters
             var properties = ArrayPool<(IJsonMemberInfo Member, object? Value)>.Shared.Rent(info.MemberCount);
             var propertiesUsed = 0;
             
-            while (reader.IsObject())
+            while (reader.IsInObject())
             {
                 var name = reader.ReadMember(ref state);
 
@@ -32,7 +32,7 @@ namespace JsonApi.Converters
                 {
                     reader.ReadObject("resource attributes");
 
-                    while (reader.IsObject())
+                    while (reader.IsInObject())
                     {
                         var attributeName = reader.ReadMember("resource object");
 

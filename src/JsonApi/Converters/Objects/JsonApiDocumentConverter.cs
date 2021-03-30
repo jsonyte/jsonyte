@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace JsonApi.Converters
+namespace JsonApi.Converters.Objects
 {
     internal class JsonApiDocumentConverter : JsonApiDocumentBaseConverter<JsonApiDocument>
     {

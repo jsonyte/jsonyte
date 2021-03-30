@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace JsonApi.Converters
+namespace JsonApi.Converters.Collections
 {
     internal class JsonApiResourcesConverter : JsonConverter<JsonApiResource[]>
     {
@@ -14,12 +14,12 @@ namespace JsonApi.Converters
                 return null;
             }
 
-            if (reader.TokenType != JsonTokenType.StartObject && reader.TokenType != JsonTokenType.StartArray)
+            if (!reader.IsObject() && !reader.IsArray())
             {
                 throw new JsonApiException("Expected single JSON:API resource or array of resources for this data");
             }
 
-            if (reader.TokenType == JsonTokenType.StartObject)
+            if (reader.IsObject())
             {
                 var resource = reader.Read<JsonApiResource>(options);
 
@@ -35,7 +35,7 @@ namespace JsonApi.Converters
 
             reader.ReadArray("resources");
 
-            while (reader.IsArray())
+            while (reader.IsInArray())
             {
                 var resource = reader.Read<JsonApiResource>(options);
 

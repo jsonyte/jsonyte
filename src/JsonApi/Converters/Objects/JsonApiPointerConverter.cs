@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace JsonApi.Converters
+namespace JsonApi.Converters.Objects
 {
     internal class JsonApiPointerConverter : JsonConverter<JsonApiPointer>
     {
@@ -15,7 +15,7 @@ namespace JsonApi.Converters
                 throw new JsonApiException($"Invalid JSON pointer [RFC6901] value: '{value}'");
             }
 
-            return new JsonApiPointer(value);
+            return new JsonApiPointer(value ?? string.Empty);
         }
 
         public override void Write(Utf8JsonWriter writer, JsonApiPointer value, JsonSerializerOptions options)

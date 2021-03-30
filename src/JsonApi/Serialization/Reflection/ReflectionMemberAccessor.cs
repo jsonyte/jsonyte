@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace JsonApi.Serialization
+namespace JsonApi.Serialization.Reflection
 {
 #if !NETCOREAPP && !NETFRAMEWORK
     internal class ReflectionMemberAccessor : IMemberAccessor

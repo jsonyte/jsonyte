@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
-namespace JsonApi.Converters
+namespace JsonApi.Converters.Objects
 {
     internal abstract class JsonApiDocumentBaseConverter<T> : JsonConverter<T>
         where T : IJsonApiDocument, new()
@@ -16,7 +16,7 @@ namespace JsonApi.Converters
 
             var state = reader.ReadDocument();
 
-            while (reader.IsObject())
+            while (reader.IsInObject())
             {
                 var name = reader.ReadMember(ref state);
 
@@ -38,7 +38,11 @@ namespace JsonApi.Converters
                 }
                 else if (name == JsonApiMembers.Links)
                 {
-                    document.Links = JsonSerializer.Deserialize<JsonApiLinks>(ref reader, options);
+                    document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
+                }
+                else if (name == JsonApiMembers.Included)
+                {
+                    document.Included = JsonSerializer.Deserialize<JsonApiResource[]>(ref reader, options);
                 }
                 else
                 {
@@ -65,27 +69,33 @@ namespace JsonApi.Converters
 
             WriteData(writer, value, options);
 
+            if (value.Included != null)
+            {
+                writer.WritePropertyName(JsonApiMembers.Included);
+                writer.Write(value.Included, options);
+            }
+
             if (value.Errors != null)
             {
-                writer.WritePropertyName("errors");
+                writer.WritePropertyName(JsonApiMembers.Errors);
                 writer.WriteWrapped(value.Errors, options);
             }
 
             if (value.Links != null)
             {
-                writer.WritePropertyName("links");
+                writer.WritePropertyName(JsonApiMembers.Links);
                 JsonSerializer.Serialize(writer, value.Links, options);
             }
 
             if (value.Meta != null)
             {
-                writer.WritePropertyName("meta");
+                writer.WritePropertyName(JsonApiMembers.Meta);
                 JsonSerializer.Serialize(writer, value.Meta, options);
             }
 
             if (value.JsonApi != null)
             {
-                writer.WritePropertyName("jsonapi");
+                writer.WritePropertyName(JsonApiMembers.JsonApi);
                 JsonSerializer.Serialize(writer, value.JsonApi, options);
             }
 

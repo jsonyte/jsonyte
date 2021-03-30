@@ -10,7 +10,7 @@
 
         public JsonApiObject JsonApi { get; set; }
 
-        public JsonApiLinks Links { get; set; }
+        public JsonApiDocumentLinks Links { get; set; }
 
         public JsonApiResource[] Included { get; set; }
     }

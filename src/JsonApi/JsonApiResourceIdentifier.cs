@@ -2,7 +2,7 @@
 
 namespace JsonApi
 {
-    public class JsonApiResourceIdentifier
+    public sealed class JsonApiResourceIdentifier
     {
         [JsonPropertyName("id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

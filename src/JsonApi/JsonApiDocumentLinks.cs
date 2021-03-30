@@ -2,7 +2,7 @@
 
 namespace JsonApi
 {
-    public class JsonApiRelationshipLinks : JsonApiLinks
+    public class JsonApiDocumentLinks : JsonApiLinks
     {
         private const string FirstKey = "first";
 

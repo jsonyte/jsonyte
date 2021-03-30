@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Text.Json;
+using JsonApi.Validation;
 
-namespace JsonApi.Converters
+namespace JsonApi.Converters.Objects
 {
     internal class JsonApiErrorConverter : JsonApiConverter<JsonApiError>
     {
@@ -11,7 +12,7 @@ namespace JsonApi.Converters
 
             var state = reader.ReadDocument();
 
-            while (reader.IsObject())
+            while (reader.IsInObject())
             {
                 var name = reader.ReadMember(ref state);
 
@@ -19,7 +20,7 @@ namespace JsonApi.Converters
                 {
                     reader.ReadArray("errors");
 
-                    while (reader.IsArray())
+                    while (reader.IsInArray())
                     {
                         if (firstError == null)
                         {
@@ -54,7 +55,7 @@ namespace JsonApi.Converters
 
             reader.ReadObject("error");
 
-            while (reader.IsObject())
+            while (reader.IsInObject())
             {
                 var name = reader.ReadMember("error object");
 

@@ -32,11 +32,6 @@ namespace JsonApi
 
         public static bool IsDocument(this Type type)
         {
-            if (type == typeof(JsonApiDocument))
-            {
-                return true;
-            }
-
             if (type.IsGenericType)
             {
                 var genericType = type.GetGenericTypeDefinition();
@@ -52,11 +47,6 @@ namespace JsonApi
 
         public static bool IsCollection(this Type type)
         {
-            if (type == typeof(string))
-            {
-                return false;
-            }
-
             return type.IsArray || typeof(IEnumerable).IsAssignableFrom(type);
         }
 
@@ -77,11 +67,6 @@ namespace JsonApi
 
         public static Type? GetCollectionType(this Type type)
         {
-            if (type == typeof(string))
-            {
-                return null;
-            }
-
             if (type.IsArray)
             {
                 return type.GetElementType();

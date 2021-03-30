@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using JsonApi.Serialization;
 
-namespace JsonApi.Converters
+namespace JsonApi.Converters.Collections
 {
     internal class JsonApiResourceCollectionConverter<T, TElement> : JsonApiConverter<T>
     {
@@ -13,7 +13,7 @@ namespace JsonApi.Converters
 
             var state = reader.ReadDocument();
 
-            while (reader.IsObject())
+            while (reader.IsInObject())
             {
                 var name = reader.ReadMember(ref state);
 
@@ -45,7 +45,7 @@ namespace JsonApi.Converters
 
             var converter = options.GetWrappedConverter<TElement>();
 
-            while (reader.IsArray())
+            while (reader.IsInArray())
             {
                 var resource = converter.ReadWrapped(ref reader, typeof(TElement), options);
 

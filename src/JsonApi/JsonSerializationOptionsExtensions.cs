@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.Json;
 using JsonApi.Converters;
 using JsonApi.Serialization;
+using JsonApi.Serialization.Reflection;
 
 namespace JsonApi
 {

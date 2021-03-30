@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text.Json;
 using JsonApi.Serialization;
 
-namespace JsonApi.Converters
+namespace JsonApi.Converters.Objects
 {
     internal class JsonApiResourceConverter<T> : JsonApiConverter<T>
     {
@@ -13,7 +13,7 @@ namespace JsonApi.Converters
 
             var state = reader.ReadDocument();
 
-            while (reader.IsObject())
+            while (reader.IsInObject())
             {
                 var name = reader.ReadMember(ref state);
 
@@ -53,7 +53,7 @@ namespace JsonApi.Converters
                 return default;
             }
 
-            while (reader.IsObject())
+            while (reader.IsInObject())
             {
                 var name = reader.ReadMember(ref state);
 
@@ -63,7 +63,7 @@ namespace JsonApi.Converters
                 {
                     reader.ReadObject("resource attributes");
 
-                    while (reader.IsObject())
+                    while (reader.IsInObject())
                     {
                         var attributeName = reader.ReadMember("resource object");
 

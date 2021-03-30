@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace JsonApi
 {
-    public class JsonApiMeta : Dictionary<string, JsonElement>
+    public sealed class JsonApiMeta : Dictionary<string, JsonElement>
     {
         public static JsonElement Value(object value, JsonSerializerOptions? options = null)
         {

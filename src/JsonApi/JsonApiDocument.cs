@@ -1,9 +1,8 @@
 ﻿using System.Text.Json.Serialization;
-using JsonApi.Converters;
 
 namespace JsonApi
 {
-    public class JsonApiDocument<T> : IJsonApiDocument
+    public sealed class JsonApiDocument<T> : IJsonApiDocument
     {
         [JsonPropertyName("data")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -23,18 +22,16 @@ namespace JsonApi
 
         [JsonPropertyName("links")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public JsonApiLinks? Links { get; set; }
+        public JsonApiDocumentLinks? Links { get; set; }
 
         [JsonPropertyName("included")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiResource[]? Included { get; set; }
     }
 
-    [JsonConverter(typeof(JsonApiDocumentConverter))]
-    public class JsonApiDocument : IJsonApiDocument
+    public sealed class JsonApiDocument : IJsonApiDocument
     {
         [JsonPropertyName("data")]
-        [JsonConverter(typeof(JsonApiResourcesConverter))]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiResource[]? Data { get; set; }
 
@@ -52,7 +49,7 @@ namespace JsonApi
 
         [JsonPropertyName("links")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public JsonApiLinks? Links { get; set; }
+        public JsonApiDocumentLinks? Links { get; set; }
 
         [JsonPropertyName("included")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

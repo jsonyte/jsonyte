@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using JsonApi.Serialization;
+using JsonApi.Validation;
 
-namespace JsonApi.Converters
+namespace JsonApi.Converters.Collections
 {
     internal class JsonApiErrorsConverter<T> : JsonApiConverter<T>
     {
@@ -13,7 +14,7 @@ namespace JsonApi.Converters
 
             var state = reader.ReadDocument();
 
-            while (reader.IsObject())
+            while (reader.IsInObject())
             {
                 var name = reader.ReadMember(ref state);
 
@@ -43,14 +44,16 @@ namespace JsonApi.Converters
 
             reader.ReadArray("errors");
 
-            while (reader.IsArray())
+            while (reader.IsInArray())
             {
                 var error = converter.ReadWrapped(ref reader, typeof(JsonApiError), options);
 
-                if (error != null)
+                if (error == null)
                 {
-                    errors.Add(error);
+                    throw new JsonApiException("JSON:API error object must not be null");
                 }
+
+                errors.Add(error);
 
                 reader.Read();
             }

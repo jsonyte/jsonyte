@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using JsonApi.Serialization;
+using JsonApi.Serialization.Reflection;
 
 namespace JsonApi.Converters
 {

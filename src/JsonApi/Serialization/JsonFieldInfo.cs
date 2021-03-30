@@ -21,7 +21,7 @@ namespace JsonApi.Serialization
 
         public override bool Ignored { get; }
 
-        private Func<object, T>? CreateGetter(FieldInfo field)
+        private Func<object, T> CreateGetter(FieldInfo field)
         {
             return Options.GetMemberAccessor().CreateFieldGetter<T>(field);
         }

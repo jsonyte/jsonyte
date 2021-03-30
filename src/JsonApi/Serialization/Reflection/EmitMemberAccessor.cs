@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace JsonApi.Serialization
+namespace JsonApi.Serialization.Reflection
 {
 #if NETCOREAPP || NETFRAMEWORK
     internal class EmitMemberAccessor : IMemberAccessor

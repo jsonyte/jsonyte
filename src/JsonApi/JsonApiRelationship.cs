@@ -2,7 +2,7 @@
 
 namespace JsonApi
 {
-    public class JsonApiRelationship
+    public sealed class JsonApiRelationship
     {
         [JsonPropertyName("data")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -17,7 +17,7 @@ namespace JsonApi
         public JsonApiMeta? Meta { get; set; }
     }
 
-    public class JsonApiRelationship<T>
+    public sealed class JsonApiRelationship<T>
     {
         [JsonPropertyName("data")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

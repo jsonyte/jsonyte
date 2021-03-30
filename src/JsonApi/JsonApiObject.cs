@@ -2,7 +2,7 @@
 
 namespace JsonApi
 {
-    public class JsonApiObject
+    public sealed class JsonApiObject
     {
         [JsonPropertyName("version")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

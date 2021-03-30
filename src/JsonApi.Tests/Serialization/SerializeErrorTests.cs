@@ -192,7 +192,7 @@ namespace JsonApi.Tests.Serialization
         {
             var document = new MockJsonApiDocument
             {
-                Links = new JsonApiLinks
+                Links = new JsonApiDocumentLinks
                 {
                     Self = "http://localhost"
                 }

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using JsonApi.Converters;
+using JsonApi.Validation;
 
 namespace JsonApi
 {
@@ -8,10 +9,20 @@ namespace JsonApi
     {
         public static bool IsObject(this ref Utf8JsonReader reader)
         {
+            return reader.TokenType == JsonTokenType.StartObject;
+        }
+
+        public static bool IsInObject(this ref Utf8JsonReader reader)
+        {
             return reader.TokenType != JsonTokenType.EndObject;
         }
 
         public static bool IsArray(this ref Utf8JsonReader reader)
+        {
+            return reader.TokenType == JsonTokenType.StartArray;
+        }
+
+        public static bool IsInArray(this ref Utf8JsonReader reader)
         {
             return reader.TokenType != JsonTokenType.EndArray;
         }
@@ -38,6 +49,13 @@ namespace JsonApi
             reader.ReadObject("resource");
 
             return new JsonApiResourceState();
+        }
+
+        public static JsonApiRelationshipState ReadRelationship(this ref Utf8JsonReader reader)
+        {
+            reader.ReadObject("relationship");
+
+            return new JsonApiRelationshipState();
         }
 
         public static void ReadObject(this ref Utf8JsonReader reader, string description)
@@ -68,6 +86,15 @@ namespace JsonApi
             return name;
         }
 
+        public static string? ReadMember(this ref Utf8JsonReader reader, ref JsonApiRelationshipState state)
+        {
+            var name = reader.ReadMember("relationship");
+
+            state.AddFlag(name);
+
+            return name;
+        }
+
         public static string? ReadMember(this ref Utf8JsonReader reader, string description)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
@@ -79,21 +106,6 @@ namespace JsonApi
             reader.Read();
 
             return name;
-        }
-
-        public static bool IsDocument(this Utf8JsonReader reader)
-        {
-            if (reader.CurrentDepth > 0)
-            {
-                return false;
-            }
-
-            if (reader.TokenType != JsonTokenType.StartObject)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         public static T? Read<T>(this ref Utf8JsonReader reader, JsonSerializerOptions options)
