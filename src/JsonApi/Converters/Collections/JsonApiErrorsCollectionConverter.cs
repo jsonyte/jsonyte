@@ -6,7 +6,7 @@ using JsonApi.Validation;
 
 namespace JsonApi.Converters.Collections
 {
-    internal class JsonApiErrorsConverter<T> : JsonApiConverter<T>
+    internal class JsonApiErrorsCollectionConverter<T> : JsonApiConverter<T>
     {
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

@@ -32,13 +32,13 @@ namespace JsonApi.Converters
         private static readonly Dictionary<Type, JsonConverter> JsonApiConverters = new()
         {
             {typeof(JsonApiError), new JsonApiErrorConverter()},
-            {typeof(JsonApiDocument), new JsonApiDocumentConverter()},
+            {typeof(JsonApiDocument), new JsonApiDocumentDataConverter()},
             {typeof(JsonApiLink), new JsonApiLinkConverter()},
             {typeof(JsonApiPointer), new JsonApiPointerConverter()},
             {typeof(JsonApiRelationship), new JsonApiRelationshipConverter()},
-            {typeof(JsonApiResource[]), new JsonApiResourcesConverter()},
-            {typeof(JsonApiError[]), new JsonApiErrorsConverter<JsonApiError[]>()},
-            {typeof(List<JsonApiError>), new JsonApiErrorsConverter<List<JsonApiError>>()}
+            {typeof(JsonApiResource[]), new JsonApiResourceArrayConverter()},
+            {typeof(JsonApiError[]), new JsonApiErrorsCollectionConverter<JsonApiError[]>()},
+            {typeof(List<JsonApiError>), new JsonApiErrorsCollectionConverter<List<JsonApiError>>()}
         };
 
         protected bool IsIgnoredType(Type typeToConvert)
@@ -90,7 +90,7 @@ namespace JsonApi.Converters
 
             if (typeToConvert.IsDocument())
             {
-                return CreateConverter(typeof(JsonApiDocumentConverter<>), typeToConvert.GenericTypeArguments.First());
+                return CreateConverter(typeof(JsonApiDocumentDataConverter<>), typeToConvert.GenericTypeArguments.First());
             }
 
             if (typeToConvert.IsCollection())
@@ -99,7 +99,7 @@ namespace JsonApi.Converters
 
                 if (collectionType != null && collectionType.IsError())
                 {
-                    return CreateConverter(typeof(JsonApiErrorsConverter<>), typeToConvert);
+                    return CreateConverter(typeof(JsonApiErrorsCollectionConverter<>), typeToConvert);
                 }
             }
 

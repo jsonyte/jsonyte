@@ -1,72 +1,108 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using JetBrains.Annotations;
 
 namespace JsonApi.Converters.Objects
 {
-    internal class JsonApiDocumentConverter : JsonApiDocumentBaseConverter<JsonApiDocument>
+    internal abstract class JsonApiDocumentConverter<T> : JsonConverter<T>
+        where T : IJsonApiDocument, new()
     {
-        protected override void ReadData(ref Utf8JsonReader reader, JsonApiDocument document, JsonSerializerOptions options)
+        protected abstract void ReadData(ref Utf8JsonReader reader, T document, JsonSerializerOptions options);
+
+        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            document.Data = reader.Read<JsonApiResource[]>(options);
+            var document = new T();
+
+            var state = reader.ReadDocument();
+
+            while (reader.IsInObject())
+            {
+                var name = reader.ReadMember(ref state);
+
+                if (name == JsonApiMembers.Data)
+                {
+                    ReadData(ref reader, document, options);
+                }
+                else if (name == JsonApiMembers.Errors)
+                {
+                    document.Errors = reader.ReadWrapped<JsonApiError[]>(options);
+                }
+                else if (name == JsonApiMembers.JsonApi)
+                {
+                    document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
+                }
+                else if (name == JsonApiMembers.Meta)
+                {
+                    document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
+                }
+                else if (name == JsonApiMembers.Links)
+                {
+                    document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
+                }
+                else if (name == JsonApiMembers.Included)
+                {
+                    document.Included = JsonSerializer.Deserialize<JsonApiResource[]>(ref reader, options);
+                }
+                else
+                {
+                    reader.Skip();
+                }
+
+                reader.Read();
+            }
+
+            state.Validate();
+
+            return state.IsEmpty()
+                ? default
+                : document;
         }
 
-        protected override void ValidateDocument(JsonApiDocument document)
+        protected abstract void WriteData(Utf8JsonWriter writer, T value, JsonSerializerOptions options);
+
+        public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
-            if (document.Data != null && document.Errors != null)
+            ValidateDocument(value);
+
+            writer.WriteStartObject();
+
+            WriteData(writer, value, options);
+
+            if (value.Included != null)
             {
-                throw new JsonApiException("JSON:API document must not contain both 'data' and 'errors' members");
+                writer.WritePropertyName(JsonApiMembers.Included);
+                writer.Write(value.Included, options);
             }
 
-            if (document.Data == null && document.Included != null)
+            if (value.Errors != null)
             {
-                throw new JsonApiException("JSON:API document must contain 'data' member if 'included' member is specified");
+                writer.WritePropertyName(JsonApiMembers.Errors);
+                writer.WriteWrapped(value.Errors, options);
             }
+
+            if (value.Links != null)
+            {
+                writer.WritePropertyName(JsonApiMembers.Links);
+                JsonSerializer.Serialize(writer, value.Links, options);
+            }
+
+            if (value.Meta != null)
+            {
+                writer.WritePropertyName(JsonApiMembers.Meta);
+                JsonSerializer.Serialize(writer, value.Meta, options);
+            }
+
+            if (value.JsonApi != null)
+            {
+                writer.WritePropertyName(JsonApiMembers.JsonApi);
+                JsonSerializer.Serialize(writer, value.JsonApi, options);
+            }
+
+            writer.WriteEndObject();
         }
 
-        protected override void WriteData(Utf8JsonWriter writer, JsonApiDocument value, JsonSerializerOptions options)
-        {
-            if (value.Errors == null && value.Meta == null && value.Data == null)
-            {
-                writer.WriteNull("data");
-            }
-            else if (value.Data != null)
-            {
-                writer.WritePropertyName("data");
-                writer.Write(value.Data, options);
-            }
-        }
-    }
-
-    internal class JsonApiDocumentConverter<T> : JsonApiDocumentBaseConverter<JsonApiDocument<T>>
-    {
-        protected override void ReadData(ref Utf8JsonReader reader, JsonApiDocument<T> document, JsonSerializerOptions options)
-        {
-            document.Data = reader.ReadWrapped<T>(options);
-        }
-
-        protected override void ValidateDocument(JsonApiDocument<T> document)
-        {
-            if (document.Data != null && document.Errors != null)
-            {
-                throw new JsonApiException("JSON:API document must not contain both 'data' and 'errors' members");
-            }
-
-            if (document.Data == null && document.Included != null)
-            {
-                throw new JsonApiException("JSON:API document must contain 'data' member if 'included' member is specified");
-            }
-        }
-
-        protected override void WriteData(Utf8JsonWriter writer, JsonApiDocument<T> value, JsonSerializerOptions options)
-        {
-            if (value.Errors == null && value.Meta == null && value.Data == null)
-            {
-                writer.WriteNull("data");
-            }
-            else if (value.Data != null)
-            {
-                writer.WritePropertyName("data");
-                writer.WriteWrapped(value.Data, options);
-            }
-        }
+        [AssertionMethod]
+        protected abstract void ValidateDocument(T document);
     }
 }

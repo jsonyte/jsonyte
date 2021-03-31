@@ -5,7 +5,7 @@ using JsonApi.Serialization;
 
 namespace JsonApi.Converters.Objects
 {
-    internal class JsonApiResourceConverter<T> : JsonApiConverter<T>
+    internal class JsonApiResourceObjectConverter<T> : JsonApiConverter<T>
     {
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
