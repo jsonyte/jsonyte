@@ -99,8 +99,6 @@ namespace JsonApi.Tests.Deserialization
             var article = json.Deserialize<ArticleWithAuthor>();
 
             Assert.NotNull(article);
-            Assert.NotNull(article.Author);
-
             Assert.Equal("1", article.Id);
             Assert.Equal("articles", article.Type);
             Assert.Equal("Jsonapi", article.Title);
@@ -162,6 +160,76 @@ namespace JsonApi.Tests.Deserialization
             Assert.Equal("people", article.Author.Type);
             Assert.Equal("Dan Gebhardt", article.Author.Name);
             Assert.Equal("dgeb", article.Author.Twitter);
+        }
+
+        [Fact]
+        public void CanDeserializeRelationshipWhenIncludedComesAfter()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'comments': {
+                        'data': [
+                          {
+                            'type': 'comments',
+                            'id': '5'
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'type': 'comments',
+                      'id': '5',
+                      'attributes': {
+                        'body': 'first'
+                      },
+                      'relationships': {
+                        'author': {
+                          'data': { 'type': 'people', 'id': '9' }
+                        }
+                      }
+                    },
+                    {
+                      'type': 'people',
+                      'id': '9',
+                      'attributes': {
+                        'name': 'Dan Gebhardt',
+                        'twitter': 'dgeb'
+                      }
+                    }
+                  ]
+                }";
+
+            var article = json.Deserialize<ArticleWithAuthor>();
+
+            var comment = article.Comments[0];
+            var author = comment.Author;
+
+            Assert.NotNull(article);
+            Assert.NotNull(article.Comments);
+            Assert.Single(article.Comments);
+
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal("Jsonapi", article.Title);
+
+            Assert.Equal("5", comment.Id);
+            Assert.Equal("comments", comment.Type);
+            Assert.Equal("first", comment.Body);
+
+            Assert.NotNull(author);
+            Assert.Equal("9", author.Id);
+            Assert.Equal("people", author.Type);
+            Assert.Equal("Dan Gebhardt", author.Name);
+            Assert.Equal("dgeb", author.Twitter);
         }
 
         [Fact]

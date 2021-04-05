@@ -1,6 +1,6 @@
 ﻿using System.Buffers;
-using System.Text.Json.Serialization;
-using IncludedValue = System.ValueTuple<JsonApi.JsonApiResourceIdentifier, System.Text.Json.Serialization.JsonConverter, object>;
+using JsonApi.Serialization;
+using IncludedValue = System.ValueTuple<JsonApi.JsonApiResourceIdentifier, JsonApi.Serialization.IJsonValueConverter, object>;
 
 namespace JsonApi
 {
@@ -12,7 +12,7 @@ namespace JsonApi
 
         private int includedIndex;
 
-        public void AddIncluded(JsonApiResourceIdentifier identifier, JsonConverter converter, object value)
+        public void AddIncluded(JsonApiResourceIdentifier identifier, IJsonValueConverter converter, object value)
         {
             included ??= ArrayPool<IncludedValue>.Shared.Rent(IncludedLength);
 

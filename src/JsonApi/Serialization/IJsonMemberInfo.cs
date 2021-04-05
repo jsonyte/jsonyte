@@ -12,6 +12,8 @@ namespace JsonApi.Serialization
 
         Type MemberType { get; }
 
+        Type? ElementType { get; }
+
         bool Ignored { get; }
 
         JsonConverter Converter { get; }

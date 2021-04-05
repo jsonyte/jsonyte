@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using JsonApi.Converters;
 
 namespace JsonApi.Serialization
 {
@@ -16,6 +17,7 @@ namespace JsonApi.Serialization
             Name = GetName(member);
             MemberName = member.Name;
             MemberType = memberType;
+            ElementType = GetElementType(converter);
         }
 
         public JsonSerializerOptions Options { get; }
@@ -33,6 +35,8 @@ namespace JsonApi.Serialization
         public string MemberName { get; }
 
         public Type MemberType { get; }
+
+        public Type? ElementType { get; }
 
         public abstract bool Ignored { get; }
 
@@ -156,6 +160,16 @@ namespace JsonApi.Serialization
             }
 
             return member.Name;
+        }
+
+        private Type? GetElementType(JsonConverter converter)
+        {
+            if (converter is JsonApiConverter<T> wrappedConverter)
+            {
+                return wrappedConverter.ElementType;
+            }
+
+            return null;
         }
     }
 }

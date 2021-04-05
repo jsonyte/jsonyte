@@ -7,6 +7,10 @@ namespace JsonApi.Converters.Collections
 {
     internal class JsonApiRelationshipCollectionConverter<T, TElement> : JsonApiRelationshipConverterBase<T>
     {
+        public override Type? ElementType { get; } = typeof(TElement);
+
+        public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
+
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
@@ -59,7 +63,7 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var resource = converter.ReadWrapped(ref reader, ref state, typeof(TElement), default, options);
+                var resource = converter.ReadWrapped(ref reader, ref state, ElementType!, default, options);
 
                 if (resource != null)
                 {
@@ -84,14 +88,9 @@ namespace JsonApi.Converters.Collections
 
         private object GetCollection(List<TElement> relationships)
         {
-            var category = typeof(T).GetTypeCategory();
-
-            if (category == JsonTypeCategory.Array)
-            {
-                return relationships.ToArray();
-            }
-
-            return relationships;
+            return TypeCategory == JsonTypeCategory.Array
+                ? relationships.ToArray()
+                : relationships;
         }
     }
 }

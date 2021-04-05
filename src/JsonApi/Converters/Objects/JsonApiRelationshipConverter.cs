@@ -8,6 +8,8 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiRelationshipConverter<T> : JsonApiRelationshipConverterBase<T>
     {
+        public override Type? ElementType { get; } = null;
+
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var relationship = new JsonApiRelationship<T>();
@@ -100,6 +102,13 @@ namespace JsonApi.Converters.Objects
 
         public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
         {
+            var identifier = reader.Read<JsonApiResourceIdentifier>(options);
+
+            if (state.TryGetIncluded(identifier, out var value))
+            {
+                return (T) value.Item3;
+            }
+
             var info = options.GetClassInfo(typeToConvert);
             var relationship = info.Creator();
 
@@ -108,12 +117,12 @@ namespace JsonApi.Converters.Objects
                 return default;
             }
 
-            var identifier = reader.Read<JsonApiResourceIdentifier>(options);
-
             info.GetMember(JsonApiMembers.Id).Write(relationship, identifier.Id);
             info.GetMember(JsonApiMembers.Type).Write(relationship, identifier.Type);
 
-            state.AddIncluded(identifier, options.GetConverter(typeof(T)), relationship);
+            var converter = options.GetValueConverter<T>();
+
+            state.AddIncluded(identifier, converter, relationship);
 
             return (T) relationship;
         }

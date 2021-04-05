@@ -8,6 +8,10 @@ namespace JsonApi.Converters.Collections
 {
     internal class JsonApiErrorsCollectionConverter<T> : JsonApiConverter<T>
     {
+        public override Type? ElementType { get; } = typeof(JsonApiError);
+
+        public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
+
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var errors = default(T);
@@ -59,7 +63,7 @@ namespace JsonApi.Converters.Collections
                 reader.Read();
             }
 
-            var items = GetCollection(typeToConvert, errors);
+            var items = GetCollection(errors);
 
             return items == null
                 ? default
@@ -98,19 +102,16 @@ namespace JsonApi.Converters.Collections
             writer.WriteEndArray();
         }
 
-        private object? GetCollection(Type typeToConvert, List<JsonApiError>? errors)
+        private object? GetCollection(List<JsonApiError>? errors)
         {
             if (errors == null)
             {
                 return null;
             }
 
-            if (typeToConvert.GetTypeCategory() == JsonTypeCategory.Array)
-            {
-                return errors.ToArray();
-            }
-
-            return errors;
+            return TypeCategory == JsonTypeCategory.Array
+                ? errors.ToArray()
+                : errors;
         }
     }
 }

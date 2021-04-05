@@ -7,6 +7,10 @@ namespace JsonApi.Converters.Collections
 {
     internal class JsonApiResourceObjectCollectionConverter<T, TElement> : JsonApiConverter<T>
     {
+        public override Type? ElementType { get; } = typeof(TElement);
+
+        public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
+
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var resources = default(T);
@@ -21,6 +25,10 @@ namespace JsonApi.Converters.Collections
                 if (name == JsonApiMembers.Data)
                 {
                     resources = ReadWrapped(ref reader, ref readState, typeToConvert, default, options);
+                }
+                else if (name == JsonApiMembers.Included)
+                {
+                    ReadIncluded(ref reader, ref readState, options);
                 }
                 else
                 {
@@ -48,7 +56,7 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var resource = converter.ReadWrapped(ref reader, ref state, typeof(TElement), default, options);
+                var resource = converter.ReadWrapped(ref reader, ref state, ElementType!, default, options);
 
                 if (resource != null)
                 {
@@ -59,6 +67,23 @@ namespace JsonApi.Converters.Collections
             }
 
             return (T) GetCollection(resources);
+        }
+
+        private void ReadIncluded(ref Utf8JsonReader reader, ref JsonApiState state, JsonSerializerOptions options)
+        {
+            reader.ReadArray("included");
+
+            while (reader.IsInArray())
+            {
+                var identifier = reader.ReadAheadIdentifier(options);
+
+                if (state.TryGetIncluded(identifier, out var included))
+                {
+                    included.Item2.Read(ref reader, ref state, included.Item3, options);
+                }
+
+                reader.Read();
+            }
         }
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
@@ -98,14 +123,9 @@ namespace JsonApi.Converters.Collections
 
         private object GetCollection(List<TElement> resources)
         {
-            var category = typeof(T).GetTypeCategory();
-
-            if (category == JsonTypeCategory.Array)
-            {
-                return resources.ToArray();
-            }
-
-            return resources;
+            return TypeCategory == JsonTypeCategory.Array
+                ? resources.ToArray()
+                : resources;
         }
     }
 }

@@ -7,6 +7,8 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiResourceObjectConverter<T> : JsonApiConverter<T>
     {
+        public override Type? ElementType { get; } = null;
+
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var resource = default(T);
@@ -126,7 +128,7 @@ namespace JsonApi.Converters.Objects
 
                 if (state.TryGetIncluded(identifier, out var included))
                 {
-                    //included.Item2.ReadExisting(ref reader, ref state, included.Item3);
+                    included.Item2.Read(ref reader, ref state, included.Item3, options);
                 }
 
                 reader.Read();
