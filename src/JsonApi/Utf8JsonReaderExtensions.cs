@@ -128,7 +128,7 @@ namespace JsonApi
             return converter.ReadWrapped(ref reader, ref state, typeof(T), default, options);
         }
 
-        public static JsonApiResourceIdentifier ReadAheadIdentifier(this Utf8JsonReader reader, JsonSerializerOptions options)
+        public static JsonApiResourceIdentifier ReadAheadIdentifier(this Utf8JsonReader reader)
         {
             string? id = null;
             string? type = null;

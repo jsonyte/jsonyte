@@ -8,41 +8,13 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiRelationshipConverter<T> : JsonApiRelationshipConverterBase<T>
     {
-        public override Type? ElementType { get; } = null;
+        public Type TypeToConvert { get; } = typeof(T);
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var relationship = new JsonApiRelationship<T>();
+            var state = new JsonApiState();
 
-            var state = reader.ReadRelationship();
-
-            while (reader.IsInObject())
-            {
-                var name = reader.ReadMember(ref state);
-
-                if (name == JsonApiMembers.Links)
-                {
-                    relationship.Links = reader.Read<JsonApiRelationshipLinks>(options);
-                }
-                else if (name == JsonApiMembers.Data)
-                {
-                    relationship.Data = ReadData(ref reader, options);
-                }
-                else if (name == JsonApiMembers.Meta)
-                {
-                    relationship.Meta = reader.Read<JsonApiMeta>(options);
-                }
-                else
-                {
-                    reader.Skip();
-                }
-
-                reader.Read();
-            }
-
-            state.Validate();
-
-            return default;
+            return Read(ref reader, ref state, TypeToConvert, options);
         }
 
         public override T? Read(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, JsonSerializerOptions options)
@@ -70,34 +42,6 @@ namespace JsonApi.Converters.Objects
             relationshipState.Validate();
 
             return relationship;
-        }
-
-        private T? ReadData(ref Utf8JsonReader reader, JsonSerializerOptions options)
-        {
-            if (reader.TokenType == JsonTokenType.Null)
-            {
-                return default;
-            }
-
-            var info = options.GetClassInfo(typeof(T));
-            var resource = info.Creator();
-
-            if (resource == null)
-            {
-                return default;
-            }
-
-            if (reader.IsObject())
-            {
-                var identifier = reader.Read<JsonApiResourceIdentifier>(options);
-
-                info.GetMember(JsonApiMembers.Id).Write(resource, identifier.Id);
-                info.GetMember(JsonApiMembers.Type).Write(resource, identifier.Type);
-
-                return (T) resource;
-            }
-
-            return default;
         }
 
         public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)

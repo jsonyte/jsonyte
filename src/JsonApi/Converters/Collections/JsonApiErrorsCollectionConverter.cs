@@ -8,7 +8,7 @@ namespace JsonApi.Converters.Collections
 {
     internal class JsonApiErrorsCollectionConverter<T> : JsonApiConverter<T>
     {
-        public override Type? ElementType { get; } = typeof(JsonApiError);
+        public Type? ElementType { get; } = typeof(JsonApiError);
 
         public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
 
@@ -51,7 +51,7 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var error = converter.ReadWrapped(ref reader, ref state, typeof(JsonApiError), null, options);
+                var error = converter.ReadWrapped(ref reader, ref state, ElementType!, null, options);
 
                 if (error == null)
                 {

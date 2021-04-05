@@ -7,7 +7,7 @@ namespace JsonApi.Converters.Collections
 {
     internal class JsonApiResourceObjectCollectionConverter<T, TElement> : JsonApiConverter<T>
     {
-        public override Type? ElementType { get; } = typeof(TElement);
+        public Type? ElementType { get; } = typeof(TElement);
 
         public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
 
@@ -75,7 +75,7 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var identifier = reader.ReadAheadIdentifier(options);
+                var identifier = reader.ReadAheadIdentifier();
 
                 if (state.TryGetIncluded(identifier, out var included))
                 {

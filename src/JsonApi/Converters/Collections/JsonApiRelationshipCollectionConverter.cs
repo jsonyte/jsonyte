@@ -7,13 +7,15 @@ namespace JsonApi.Converters.Collections
 {
     internal class JsonApiRelationshipCollectionConverter<T, TElement> : JsonApiRelationshipConverterBase<T>
     {
-        public override Type? ElementType { get; } = typeof(TElement);
+        public Type? ElementType { get; } = typeof(TElement);
 
         public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            var state = new JsonApiState();
+
+            return Read(ref reader, ref state, typeToConvert, options);
         }
 
         public override T? Read(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, JsonSerializerOptions options)
@@ -28,7 +30,7 @@ namespace JsonApi.Converters.Collections
 
                 if (name == JsonApiMembers.Data)
                 {
-                    relationships = ReadData(ref reader, ref state, options);
+                    relationships = ReadWrapped(ref reader, ref state, typeToConvert, default, options);
                 }
                 else
                 {
@@ -44,11 +46,6 @@ namespace JsonApi.Converters.Collections
         }
 
         public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        private T? ReadData(ref Utf8JsonReader reader, ref JsonApiState state, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {

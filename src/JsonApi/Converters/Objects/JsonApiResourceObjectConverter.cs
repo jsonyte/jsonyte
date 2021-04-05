@@ -7,7 +7,7 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiResourceObjectConverter<T> : JsonApiConverter<T>
     {
-        public override Type? ElementType { get; } = null;
+        public Type TypeToConvert { get; } = typeof(T);
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -124,7 +124,7 @@ namespace JsonApi.Converters.Objects
 
             while (reader.IsInArray())
             {
-                var identifier = reader.ReadAheadIdentifier(options);
+                var identifier = reader.ReadAheadIdentifier();
 
                 if (state.TryGetIncluded(identifier, out var included))
                 {
@@ -154,7 +154,7 @@ namespace JsonApi.Converters.Objects
                 return;
             }
 
-            var info = options.GetClassInfo(typeof(T));
+            var info = options.GetClassInfo(TypeToConvert);
 
             ValidateResource(info);
 

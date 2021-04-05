@@ -6,7 +6,7 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiErrorConverter : JsonApiConverter<JsonApiError>
     {
-        public override Type? ElementType { get; } = null;
+        public Type TypeToConvert { get; } = typeof(JsonApiError);
 
         public override JsonApiError? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -27,7 +27,7 @@ namespace JsonApi.Converters.Objects
                     {
                         if (firstError == null)
                         {
-                            firstError = ReadWrapped(ref reader, ref readState, typeof(JsonApiError), null, options);
+                            firstError = ReadWrapped(ref reader, ref readState, TypeToConvert!, null, options);
                         }
                         else
                         {

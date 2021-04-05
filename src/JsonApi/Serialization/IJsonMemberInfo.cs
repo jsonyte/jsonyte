@@ -12,8 +12,6 @@ namespace JsonApi.Serialization
 
         Type MemberType { get; }
 
-        Type? ElementType { get; }
-
         bool Ignored { get; }
 
         JsonConverter Converter { get; }
@@ -21,8 +19,6 @@ namespace JsonApi.Serialization
         void Read(ref Utf8JsonReader reader, object resource);
 
         void ReadRelationship(ref Utf8JsonReader reader, ref JsonApiState state, object resource);
-
-        void ReadExisting(ref Utf8JsonReader reader, ref JsonApiState state, object existingValue);
 
         object? Read(ref Utf8JsonReader reader);
 
