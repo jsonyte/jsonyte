@@ -6,6 +6,129 @@ using JetBrains.Annotations;
 
 namespace JsonApi.Converters.Objects
 {
+    internal class JsonApiRelationshipConverter<T> : JsonApiRelationshipConverterBase<T>
+    {
+        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            var relationship = new JsonApiRelationship<T>();
+
+            var state = reader.ReadRelationship();
+
+            while (reader.IsInObject())
+            {
+                var name = reader.ReadMember(ref state);
+
+                if (name == JsonApiMembers.Links)
+                {
+                    relationship.Links = reader.Read<JsonApiRelationshipLinks>(options);
+                }
+                else if (name == JsonApiMembers.Data)
+                {
+                    relationship.Data = ReadData(ref reader, options);
+                }
+                else if (name == JsonApiMembers.Meta)
+                {
+                    relationship.Meta = reader.Read<JsonApiMeta>(options);
+                }
+                else
+                {
+                    reader.Skip();
+                }
+
+                reader.Read();
+            }
+
+            state.Validate();
+
+            return default;
+        }
+
+        public override T? Read(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, JsonSerializerOptions options)
+        {
+            var relationship = default(T);
+
+            var relationshipState = reader.ReadRelationship();
+
+            while (reader.IsInObject())
+            {
+                var name = reader.ReadMember(ref relationshipState);
+
+                if (name == JsonApiMembers.Data)
+                {
+                    relationship = ReadWrapped(ref reader, ref state, typeToConvert, default, options);
+                }
+                else
+                {
+                    reader.Skip();
+                }
+
+                reader.Read();
+            }
+
+            relationshipState.Validate();
+
+            return relationship;
+        }
+
+        private T? ReadData(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return default;
+            }
+
+            var info = options.GetClassInfo(typeof(T));
+            var resource = info.Creator();
+
+            if (resource == null)
+            {
+                return default;
+            }
+
+            if (reader.IsObject())
+            {
+                var identifier = reader.Read<JsonApiResourceIdentifier>(options);
+
+                info.GetMember(JsonApiMembers.Id).Write(resource, identifier.Id);
+                info.GetMember(JsonApiMembers.Type).Write(resource, identifier.Type);
+
+                return (T) resource;
+            }
+
+            return default;
+        }
+
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
+        {
+            var info = options.GetClassInfo(typeToConvert);
+            var relationship = info.Creator();
+
+            if (relationship == null)
+            {
+                return default;
+            }
+
+            var identifier = reader.Read<JsonApiResourceIdentifier>(options);
+
+            info.GetMember(JsonApiMembers.Id).Write(relationship, identifier.Id);
+            info.GetMember(JsonApiMembers.Type).Write(relationship, identifier.Type);
+
+            state.AddIncluded(identifier, options.GetConverter(typeof(T)), relationship);
+
+            return (T) relationship;
+        }
+
+        public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void WriteWrapped(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     internal class JsonApiRelationshipConverter : JsonConverter<JsonApiRelationship>
     {
         public override JsonApiRelationship Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -54,11 +177,6 @@ namespace JsonApi.Converters.Objects
             {
                 var identifier = reader.Read<JsonApiResourceIdentifier>(options);
 
-                if (identifier == null)
-                {
-                    throw new JsonApiException("JSON:API resource identifier must not be null");
-                }
-
                 return new[] {identifier};
             }
 
@@ -69,11 +187,6 @@ namespace JsonApi.Converters.Objects
             while (reader.IsArray())
             {
                 var identifier = reader.Read<JsonApiResourceIdentifier>(options);
-
-                if (identifier == null)
-                {
-                    throw new JsonApiException("JSON:API resource identifier must not be null");
-                }
 
                 identifiers.Add(identifier);
 

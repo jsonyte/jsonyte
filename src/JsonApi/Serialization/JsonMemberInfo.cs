@@ -55,6 +55,37 @@ namespace JsonApi.Serialization
             Set(resource, value!);
         }
 
+        public void ReadRelationship(ref Utf8JsonReader reader, ref JsonApiState state, object resource)
+        {
+            if (Set == null)
+            {
+                return;
+            }
+
+            var converter = Options.GetRelationshipConverter<T>();
+
+            var value = converter.Read(ref reader, ref state, MemberType, Options);
+
+            if (Options.IgnoreNullValues && value == null)
+            {
+                return;
+            }
+
+            Set(resource, value!);
+        }
+
+        public void ReadExisting(ref Utf8JsonReader reader, ref JsonApiState state, object existingValue)
+        {
+            if (Set == null)
+            {
+                return;
+            }
+
+            var converter = Options.GetWrappedConverter<T>();
+
+            converter.ReadWrapped(ref reader, ref state, MemberType, (T) existingValue, Options);
+        }
+
         public object? Read(ref Utf8JsonReader reader)
         {
             if (Set == null)

@@ -12,6 +12,7 @@ namespace JsonApi.Converters.Collections
             var resources = default(T);
 
             var state = reader.ReadDocument();
+            var readState = new JsonApiState();
 
             while (reader.IsInObject())
             {
@@ -19,7 +20,7 @@ namespace JsonApi.Converters.Collections
 
                 if (name == JsonApiMembers.Data)
                 {
-                    resources = ReadWrapped(ref reader, typeToConvert, options);
+                    resources = ReadWrapped(ref reader, ref readState, typeToConvert, default, options);
                 }
                 else
                 {
@@ -32,7 +33,7 @@ namespace JsonApi.Converters.Collections
             return resources;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
@@ -47,7 +48,7 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var resource = converter.ReadWrapped(ref reader, typeof(TElement), options);
+                var resource = converter.ReadWrapped(ref reader, ref state, typeof(TElement), default, options);
 
                 if (resource != null)
                 {
@@ -57,7 +58,7 @@ namespace JsonApi.Converters.Collections
                 reader.Read();
             }
 
-            return (T) GetInstance(resources);
+            return (T) GetCollection(resources);
         }
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
@@ -95,7 +96,7 @@ namespace JsonApi.Converters.Collections
             }
         }
 
-        private object GetInstance(List<TElement> resources)
+        private object GetCollection(List<TElement> resources)
         {
             var category = typeof(T).GetTypeCategory();
 

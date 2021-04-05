@@ -3,12 +3,11 @@
 namespace JsonApi.Validation
 {
     [Flags]
-    internal enum JsonApiResourceFlags
+    internal enum JsonApiResourceIdentifierFlags
     {
         None = 0,
         Id = 1,
         Type = 2,
-        Relationships = 4,
-        Unknown = 8
+        Unknown = 4
     }
 }

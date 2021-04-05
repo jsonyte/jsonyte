@@ -13,6 +13,7 @@ namespace JsonApi.Converters.Collections
             var errors = default(T);
 
             var state = reader.ReadDocument();
+            var readState = new JsonApiState();
 
             while (reader.IsInObject())
             {
@@ -20,7 +21,7 @@ namespace JsonApi.Converters.Collections
 
                 if (name == JsonApiMembers.Errors)
                 {
-                    errors = ReadWrapped(ref reader, typeToConvert, options);
+                    errors = ReadWrapped(ref reader, ref readState, typeToConvert, default, options);
                 }
                 else
                 {
@@ -37,7 +38,7 @@ namespace JsonApi.Converters.Collections
                 : default;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
         {
             var errors = new List<JsonApiError>();
             var converter = options.GetWrappedConverter<JsonApiError>();
@@ -46,7 +47,7 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var error = converter.ReadWrapped(ref reader, typeof(JsonApiError), options);
+                var error = converter.ReadWrapped(ref reader, ref state, typeof(JsonApiError), null, options);
 
                 if (error == null)
                 {

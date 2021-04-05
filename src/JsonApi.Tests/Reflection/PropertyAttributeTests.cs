@@ -4,7 +4,7 @@ namespace JsonApi.Tests.Reflection
 {
     public class PropertyAttributeTests
     {
-        [Fact(Skip = "test")]
+        [Fact(Skip = "not sure")]
         public void DuplicatePropertyNamesThrows()
         {
             // does it?

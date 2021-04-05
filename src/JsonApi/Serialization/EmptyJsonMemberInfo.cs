@@ -21,6 +21,16 @@ namespace JsonApi.Serialization
             reader.Skip();
         }
 
+        public void ReadRelationship(ref Utf8JsonReader reader, ref JsonApiState state, object resource)
+        {
+            reader.Skip();
+        }
+
+        public void ReadExisting(ref Utf8JsonReader reader, ref JsonApiState state, object existingValue)
+        {
+            reader.Skip();
+        }
+
         public object? Read(ref Utf8JsonReader reader)
         {
             return null;

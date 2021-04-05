@@ -366,11 +366,7 @@ namespace JsonApi.Tests.Serialization
                                 {
                                     Data = new[]
                                     {
-                                        new JsonApiResourceIdentifier
-                                        {
-                                            Id = "2",
-                                            Type = "people"
-                                        }
+                                        new JsonApiResourceIdentifier("2", "people")
                                     }
                                 }
                             }
@@ -476,11 +472,7 @@ namespace JsonApi.Tests.Serialization
                                 {
                                     Data = new[]
                                     {
-                                        new JsonApiResourceIdentifier
-                                        {
-                                            Id = "2",
-                                            Type = "people"
-                                        }
+                                        new JsonApiResourceIdentifier("2", "people")
                                     }
                                 }
                             }

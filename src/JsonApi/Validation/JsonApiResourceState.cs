@@ -10,10 +10,11 @@
             {
                 JsonApiMembers.Id => JsonApiResourceFlags.Id,
                 JsonApiMembers.Type => JsonApiResourceFlags.Type,
+                JsonApiMembers.Relationships => JsonApiResourceFlags.Relationships,
                 _ => JsonApiResourceFlags.Unknown
             };
 
-            if (flags.HasFlag(memberFlag))
+            if (memberFlag != JsonApiResourceFlags.Unknown && flags.HasFlag(memberFlag))
             {
                 throw new JsonApiException($"Invalid JSON:API resource, duplicate '{member}' member");
             }

@@ -96,6 +96,7 @@ namespace JsonApi.Tests.Deserialization
 
             Assert.NotNull(document);
             Assert.NotNull(document.Data);
+            Assert.NotNull(document.Data.Meta);
 
             Assert.Equal("articles", document.Data.Type);
             Assert.Equal("1", document.Data.Id);

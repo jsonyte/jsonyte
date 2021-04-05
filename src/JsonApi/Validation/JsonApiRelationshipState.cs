@@ -14,7 +14,7 @@
                 _ => JsonApiRelationshipFlags.Unknown
             };
 
-            if (flags.HasFlag(memberFlag))
+            if (memberFlag != JsonApiRelationshipFlags.Unknown && flags.HasFlag(memberFlag))
             {
                 throw new JsonApiException($"Invalid JSON:API relationship, duplicate '{member}' member");
             }

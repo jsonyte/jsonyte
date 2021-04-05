@@ -118,14 +118,55 @@ namespace JsonApi
             return converter.Read(ref reader, typeof(T), options);
         }
 
-        public static T? ReadWrapped<T>(this ref Utf8JsonReader reader, JsonSerializerOptions options)
+        public static T? ReadWrapped<T>(this ref Utf8JsonReader reader, ref JsonApiState state, JsonSerializerOptions options)
         {
             if (options.GetConverter(typeof(T)) is not JsonApiConverter<T> converter)
             {
                 throw new JsonApiException($"Could not find converter for type '{typeof(T)}'");
             }
 
-            return converter.ReadWrapped(ref reader, typeof(T), options);
+            return converter.ReadWrapped(ref reader, ref state, typeof(T), default, options);
+        }
+
+        public static JsonApiResourceIdentifier ReadAheadIdentifier(this Utf8JsonReader reader, JsonSerializerOptions options)
+        {
+            string? id = null;
+            string? type = null;
+
+            reader.ReadObject("resource identifier");
+
+            while (reader.IsInObject())
+            {
+                var name = reader.GetString();
+                reader.Read();
+
+                if (name == JsonApiMembers.Id)
+                {
+                    id = reader.GetString();
+                }
+                else if (name == JsonApiMembers.Type)
+                {
+                    type = reader.GetString();
+                }
+                else
+                {
+                    reader.Skip();
+                }
+
+                if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(type))
+                {
+                    break;
+                }
+
+                reader.Read();
+            }
+
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
+            {
+                throw new JsonApiException("JSON:API resource identifier must contain 'id' and 'type' members");
+            }
+
+            return new JsonApiResourceIdentifier(id!, type!);
         }
     }
 }

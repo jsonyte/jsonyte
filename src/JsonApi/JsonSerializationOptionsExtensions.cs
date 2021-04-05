@@ -65,6 +65,13 @@ namespace JsonApi
             return jsonApiConverter;
         }
 
+        internal static JsonApiRelationshipConverterBase<T> GetRelationshipConverter<T>(this JsonSerializerOptions options)
+        {
+            var converters = GetState(options).RelationshipConverters;
+
+            return (JsonApiRelationshipConverterBase<T>) converters.GetOrAdd(typeof(T), JsonApiConverterFactory.GetRelationshipConverter);
+        }
+
         internal static JsonTypeInfo GetClassInfo(this JsonSerializerOptions options, Type type)
         {
             return GetState(options).Classes.GetOrAdd(type, x => new JsonTypeInfo(x, options));

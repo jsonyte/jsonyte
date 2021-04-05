@@ -1,12 +1,11 @@
-﻿using System.Text.Json;
-using JsonApi.Tests.Models;
+﻿using JsonApi.Tests.Models;
 using Xunit;
 
 namespace JsonApi.Tests.Deserialization
 {
     public class DeserializeRelationshipTests
     {
-        [Fact(Skip = "Not implemented")]
+        [Fact]
         public void CanDeserializeSingleRelationship()
         {
             const string json = @"
@@ -23,7 +22,10 @@ namespace JsonApi.Tests.Deserialization
                           'self': '/articles/1/relationships/author',
                           'related': '/articles/1/author'
                         },
-                        'data': { 'type': 'people', 'id': '9' }
+                        'data': {
+                          'type': 'people',
+                          'id': '9'
+                        }
                       }
                     }
                   }
@@ -31,16 +33,13 @@ namespace JsonApi.Tests.Deserialization
 
             var article = json.Deserialize<ArticleWithAuthor>();
 
-            JsonElement element = default;
-
-            foreach (var property in element.EnumerateObject())
-            {
-
-            }
-
             Assert.NotNull(article);
             Assert.NotNull(article.Author);
+
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
             Assert.Equal("Rails is Omakase", article.Title);
+
             Assert.Equal("people", article.Author.Type);
             Assert.Equal("9", article.Author.Id);
         }

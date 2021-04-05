@@ -45,6 +45,21 @@ namespace JsonApi
             return false;
         }
 
+        public static bool IsRelationship(this Type type)
+        {
+            if (type.IsGenericType)
+            {
+                var genericType = type.GetGenericTypeDefinition();
+
+                if (genericType == typeof(JsonApiRelationship<>))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public static bool IsCollection(this Type type)
         {
             return type.IsArray || typeof(IEnumerable).IsAssignableFrom(type);

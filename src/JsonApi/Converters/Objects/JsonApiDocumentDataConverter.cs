@@ -4,7 +4,7 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiDocumentDataConverter : JsonApiDocumentConverter<JsonApiDocument>
     {
-        protected override void ReadData(ref Utf8JsonReader reader, JsonApiDocument document, JsonSerializerOptions options)
+        protected override void ReadData(ref Utf8JsonReader reader, ref JsonApiState state, JsonApiDocument document, JsonSerializerOptions options)
         {
             document.Data = reader.Read<JsonApiResource[]>(options);
         }
@@ -38,9 +38,9 @@ namespace JsonApi.Converters.Objects
 
     internal class JsonApiDocumentDataConverter<T> : JsonApiDocumentConverter<JsonApiDocument<T>>
     {
-        protected override void ReadData(ref Utf8JsonReader reader, JsonApiDocument<T> document, JsonSerializerOptions options)
+        protected override void ReadData(ref Utf8JsonReader reader, ref JsonApiState state, JsonApiDocument<T> document, JsonSerializerOptions options)
         {
-            document.Data = reader.ReadWrapped<T>(options);
+            document.Data = reader.ReadWrapped<T>(ref state, options);
         }
 
         protected override void ValidateDocument(JsonApiDocument<T> document)

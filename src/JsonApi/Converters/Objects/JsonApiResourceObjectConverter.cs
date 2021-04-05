@@ -12,6 +12,7 @@ namespace JsonApi.Converters.Objects
             var resource = default(T);
 
             var state = reader.ReadDocument();
+            var readState = new JsonApiState();
 
             while (reader.IsInObject())
             {
@@ -19,7 +20,11 @@ namespace JsonApi.Converters.Objects
 
                 if (name == JsonApiMembers.Data)
                 {
-                    resource = ReadWrapped(ref reader, typeToConvert, options);
+                    resource = ReadWrapped(ref reader, ref readState, typeToConvert, default, options);
+                }
+                else if (name == JsonApiMembers.Included)
+                {
+                    ReadIncluded(ref reader, ref readState, options);
                 }
                 else
                 {
@@ -34,17 +39,17 @@ namespace JsonApi.Converters.Objects
             return resource;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
                 return default;
             }
 
-            var state = reader.ReadResource();
+            var resourceState = reader.ReadResource();
 
             var info = options.GetClassInfo(typeToConvert);
-            var resource = info.Creator();
+            var resource = existingValue ?? info.Creator();
 
             ValidateResource(info);
 
@@ -55,34 +60,77 @@ namespace JsonApi.Converters.Objects
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(ref state);
+                var name = reader.ReadMember(ref resourceState);
 
                 var property = info.GetMember(name);
 
-                if (name == JsonApiMembers.Attributes)
+                if (name == JsonApiMembers.Id || name == JsonApiMembers.Type)
+                {
+                    property.Read(ref reader, resource);
+                }
+                else if (name == JsonApiMembers.Attributes)
                 {
                     reader.ReadObject("resource attributes");
 
                     while (reader.IsInObject())
                     {
-                        var attributeName = reader.ReadMember("resource object");
+                        var attributeName = reader.ReadMember("resource");
 
                         info.GetMember(attributeName).Read(ref reader, resource);
 
                         reader.Read();
                     }
                 }
-                else
+                else if (name == JsonApiMembers.Meta)
                 {
                     property.Read(ref reader, resource);
+                }
+                else if (name == JsonApiMembers.Relationships)
+                {
+                    ReadRelationships(ref reader, ref state, resource, info);
+                }
+                else
+                {
+                    reader.Skip();
                 }
 
                 reader.Read();
             }
 
-            state.Validate();
+            resourceState.Validate();
 
             return (T) resource;
+        }
+
+        private void ReadRelationships(ref Utf8JsonReader reader, ref JsonApiState state, object resource, JsonTypeInfo info)
+        {
+            reader.ReadObject("relationship");
+
+            while (reader.IsInObject())
+            {
+                var relationshipName = reader.ReadMember("relationship");
+
+                info.GetMember(relationshipName).ReadRelationship(ref reader, ref state, resource);
+
+                reader.Read();
+            }
+        }
+
+        private void ReadIncluded(ref Utf8JsonReader reader, ref JsonApiState state, JsonSerializerOptions options)
+        {
+            reader.ReadArray("included");
+
+            while (reader.IsInArray())
+            {
+                var identifier = reader.ReadAheadIdentifier(options);
+
+                if (state.TryGetIncluded(identifier, out var included))
+                {
+                    //included.Item2.ReadExisting(ref reader, ref state, included.Item3);
+                }
+
+                reader.Read();
+            }
         }
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)

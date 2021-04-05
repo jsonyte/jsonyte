@@ -7,14 +7,14 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiResourceObjectConstructorConverter<T> : JsonApiResourceObjectConverter<T>
     {
-        public override T? ReadWrapped(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
                 return default;
             }
 
-            var state = reader.ReadResource();
+            var resourceState = reader.ReadResource();
 
             var info = options.GetClassInfo(typeToConvert);
 
@@ -26,7 +26,7 @@ namespace JsonApi.Converters.Objects
             
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(ref state);
+                var name = reader.ReadMember(ref resourceState);
 
                 if (name == JsonApiMembers.Attributes)
                 {
@@ -49,7 +49,7 @@ namespace JsonApi.Converters.Objects
                 reader.Read();
             }
 
-            state.Validate();
+            resourceState.Validate();
 
             var resource = info.CreatorWithArguments(parameters);
 

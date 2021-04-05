@@ -17,7 +17,7 @@
                 _ => JsonApiDocumentFlags.None
             };
 
-            if (flags.HasFlag(memberFlag))
+            if (memberFlag != JsonApiDocumentFlags.None && flags.HasFlag(memberFlag))
             {
                 throw new JsonApiException($"Invalid JSON:API document, duplicate '{member}' member");
             }

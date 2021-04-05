@@ -68,6 +68,11 @@ namespace JsonApi.Converters
                 return true;
             }
 
+            if (typeToConvert.IsRelationship())
+            {
+                return true;
+            }
+
             if (typeToConvert.IsCollection())
             {
                 var collectionType = typeToConvert.GetCollectionType();
@@ -93,6 +98,11 @@ namespace JsonApi.Converters
                 return CreateConverter(typeof(JsonApiDocumentDataConverter<>), typeToConvert.GenericTypeArguments.First());
             }
 
+            if (typeToConvert.IsRelationship())
+            {
+                return CreateConverter(typeof(JsonApiRelationshipConverter<>), typeToConvert.GenericTypeArguments.First());
+            }
+
             if (typeToConvert.IsCollection())
             {
                 var collectionType = typeToConvert.GetCollectionType();
@@ -104,6 +114,22 @@ namespace JsonApi.Converters
             }
 
             return null;
+        }
+
+        public static JsonConverter GetRelationshipConverter(Type relationshipType)
+        {
+            if (relationshipType.IsCollection())
+            {
+                var collectionType = relationshipType.GetCollectionType();
+
+                var converterType = typeof(JsonApiRelationshipCollectionConverter<,>).MakeGenericType(relationshipType, collectionType);
+
+                return (JsonConverter) Activator.CreateInstance(converterType);
+            }
+
+            var converter = typeof(JsonApiRelationshipConverter<>).MakeGenericType(relationshipType);
+
+            return (JsonConverter) Activator.CreateInstance(converter);
         }
 
         protected JsonConverter? CreateConverter(Type converterType, params Type[] typesToConvert)

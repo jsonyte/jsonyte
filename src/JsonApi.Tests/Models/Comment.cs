@@ -2,7 +2,7 @@
 
 namespace JsonApi.Tests.Models
 {
-    public class ArticleWithAuthor
+    public class Comment
     {
         [JsonPropertyName("id")]
         public string Id { get; set; }
@@ -10,13 +10,10 @@ namespace JsonApi.Tests.Models
         [JsonPropertyName("type")]
         public string Type { get; set; }
 
-        [JsonPropertyName("title")]
-        public string Title { get; set; }
+        [JsonPropertyName("body")]
+        public string Body { get; set;}
 
         [JsonPropertyName("author")]
         public Author Author { get; set; }
-
-        [JsonPropertyName("comments")]
-        public Comment[] Comments { get; set; }
     }
 }

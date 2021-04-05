@@ -31,7 +31,6 @@ namespace JsonApi.Serialization
 
             Creator = options.GetMemberAccessor().CreateCreator(type);
             CreatorWithArguments = options.GetMemberAccessor().CreateParameterizedCreator(constructor);
-            TypeCategory = type.GetTypeCategory();
 
             var members = GetProperties(type, options)
                 .Concat(GetFields(type, options))
@@ -48,8 +47,6 @@ namespace JsonApi.Serialization
         public Func<object?> Creator { get; }
 
         public Func<object[], object?> CreatorWithArguments { get; }
-
-        public JsonTypeCategory TypeCategory { get; }
 
         public int ParameterCount => parameterCache.Count;
 

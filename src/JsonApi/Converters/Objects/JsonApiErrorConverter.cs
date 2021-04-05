@@ -11,6 +11,7 @@ namespace JsonApi.Converters.Objects
             JsonApiError? firstError = null;
 
             var state = reader.ReadDocument();
+            var readState = new JsonApiState();
 
             while (reader.IsInObject())
             {
@@ -24,7 +25,7 @@ namespace JsonApi.Converters.Objects
                     {
                         if (firstError == null)
                         {
-                            firstError = ReadWrapped(ref reader, typeof(JsonApiError), options);
+                            firstError = ReadWrapped(ref reader, ref readState, typeof(JsonApiError), null, options);
                         }
                         else
                         {
@@ -49,7 +50,7 @@ namespace JsonApi.Converters.Objects
                 : default;
         }
 
-        public override JsonApiError ReadWrapped(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override JsonApiError ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, JsonApiError? existingValue, JsonSerializerOptions options)
         {
             var error = new JsonApiError();
 
