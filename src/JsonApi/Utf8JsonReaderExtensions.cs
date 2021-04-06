@@ -39,30 +39,30 @@ namespace JsonApi
 
         public static DocumentState ReadDocument(this ref Utf8JsonReader reader)
         {
-            reader.ReadObject("document");
+            reader.ReadObject(JsonApiMemberCode.Document);
 
             return new DocumentState();
         }
 
         public static ResourceState ReadResource(this ref Utf8JsonReader reader)
         {
-            reader.ReadObject("resource");
+            reader.ReadObject(JsonApiMemberCode.Resource);
 
             return new ResourceState();
         }
 
         public static RelationshipState ReadRelationship(this ref Utf8JsonReader reader)
         {
-            reader.ReadObject("relationship");
+            reader.ReadObject(JsonApiMemberCode.Relationship);
 
             return new RelationshipState();
         }
 
-        public static void ReadObject(this ref Utf8JsonReader reader, string description)
+        public static void ReadObject(this ref Utf8JsonReader reader, JsonApiMemberCode code)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
-                throw new JsonApiException($"Invalid JSON:API {description} object, expected JSON object");
+                throw new JsonApiFormatException(code);
             }
 
             reader.Read();
@@ -70,7 +70,7 @@ namespace JsonApi
 
         public static string? ReadMember(this ref Utf8JsonReader reader, ref DocumentState state)
         {
-            var name = reader.ReadMember("top-level");
+            var name = reader.ReadMember(JsonApiMemberCode.TopLevel);
 
             state.AddFlag(name);
 
@@ -79,7 +79,7 @@ namespace JsonApi
 
         public static string? ReadMember(this ref Utf8JsonReader reader, ref ResourceState state)
         {
-            var name = reader.ReadMember("resource object");
+            var name = reader.ReadMember(JsonApiMemberCode.Resource);
 
             state.AddFlag(name);
 
@@ -88,18 +88,18 @@ namespace JsonApi
 
         public static string? ReadMember(this ref Utf8JsonReader reader, ref RelationshipState state)
         {
-            var name = reader.ReadMember("relationship");
+            var name = reader.ReadMember(JsonApiMemberCode.Relationship);
 
             state.AddFlag(name);
 
             return name;
         }
 
-        public static string? ReadMember(this ref Utf8JsonReader reader, string description)
+        public static string? ReadMember(this ref Utf8JsonReader reader, JsonApiMemberCode code)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
             {
-                throw new JsonApiException($"Expected JSON:API {description} object property but found '{reader.GetString()}'");
+                throw new JsonApiFormatException(code, reader.GetString());
             }
 
             var name = reader.GetString();
@@ -133,7 +133,7 @@ namespace JsonApi
             string? id = null;
             string? type = null;
 
-            reader.ReadObject("resource identifier");
+            reader.ReadObject(JsonApiMemberCode.ResourceIdentifier);
 
             while (reader.IsInObject())
             {

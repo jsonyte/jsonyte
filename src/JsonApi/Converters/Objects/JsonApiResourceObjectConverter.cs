@@ -74,11 +74,11 @@ namespace JsonApi.Converters.Objects
                 }
                 else if (name == JsonApiMembers.Attributes)
                 {
-                    reader.ReadObject("resource attributes");
+                    reader.ReadObject(JsonApiMemberCode.ResourceAttributes);
 
                     while (reader.IsInObject())
                     {
-                        var attributeName = reader.ReadMember("resource");
+                        var attributeName = reader.ReadMember(JsonApiMemberCode.Resource);
 
                         info.GetMember(attributeName).Read(ref reader, resource);
 
@@ -108,11 +108,11 @@ namespace JsonApi.Converters.Objects
 
         private void ReadRelationships(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource, JsonTypeInfo info)
         {
-            reader.ReadObject("relationship");
+            reader.ReadObject(JsonApiMemberCode.Relationship);
 
             while (reader.IsInObject())
             {
-                var relationshipName = reader.ReadMember("relationship");
+                var relationshipName = reader.ReadMember(JsonApiMemberCode.Relationship);
 
                 info.GetMember(relationshipName).ReadRelationship(ref reader, ref tracked, resource);
 

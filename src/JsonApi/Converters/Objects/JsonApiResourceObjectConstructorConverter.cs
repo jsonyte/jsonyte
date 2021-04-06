@@ -30,11 +30,11 @@ namespace JsonApi.Converters.Objects
 
                 if (name == JsonApiMembers.Attributes)
                 {
-                    reader.ReadObject("resource attributes");
+                    reader.ReadObject(JsonApiMemberCode.ResourceAttributes);
 
                     while (reader.IsInObject())
                     {
-                        var attributeName = reader.ReadMember("resource object");
+                        var attributeName = reader.ReadMember(JsonApiMemberCode.Resource);
 
                         ReadValue(ref reader, info, attributeName, parameters, properties, ref propertiesUsed);
 

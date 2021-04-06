@@ -58,11 +58,11 @@ namespace JsonApi.Converters.Objects
         {
             var error = new JsonApiError();
 
-            reader.ReadObject("error");
+            reader.ReadObject(JsonApiMemberCode.Error);
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember("error object");
+                var name = reader.ReadMember(JsonApiMemberCode.Error);
 
                 switch (name)
                 {
