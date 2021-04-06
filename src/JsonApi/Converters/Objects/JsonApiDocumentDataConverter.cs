@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using JsonApi.Serialization;
 
 namespace JsonApi.Converters.Objects
 {

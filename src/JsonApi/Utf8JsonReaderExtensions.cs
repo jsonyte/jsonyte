@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using JsonApi.Converters;
+using JsonApi.Serialization;
 using JsonApi.Validation;
 
 namespace JsonApi

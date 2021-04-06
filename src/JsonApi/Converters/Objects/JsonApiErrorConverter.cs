@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using JsonApi.Serialization;
 using JsonApi.Validation;
 
 namespace JsonApi.Converters.Objects

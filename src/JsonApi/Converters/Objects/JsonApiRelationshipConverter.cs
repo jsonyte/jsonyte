@@ -3,18 +3,15 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
+using JsonApi.Serialization;
 
 namespace JsonApi.Converters.Objects
 {
     internal class JsonApiRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<T>
     {
-        public Type TypeToConvert { get; } = typeof(T);
-
-        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var tracked = new TrackedResources();
-
-            return Read(ref reader, ref tracked, TypeToConvert, options);
+            throw new NotSupportedException();
         }
 
         public override T? Read(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonSerializerOptions options)

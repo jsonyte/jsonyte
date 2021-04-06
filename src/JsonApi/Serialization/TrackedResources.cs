@@ -1,7 +1,6 @@
 ﻿using System.Buffers;
-using JsonApi.Serialization;
 
-namespace JsonApi
+namespace JsonApi.Serialization
 {
     internal ref struct TrackedResources
     {
