@@ -119,7 +119,7 @@ namespace JsonApi.Converters.Collections
             }
             else
             {
-                throw new JsonApiException("JSON:API resources collection must be an enumerable");
+                throw new JsonApiFormatException("JSON:API resources collection must be an enumerable");
             }
         }
 

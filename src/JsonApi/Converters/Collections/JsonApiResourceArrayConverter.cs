@@ -16,7 +16,7 @@ namespace JsonApi.Converters.Collections
 
             if (!reader.IsObject() && !reader.IsArray())
             {
-                throw new JsonApiException("Expected single JSON:API resource or array of resources for this data");
+                throw new JsonApiFormatException("Expected single JSON:API resource or array of resources for this data");
             }
 
             if (reader.IsObject())
@@ -25,7 +25,7 @@ namespace JsonApi.Converters.Collections
 
                 if (resource == null)
                 {
-                    throw new JsonApiException("JSON:API resource must not be empty");
+                    throw new JsonApiFormatException("JSON:API resource must not be empty");
                 }
 
                 return new[] {resource};
@@ -41,7 +41,7 @@ namespace JsonApi.Converters.Collections
 
                 if (resource == null)
                 {
-                    throw new JsonApiException("JSON:API resource must not be empty");
+                    throw new JsonApiFormatException("JSON:API resource must not be empty");
                 }
 
                 resources.Add(resource);

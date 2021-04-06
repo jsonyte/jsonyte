@@ -13,12 +13,12 @@ namespace JsonApi.Converters.Objects
         {
             if (document.Data != null && document.Errors != null)
             {
-                throw new JsonApiException("JSON:API document must not contain both 'data' and 'errors' members");
+                throw new JsonApiFormatException("JSON:API document must not contain both 'data' and 'errors' members");
             }
 
             if (document.Data == null && document.Included != null)
             {
-                throw new JsonApiException("JSON:API document must contain 'data' member if 'included' member is specified");
+                throw new JsonApiFormatException("JSON:API document must contain 'data' member if 'included' member is specified");
             }
         }
 
@@ -47,12 +47,12 @@ namespace JsonApi.Converters.Objects
         {
             if (document.Data != null && document.Errors != null)
             {
-                throw new JsonApiException("JSON:API document must not contain both 'data' and 'errors' members");
+                throw new JsonApiFormatException("JSON:API document must not contain both 'data' and 'errors' members");
             }
 
             if (document.Data == null && document.Included != null)
             {
-                throw new JsonApiException("JSON:API document must contain 'data' member if 'included' member is specified");
+                throw new JsonApiFormatException("JSON:API document must contain 'data' member if 'included' member is specified");
             }
         }
 

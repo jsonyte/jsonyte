@@ -55,7 +55,7 @@ namespace JsonApi.Converters.Collections
 
                 if (error == null)
                 {
-                    throw new JsonApiException("JSON:API error object must not be null");
+                    throw new JsonApiFormatException("JSON:API error object must not be null");
                 }
 
                 errors.Add(error);
@@ -92,7 +92,7 @@ namespace JsonApi.Converters.Collections
                 {
                     if (error == null)
                     {
-                        throw new JsonApiException("Invalid JSON:API errors, error item cannot be null");
+                        throw new JsonApiFormatException("Invalid JSON:API errors, error item cannot be null");
                     }
 
                     converter.WriteWrapped(writer, error, options);

@@ -31,7 +31,7 @@ namespace JsonApi
         {
             if (reader.TokenType != JsonTokenType.StartArray)
             {
-                throw new JsonApiException($"Invalid JSON:API {description} array, expected array");
+                throw new JsonApiFormatException($"Invalid JSON:API {description} array, expected array");
             }
 
             reader.Read();
@@ -163,7 +163,7 @@ namespace JsonApi
 
             if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
             {
-                throw new JsonApiException("JSON:API resource identifier must contain 'id' and 'type' members");
+                throw new JsonApiFormatException("JSON:API resource identifier must contain 'id' and 'type' members");
             }
 
             return new JsonApiResourceIdentifier(id!, type!);

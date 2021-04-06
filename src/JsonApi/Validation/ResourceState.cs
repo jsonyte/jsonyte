@@ -16,7 +16,7 @@
 
             if (memberFlag != ResourceFlags.Unknown && flags.HasFlag(memberFlag))
             {
-                throw new JsonApiException($"Invalid JSON:API resource, duplicate '{member}' member");
+                throw new JsonApiFormatException($"Invalid JSON:API resource, duplicate '{member}' member");
             }
 
             flags |= memberFlag;
@@ -26,7 +26,7 @@
         {
             if (!flags.HasFlag(ResourceFlags.Type))
             {
-                throw new JsonApiException("JSON:API resource must contain a 'type' member");
+                throw new JsonApiFormatException("JSON:API resource must contain a 'type' member");
             }
         }
     }

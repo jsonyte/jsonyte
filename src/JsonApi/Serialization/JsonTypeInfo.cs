@@ -15,10 +15,6 @@ namespace JsonApi.Serialization
 
         private static readonly EmptyJsonParameterInfo EmptyParameter = new(-1);
 
-        private static readonly Type PropertyType = typeof(JsonPropertyInfo<>);
-
-        private static readonly Type FieldType = typeof(JsonFieldInfo<>);
-
         private readonly Dictionary<string, IJsonMemberInfo> nameCache;
 
         private readonly Dictionary<string, IJsonParameterInfo> parameterCache;
@@ -104,7 +100,7 @@ namespace JsonApi.Serialization
 
                 if (ignoreCondition != JsonIgnoreCondition.Always)
                 {
-                    yield return CreateMemberInfo(PropertyType, property, property.PropertyType, ignoreCondition, options);
+                    yield return CreateMemberInfo(typeof(JsonPropertyInfo<>), property, property.PropertyType, ignoreCondition, options);
                 }
             }
         }
@@ -126,7 +122,7 @@ namespace JsonApi.Serialization
 
                 if (ignoreCondition != JsonIgnoreCondition.Always)
                 {
-                    yield return CreateMemberInfo(FieldType, field, field.FieldType, ignoreCondition, options);
+                    yield return CreateMemberInfo(typeof(JsonFieldInfo<>), field, field.FieldType, ignoreCondition, options);
                 }
             }
         }

@@ -19,7 +19,7 @@
 
             if (memberFlag != DocumentFlags.None && flags.HasFlag(memberFlag))
             {
-                throw new JsonApiException($"Invalid JSON:API document, duplicate '{member}' member");
+                throw new JsonApiFormatException($"Invalid JSON:API document, duplicate '{member}' member");
             }
 
             flags |= memberFlag;
@@ -31,17 +31,17 @@
                 !flags.HasFlag(DocumentFlags.Errors) &&
                 !flags.HasFlag(DocumentFlags.Meta))
             {
-                throw new JsonApiException("JSON:API document must contain 'data', 'errors' or 'meta' members");
+                throw new JsonApiFormatException("JSON:API document must contain 'data', 'errors' or 'meta' members");
             }
 
             if (flags.HasFlag(DocumentFlags.Data) && flags.HasFlag(DocumentFlags.Errors))
             {
-                throw new JsonApiException("JSON:API document must not contain both 'data' and 'errors' members");
+                throw new JsonApiFormatException("JSON:API document must not contain both 'data' and 'errors' members");
             }
 
             if (flags.HasFlag(DocumentFlags.Included) && !flags.HasFlag(DocumentFlags.Data))
             {
-                throw new JsonApiException("JSON:API document must contain 'data' member if 'included' member is specified");
+                throw new JsonApiFormatException("JSON:API document must contain 'data' member if 'included' member is specified");
             }
         }
 

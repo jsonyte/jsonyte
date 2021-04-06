@@ -196,7 +196,7 @@ namespace JsonApi.Converters.Objects
         {
             if (relationship.Data == null && relationship.Links == null && relationship.Meta == null)
             {
-                throw new JsonApiException("JSON:API relationship must contain a 'links', 'data' or 'meta' member");
+                throw new JsonApiFormatException("JSON:API relationship must contain a 'links', 'data' or 'meta' member");
             }
         }
     }

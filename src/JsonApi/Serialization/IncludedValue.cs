@@ -1,6 +1,4 @@
-﻿using JsonApi.Serialization;
-
-namespace JsonApi
+﻿namespace JsonApi.Serialization
 {
     internal struct IncludedValue
     {

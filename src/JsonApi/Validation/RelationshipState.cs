@@ -16,7 +16,7 @@
 
             if (memberFlag != RelationshipFlags.Unknown && flags.HasFlag(memberFlag))
             {
-                throw new JsonApiException($"Invalid JSON:API relationship, duplicate '{member}' member");
+                throw new JsonApiFormatException($"Invalid JSON:API relationship, duplicate '{member}' member");
             }
 
             flags |= memberFlag;
@@ -28,7 +28,7 @@
                 !flags.HasFlag(RelationshipFlags.Data) &&
                 !flags.HasFlag(RelationshipFlags.Meta))
             {
-                throw new JsonApiException("JSON:API relationship must contain a 'links', 'data' or 'meta' member");
+                throw new JsonApiFormatException("JSON:API relationship must contain a 'links', 'data' or 'meta' member");
             }
         }
     }

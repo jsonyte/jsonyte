@@ -132,6 +132,10 @@ namespace JsonApi.Converters.Objects
                 {
                     included.Converter.Read(ref reader, ref tracked, included.Value, options);
                 }
+                else
+                {
+                    throw new JsonApiFormatException("JSON:API included resource must be referenced by at least one relationship");
+                }
 
                 reader.Read();
             }
@@ -197,19 +201,19 @@ namespace JsonApi.Converters.Objects
 
             if (!string.IsNullOrEmpty(idProperty.Name) && idProperty.MemberType != typeof(string))
             {
-                throw new JsonApiException("JSON:API resource id must be a string");
+                throw new JsonApiFormatException("JSON:API resource id must be a string");
             }
 
             var typeProperty = info.GetMember(JsonApiMembers.Type);
 
             if (string.IsNullOrEmpty(typeProperty.Name))
             {
-                throw new JsonApiException("JSON:API resource must have a 'type' member");
+                throw new JsonApiFormatException("JSON:API resource must have a 'type' member");
             }
 
             if (typeProperty.MemberType != typeof(string))
             {
-                throw new JsonApiException("JSON:API resource type must be a string");
+                throw new JsonApiFormatException("JSON:API resource type must be a string");
             }
         }
     }

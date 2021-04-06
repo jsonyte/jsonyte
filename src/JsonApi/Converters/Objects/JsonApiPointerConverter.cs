@@ -12,7 +12,7 @@ namespace JsonApi.Converters.Objects
 
             if (reader.TokenType != JsonTokenType.String)
             {
-                throw new JsonApiException($"Invalid JSON pointer [RFC6901] value: '{value}'");
+                throw new JsonApiFormatException($"Invalid JSON pointer [RFC6901] value: '{value}'");
             }
 
             return new JsonApiPointer(value ?? string.Empty);

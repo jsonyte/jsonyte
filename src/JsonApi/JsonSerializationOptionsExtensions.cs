@@ -91,7 +91,7 @@ namespace JsonApi
         {
             if (options.GetConverter(typeof(JsonApiStateConverter)) is not JsonApiStateConverter state)
             {
-                throw new JsonApiException("JSON:API extensions not initialized, please call use 'AddJsonApi' on 'JsonSerializerOptions' first");
+                throw new JsonApiException("JSON:API extensions not initialized, please use 'AddJsonApi' on 'JsonSerializerOptions' first");
             }
 
             return state;
