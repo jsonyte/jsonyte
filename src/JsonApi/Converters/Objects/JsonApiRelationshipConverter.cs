@@ -50,7 +50,7 @@ namespace JsonApi.Converters.Objects
 
             if (tracked.TryGetIncluded(identifier, out var value))
             {
-                return (T) value.Item3;
+                return (T) value.Value;
             }
 
             var info = options.GetClassInfo(typeToConvert);

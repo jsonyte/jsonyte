@@ -130,7 +130,7 @@ namespace JsonApi.Converters.Objects
 
                 if (tracked.TryGetIncluded(identifier, out var included))
                 {
-                    included.Item2.Read(ref reader, ref tracked, included.Item3, options);
+                    included.Converter.Read(ref reader, ref tracked, included.Value, options);
                 }
 
                 reader.Read();

@@ -1,6 +1,5 @@
 ﻿using System.Buffers;
 using JsonApi.Serialization;
-using IncludedValue = System.ValueTuple<JsonApi.JsonApiResourceIdentifier, JsonApi.Serialization.IJsonValueConverter, object>;
 
 namespace JsonApi
 {
@@ -43,7 +42,7 @@ namespace JsonApi
             {
                 var include = included[i];
 
-                if (include.Item1.Equals(identifier))
+                if (include.Identifier.Equals(identifier))
                 {
                     value = include;
 
