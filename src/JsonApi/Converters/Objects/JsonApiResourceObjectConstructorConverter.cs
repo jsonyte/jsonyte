@@ -7,7 +7,7 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiResourceObjectConstructorConverter<T> : JsonApiResourceObjectConverter<T>
     {
-        public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
@@ -66,6 +66,7 @@ namespace JsonApi.Converters.Objects
             }
 
             ArrayPool<object>.Shared.Return(parameters, true);
+            ArrayPool<(IJsonMemberInfo Member, object? Value)>.Shared.Return(properties, true);
 
             return (T) resource;
         }

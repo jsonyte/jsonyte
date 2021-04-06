@@ -1,19 +1,19 @@
 ﻿namespace JsonApi.Validation
 {
-    internal ref struct JsonApiResourceIdentifierState
+    internal ref struct ResourceIdentifierState
     {
-        private JsonApiResourceIdentifierFlags flags;
+        private ResourceIdentifierFlags flags;
 
         public void AddFlag(string? member)
         {
             var memberFlag = member switch
             {
-                JsonApiMembers.Id => JsonApiResourceIdentifierFlags.Id,
-                JsonApiMembers.Type => JsonApiResourceIdentifierFlags.Type,
-                _ => JsonApiResourceIdentifierFlags.Unknown
+                JsonApiMembers.Id => ResourceIdentifierFlags.Id,
+                JsonApiMembers.Type => ResourceIdentifierFlags.Type,
+                _ => ResourceIdentifierFlags.Unknown
             };
 
-            if (memberFlag != JsonApiResourceIdentifierFlags.Unknown && flags.HasFlag(memberFlag))
+            if (memberFlag != ResourceIdentifierFlags.Unknown && flags.HasFlag(memberFlag))
             {
                 throw new JsonApiException($"Invalid JSON:API resource, duplicate '{member}' member");
             }
@@ -23,7 +23,7 @@
 
         public void Validate()
         {
-            if (!flags.HasFlag(JsonApiResourceIdentifierFlags.Id) && !flags.HasFlag(JsonApiResourceIdentifierFlags.Type))
+            if (!flags.HasFlag(ResourceIdentifierFlags.Id) && !flags.HasFlag(ResourceIdentifierFlags.Type))
             {
                 throw new JsonApiException("JSON:API resource identifier must contain 'id' and 'type' members");
             }

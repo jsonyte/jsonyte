@@ -18,7 +18,7 @@ namespace JsonApi
 
         public static void WriteWrapped<T>(this Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
-            if (options.GetConverter(typeof(T)) is not JsonApiConverter<T> converter)
+            if (options.GetConverter(typeof(T)) is not WrappedJsonConverter<T> converter)
             {
                 throw new JsonApiException($"Could not find converter for type '{typeof(T)}'");
             }

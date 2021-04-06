@@ -5,16 +5,16 @@ namespace JsonApi.Serialization
 {
     internal class JsonValueConverter<T> : IJsonValueConverter
     {
-        private readonly JsonApiConverter<T> converter;
+        private readonly WrappedJsonConverter<T> converter;
 
-        public JsonValueConverter(JsonApiConverter<T> converter)
+        public JsonValueConverter(WrappedJsonConverter<T> converter)
         {
             this.converter = converter;
         }
 
-        public void Read(ref Utf8JsonReader reader, ref JsonApiState state, object existingValue, JsonSerializerOptions options)
+        public void Read(ref Utf8JsonReader reader, ref TrackedResources tracked, object existingValue, JsonSerializerOptions options)
         {
-            converter.ReadWrapped(ref reader, ref state, typeof(T), (T) existingValue, options);
+            converter.ReadWrapped(ref reader, ref tracked, typeof(T), (T) existingValue, options);
         }
     }
 }

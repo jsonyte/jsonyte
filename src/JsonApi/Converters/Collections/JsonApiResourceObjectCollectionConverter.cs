@@ -5,7 +5,7 @@ using JsonApi.Serialization;
 
 namespace JsonApi.Converters.Collections
 {
-    internal class JsonApiResourceObjectCollectionConverter<T, TElement> : JsonApiConverter<T>
+    internal class JsonApiResourceObjectCollectionConverter<T, TElement> : WrappedJsonConverter<T>
     {
         public Type? ElementType { get; } = typeof(TElement);
 
@@ -16,7 +16,7 @@ namespace JsonApi.Converters.Collections
             var resources = default(T);
 
             var state = reader.ReadDocument();
-            var readState = new JsonApiState();
+            var tracked = new TrackedResources();
 
             while (reader.IsInObject())
             {
@@ -24,11 +24,11 @@ namespace JsonApi.Converters.Collections
 
                 if (name == JsonApiMembers.Data)
                 {
-                    resources = ReadWrapped(ref reader, ref readState, typeToConvert, default, options);
+                    resources = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
                 else if (name == JsonApiMembers.Included)
                 {
-                    ReadIncluded(ref reader, ref readState, options);
+                    ReadIncluded(ref reader, ref tracked, options);
                 }
                 else
                 {
@@ -38,10 +38,12 @@ namespace JsonApi.Converters.Collections
                 reader.Read();
             }
 
+            tracked.Release();
+
             return resources;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
@@ -56,7 +58,7 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var resource = converter.ReadWrapped(ref reader, ref state, ElementType!, default, options);
+                var resource = converter.ReadWrapped(ref reader, ref tracked, ElementType!, default, options);
 
                 if (resource != null)
                 {
@@ -69,7 +71,7 @@ namespace JsonApi.Converters.Collections
             return (T) GetCollection(resources);
         }
 
-        private void ReadIncluded(ref Utf8JsonReader reader, ref JsonApiState state, JsonSerializerOptions options)
+        private void ReadIncluded(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonSerializerOptions options)
         {
             reader.ReadArray("included");
 
@@ -77,9 +79,9 @@ namespace JsonApi.Converters.Collections
             {
                 var identifier = reader.ReadAheadIdentifier();
 
-                if (state.TryGetIncluded(identifier, out var included))
+                if (tracked.TryGetIncluded(identifier, out var included))
                 {
-                    included.Item2.Read(ref reader, ref state, included.Item3, options);
+                    included.Item2.Read(ref reader, ref tracked, included.Item3, options);
                 }
 
                 reader.Read();

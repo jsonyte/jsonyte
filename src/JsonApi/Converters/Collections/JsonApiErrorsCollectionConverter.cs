@@ -6,7 +6,7 @@ using JsonApi.Validation;
 
 namespace JsonApi.Converters.Collections
 {
-    internal class JsonApiErrorsCollectionConverter<T> : JsonApiConverter<T>
+    internal class JsonApiErrorsCollectionConverter<T> : WrappedJsonConverter<T>
     {
         public Type? ElementType { get; } = typeof(JsonApiError);
 
@@ -17,7 +17,7 @@ namespace JsonApi.Converters.Collections
             var errors = default(T);
 
             var state = reader.ReadDocument();
-            var readState = new JsonApiState();
+            var readState = new TrackedResources();
 
             while (reader.IsInObject())
             {
@@ -37,12 +37,12 @@ namespace JsonApi.Converters.Collections
 
             state.Validate();
 
-            return state.HasFlag(JsonApiDocumentFlags.Errors)
+            return state.HasFlag(DocumentFlags.Errors)
                 ? errors
                 : default;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
         {
             var errors = new List<JsonApiError>();
             var converter = options.GetWrappedConverter<JsonApiError>();
@@ -51,7 +51,7 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var error = converter.ReadWrapped(ref reader, ref state, ElementType!, null, options);
+                var error = converter.ReadWrapped(ref reader, ref tracked, ElementType!, null, options);
 
                 if (error == null)
                 {

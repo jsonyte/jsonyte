@@ -5,7 +5,7 @@ using JsonApi.Serialization;
 
 namespace JsonApi.Converters.Collections
 {
-    internal class JsonApiRelationshipCollectionConverter<T, TElement> : JsonApiRelationshipConverterBase<T>
+    internal class JsonApiRelationshipCollectionConverter<T, TElement> : JsonApiRelationshipDetailsConverter<T>
     {
         public Type? ElementType { get; } = typeof(TElement);
 
@@ -13,12 +13,12 @@ namespace JsonApi.Converters.Collections
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var state = new JsonApiState();
+            var state = new TrackedResources();
 
             return Read(ref reader, ref state, typeToConvert, options);
         }
 
-        public override T? Read(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, JsonSerializerOptions options)
+        public override T? Read(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonSerializerOptions options)
         {
             var relationships = default(T);
 
@@ -30,7 +30,7 @@ namespace JsonApi.Converters.Collections
 
                 if (name == JsonApiMembers.Data)
                 {
-                    relationships = ReadWrapped(ref reader, ref state, typeToConvert, default, options);
+                    relationships = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
                 else
                 {
@@ -45,7 +45,7 @@ namespace JsonApi.Converters.Collections
             return relationships;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
@@ -60,7 +60,7 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var resource = converter.ReadWrapped(ref reader, ref state, ElementType!, default, options);
+                var resource = converter.ReadWrapped(ref reader, ref tracked, ElementType!, default, options);
 
                 if (resource != null)
                 {

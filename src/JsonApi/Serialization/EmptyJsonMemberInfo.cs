@@ -23,12 +23,12 @@ namespace JsonApi.Serialization
             reader.Skip();
         }
 
-        public void ReadRelationship(ref Utf8JsonReader reader, ref JsonApiState state, object resource)
+        public void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)
         {
             reader.Skip();
         }
 
-        public void ReadExisting(ref Utf8JsonReader reader, ref JsonApiState state, object existingValue)
+        public void ReadExisting(ref Utf8JsonReader reader, ref TrackedResources tracked, object existingValue)
         {
             reader.Skip();
         }

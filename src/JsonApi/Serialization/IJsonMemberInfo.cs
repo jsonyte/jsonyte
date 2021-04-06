@@ -18,7 +18,7 @@ namespace JsonApi.Serialization
 
         void Read(ref Utf8JsonReader reader, object resource);
 
-        void ReadRelationship(ref Utf8JsonReader reader, ref JsonApiState state, object resource);
+        void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource);
 
         object? Read(ref Utf8JsonReader reader);
 

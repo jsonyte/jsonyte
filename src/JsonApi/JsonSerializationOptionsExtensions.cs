@@ -53,11 +53,11 @@ namespace JsonApi
                 : StringComparer.Ordinal;
         }
 
-        internal static JsonApiConverter<T> GetWrappedConverter<T>(this JsonSerializerOptions options)
+        internal static WrappedJsonConverter<T> GetWrappedConverter<T>(this JsonSerializerOptions options)
         {
             var converter = options.GetConverter(typeof(T));
 
-            if (converter is not JsonApiConverter<T> jsonApiConverter)
+            if (converter is not WrappedJsonConverter<T> jsonApiConverter)
             {
                 throw new JsonApiException($"Converter not found for type {typeof(T)}");
             }
@@ -65,11 +65,11 @@ namespace JsonApi
             return jsonApiConverter;
         }
 
-        internal static JsonApiRelationshipConverterBase<T> GetRelationshipConverter<T>(this JsonSerializerOptions options)
+        internal static JsonApiRelationshipDetailsConverter<T> GetRelationshipConverter<T>(this JsonSerializerOptions options)
         {
             var converters = GetState(options).RelationshipConverters;
 
-            return (JsonApiRelationshipConverterBase<T>) converters.GetOrAdd(typeof(T), JsonApiConverterFactory.GetRelationshipConverter);
+            return (JsonApiRelationshipDetailsConverter<T>) converters.GetOrAdd(typeof(T), JsonApiConverterFactory.GetRelationshipConverter);
         }
 
         internal static IJsonValueConverter GetValueConverter<T>(this JsonSerializerOptions options)

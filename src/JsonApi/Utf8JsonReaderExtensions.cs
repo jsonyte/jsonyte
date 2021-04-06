@@ -37,25 +37,25 @@ namespace JsonApi
             reader.Read();
         }
 
-        public static JsonApiDocumentState ReadDocument(this ref Utf8JsonReader reader)
+        public static DocumentState ReadDocument(this ref Utf8JsonReader reader)
         {
             reader.ReadObject("document");
 
-            return new JsonApiDocumentState();
+            return new DocumentState();
         }
 
-        public static JsonApiResourceState ReadResource(this ref Utf8JsonReader reader)
+        public static ResourceState ReadResource(this ref Utf8JsonReader reader)
         {
             reader.ReadObject("resource");
 
-            return new JsonApiResourceState();
+            return new ResourceState();
         }
 
-        public static JsonApiRelationshipState ReadRelationship(this ref Utf8JsonReader reader)
+        public static RelationshipState ReadRelationship(this ref Utf8JsonReader reader)
         {
             reader.ReadObject("relationship");
 
-            return new JsonApiRelationshipState();
+            return new RelationshipState();
         }
 
         public static void ReadObject(this ref Utf8JsonReader reader, string description)
@@ -68,7 +68,7 @@ namespace JsonApi
             reader.Read();
         }
 
-        public static string? ReadMember(this ref Utf8JsonReader reader, ref JsonApiDocumentState state)
+        public static string? ReadMember(this ref Utf8JsonReader reader, ref DocumentState state)
         {
             var name = reader.ReadMember("top-level");
 
@@ -77,7 +77,7 @@ namespace JsonApi
             return name;
         }
 
-        public static string? ReadMember(this ref Utf8JsonReader reader, ref JsonApiResourceState state)
+        public static string? ReadMember(this ref Utf8JsonReader reader, ref ResourceState state)
         {
             var name = reader.ReadMember("resource object");
 
@@ -86,7 +86,7 @@ namespace JsonApi
             return name;
         }
 
-        public static string? ReadMember(this ref Utf8JsonReader reader, ref JsonApiRelationshipState state)
+        public static string? ReadMember(this ref Utf8JsonReader reader, ref RelationshipState state)
         {
             var name = reader.ReadMember("relationship");
 
@@ -118,14 +118,14 @@ namespace JsonApi
             return converter.Read(ref reader, typeof(T), options);
         }
 
-        public static T? ReadWrapped<T>(this ref Utf8JsonReader reader, ref JsonApiState state, JsonSerializerOptions options)
+        public static T? ReadWrapped<T>(this ref Utf8JsonReader reader, ref TrackedResources tracked, JsonSerializerOptions options)
         {
-            if (options.GetConverter(typeof(T)) is not JsonApiConverter<T> converter)
+            if (options.GetConverter(typeof(T)) is not WrappedJsonConverter<T> converter)
             {
                 throw new JsonApiException($"Could not find converter for type '{typeof(T)}'");
             }
 
-            return converter.ReadWrapped(ref reader, ref state, typeof(T), default, options);
+            return converter.ReadWrapped(ref reader, ref tracked, typeof(T), default, options);
         }
 
         public static JsonApiResourceIdentifier ReadAheadIdentifier(this Utf8JsonReader reader)

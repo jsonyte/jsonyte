@@ -4,7 +4,7 @@ using IncludedValue = System.ValueTuple<JsonApi.JsonApiResourceIdentifier, JsonA
 
 namespace JsonApi
 {
-    internal struct JsonApiState
+    internal ref struct TrackedResources
     {
         private const int IncludedLength = 8;
 
@@ -52,6 +52,16 @@ namespace JsonApi
             }
 
             return false;
+        }
+
+        public void Release()
+        {
+            if (included != null)
+            {
+                ArrayPool<IncludedValue>.Shared.Return(included, true);
+            }
+
+            included = null;
         }
     }
 }

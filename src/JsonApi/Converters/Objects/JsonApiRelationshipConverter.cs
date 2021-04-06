@@ -6,18 +6,18 @@ using JetBrains.Annotations;
 
 namespace JsonApi.Converters.Objects
 {
-    internal class JsonApiRelationshipConverter<T> : JsonApiRelationshipConverterBase<T>
+    internal class JsonApiRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<T>
     {
         public Type TypeToConvert { get; } = typeof(T);
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var state = new JsonApiState();
+            var tracked = new TrackedResources();
 
-            return Read(ref reader, ref state, TypeToConvert, options);
+            return Read(ref reader, ref tracked, TypeToConvert, options);
         }
 
-        public override T? Read(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, JsonSerializerOptions options)
+        public override T? Read(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonSerializerOptions options)
         {
             var relationship = default(T);
 
@@ -29,7 +29,7 @@ namespace JsonApi.Converters.Objects
 
                 if (name == JsonApiMembers.Data)
                 {
-                    relationship = ReadWrapped(ref reader, ref state, typeToConvert, default, options);
+                    relationship = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
                 else
                 {
@@ -44,11 +44,11 @@ namespace JsonApi.Converters.Objects
             return relationship;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
         {
             var identifier = reader.Read<JsonApiResourceIdentifier>(options);
 
-            if (state.TryGetIncluded(identifier, out var value))
+            if (tracked.TryGetIncluded(identifier, out var value))
             {
                 return (T) value.Item3;
             }
@@ -66,7 +66,7 @@ namespace JsonApi.Converters.Objects
 
             var converter = options.GetValueConverter<T>();
 
-            state.AddIncluded(identifier, converter, relationship);
+            tracked.AddIncluded(identifier, converter, relationship);
 
             return (T) relationship;
         }

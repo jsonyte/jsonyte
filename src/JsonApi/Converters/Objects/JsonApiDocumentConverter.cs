@@ -8,14 +8,14 @@ namespace JsonApi.Converters.Objects
     internal abstract class JsonApiDocumentConverter<T> : JsonConverter<T>
         where T : IJsonApiDocument, new()
     {
-        protected abstract void ReadData(ref Utf8JsonReader reader, ref JsonApiState state, T document, JsonSerializerOptions options);
+        protected abstract void ReadData(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var document = new T();
 
             var state = reader.ReadDocument();
-            var readState = new JsonApiState();
+            var tracked = new TrackedResources();
 
             while (reader.IsInObject())
             {
@@ -23,11 +23,11 @@ namespace JsonApi.Converters.Objects
 
                 if (name == JsonApiMembers.Data)
                 {
-                    ReadData(ref reader, ref readState, document, options);
+                    ReadData(ref reader, ref tracked, document, options);
                 }
                 else if (name == JsonApiMembers.Errors)
                 {
-                    document.Errors = reader.ReadWrapped<JsonApiError[]>(ref readState, options);
+                    document.Errors = reader.ReadWrapped<JsonApiError[]>(ref tracked, options);
                 }
                 else if (name == JsonApiMembers.JsonApi)
                 {
@@ -52,6 +52,8 @@ namespace JsonApi.Converters.Objects
 
                 reader.Read();
             }
+
+            tracked.Release();
 
             state.Validate();
 

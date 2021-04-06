@@ -55,7 +55,7 @@ namespace JsonApi.Serialization
             Set(resource, value!);
         }
 
-        public void ReadRelationship(ref Utf8JsonReader reader, ref JsonApiState state, object resource)
+        public void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)
         {
             if (Set == null)
             {
@@ -64,7 +64,7 @@ namespace JsonApi.Serialization
 
             var converter = Options.GetRelationshipConverter<T>();
 
-            var value = converter.Read(ref reader, ref state, MemberType, Options);
+            var value = converter.Read(ref reader, ref tracked, MemberType, Options);
 
             if (Options.IgnoreNullValues && value == null)
             {

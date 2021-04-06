@@ -4,7 +4,7 @@ using JsonApi.Validation;
 
 namespace JsonApi.Converters.Objects
 {
-    internal class JsonApiErrorConverter : JsonApiConverter<JsonApiError>
+    internal class JsonApiErrorConverter : WrappedJsonConverter<JsonApiError>
     {
         public Type TypeToConvert { get; } = typeof(JsonApiError);
 
@@ -13,7 +13,7 @@ namespace JsonApi.Converters.Objects
             JsonApiError? firstError = null;
 
             var state = reader.ReadDocument();
-            var readState = new JsonApiState();
+            var tracked = new TrackedResources();
 
             while (reader.IsInObject())
             {
@@ -27,7 +27,7 @@ namespace JsonApi.Converters.Objects
                     {
                         if (firstError == null)
                         {
-                            firstError = ReadWrapped(ref reader, ref readState, TypeToConvert!, null, options);
+                            firstError = ReadWrapped(ref reader, ref tracked, TypeToConvert!, null, options);
                         }
                         else
                         {
@@ -45,14 +45,16 @@ namespace JsonApi.Converters.Objects
                 reader.Read();
             }
 
+            tracked.Release();
+
             state.Validate();
 
-            return state.HasFlag(JsonApiDocumentFlags.Errors)
+            return state.HasFlag(DocumentFlags.Errors)
                 ? firstError
                 : default;
         }
 
-        public override JsonApiError ReadWrapped(ref Utf8JsonReader reader, ref JsonApiState state, Type typeToConvert, JsonApiError? existingValue, JsonSerializerOptions options)
+        public override JsonApiError ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonApiError? existingValue, JsonSerializerOptions options)
         {
             var error = new JsonApiError();
 
