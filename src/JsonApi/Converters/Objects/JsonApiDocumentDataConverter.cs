@@ -31,7 +31,7 @@ namespace JsonApi.Converters.Objects
             else if (value.Data != null)
             {
                 writer.WritePropertyName("data");
-                writer.Write(value.Data, options);
+                JsonSerializer.Serialize(writer, value.Data, options);
             }
         }
     }
@@ -65,7 +65,7 @@ namespace JsonApi.Converters.Objects
             else if (value.Data != null)
             {
                 writer.WritePropertyName("data");
-                writer.WriteWrapped(value.Data, options);
+                WriteWrapped(writer, value.Data, options);
             }
         }
     }

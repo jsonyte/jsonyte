@@ -75,13 +75,13 @@ namespace JsonApi.Converters.Objects
             if (value.Included != null)
             {
                 writer.WritePropertyName(JsonApiMembers.Included);
-                writer.Write(value.Included, options);
+                JsonSerializer.Serialize(writer, value.Included, options);
             }
 
             if (value.Errors != null)
             {
                 writer.WritePropertyName(JsonApiMembers.Errors);
-                writer.WriteWrapped(value.Errors, options);
+                WriteWrapped(writer, value.Errors, options);
             }
 
             if (value.Links != null)
@@ -103,6 +103,16 @@ namespace JsonApi.Converters.Objects
             }
 
             writer.WriteEndObject();
+        }
+
+        protected void WriteWrapped<T>(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        {
+            if (options.GetConverter(typeof(T)) is not WrappedJsonConverter<T> converter)
+            {
+                throw new JsonApiException($"Could not find converter for type '{typeof(T)}'");
+            }
+
+            converter.WriteWrapped(writer, value, options);
         }
 
         [AssertionMethod]
