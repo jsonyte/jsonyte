@@ -17,9 +17,9 @@ namespace JsonApi.Converters
 
             if (typeToConvert.IsCollection())
             {
-                var collectionType = typeToConvert.GetCollectionType();
+                var elementType = typeToConvert.GetCollectionElementType();
 
-                if (collectionType != null && collectionType.IsResource())
+                if (elementType != null && elementType.IsResource())
                 {
                     return true;
                 }
@@ -32,21 +32,21 @@ namespace JsonApi.Converters
         {
             if (typeToConvert.IsCollection())
             {
-                var collectionType = typeToConvert.GetCollectionType();
+                var elementType = typeToConvert.GetCollectionElementType();
 
-                if (collectionType != null)
+                if (elementType != null)
                 {
-                    var collectionTypeInfo = options.GetClassInfo(collectionType);
+                    var collectionTypeInfo = options.GetTypeInfo(elementType);
 
                     var collectionConverterType = collectionTypeInfo.ParameterCount == 0
                         ? typeof(JsonApiResourceObjectCollectionConverter<,>)
                         : typeof(JsonApiResourceObjectCollectionConstructorConverter<,>);
 
-                    return CreateConverter(collectionConverterType, typeToConvert, collectionType);
+                    return CreateConverter(collectionConverterType, typeToConvert, elementType);
                 }
             }
 
-            var info = options.GetClassInfo(typeToConvert);
+            var info = options.GetTypeInfo(typeToConvert);
 
             var converterType = info.ParameterCount == 0
                 ? typeof(JsonApiResourceObjectConverter<>)

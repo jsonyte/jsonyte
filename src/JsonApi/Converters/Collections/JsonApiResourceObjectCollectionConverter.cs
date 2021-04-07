@@ -90,15 +90,33 @@ namespace JsonApi.Converters.Collections
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
-            writer.WriteStartObject();
-            writer.WritePropertyName("data");
+            var tracked = new TrackedResources();
 
-            WriteWrapped(writer, value, options);
+            writer.WriteStartObject();
+            writer.WritePropertyName(JsonApiMembers.Data);
+
+            WriteWrapped(writer, ref tracked, value, options);
+
+            if (tracked.Count > 0)
+            {
+                writer.WritePropertyName(JsonApiMembers.Included);
+                writer.WriteStartArray();
+
+                foreach (var identifier in tracked.Identifiers)
+                {
+                    if (tracked.TryGetIncluded(identifier, out var included))
+                    {
+                        included.Converter.Write(writer, ref tracked, included.Value, options);
+                    }
+                }
+
+                writer.WriteEndArray();
+            }
 
             writer.WriteEndObject();
         }
 
-        public override void WriteWrapped(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
         {
             if (value == null)
             {
@@ -112,14 +130,14 @@ namespace JsonApi.Converters.Collections
 
                 foreach (var element in collection)
                 {
-                    converter.WriteWrapped(writer, element, options);
+                    converter.WriteWrapped(writer, ref tracked, element, options);
                 }
 
                 writer.WriteEndArray();
             }
             else
             {
-                throw new JsonApiFormatException("JSON:API resources collection must be an enumerable");
+                throw new JsonApiFormatException($"JSON:API resources collection of type '{typeof(T).Name}' must be an enumerable");
             }
         }
 

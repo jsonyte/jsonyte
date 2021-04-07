@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text.Json;
 using JsonApi.Serialization;
 using JsonApi.Validation;
@@ -74,7 +73,7 @@ namespace JsonApi.Converters.Objects
 
             var resourceState = reader.ReadResource();
 
-            var info = options.GetClassInfo(typeToConvert);
+            var info = options.GetTypeInfo(typeToConvert);
             var resource = existingValue ?? info.Creator();
 
             ValidateResource(info);
@@ -152,7 +151,7 @@ namespace JsonApi.Converters.Objects
 
                 if (tracked.TryGetIncluded(identifier, out var included))
                 {
-                    included.Converter!.Read(ref reader, ref tracked, included.Value, options);
+                    included.Converter.Read(ref reader, ref tracked, included.Value, options);
                 }
                 else
                 {
@@ -165,15 +164,43 @@ namespace JsonApi.Converters.Objects
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
-            writer.WriteStartObject();
-            writer.WritePropertyName("data");
+            var tracked = new TrackedResources();
 
-            WriteWrapped(writer, value, options);
+            writer.WriteStartObject();
+
+            writer.WritePropertyName(JsonApiMembers.Data);
+            WriteWrapped(writer, ref tracked, value, options);
+            
+            if (tracked.Count > 0)
+            {
+                writer.WritePropertyName(JsonApiMembers.Included);
+                writer.WriteStartArray();
+
+                while (tracked.Identifiers.Count > 0)
+                {
+                    var identifier = tracked.Identifiers.Dequeue();
+
+                    if (tracked.TryGetIncluded(identifier, out var included))
+                    {
+                        included.Converter.Write(writer, ref tracked, included.Value, options);
+                    }
+                }
+
+                foreach (var identifier in tracked.Identifiers)
+                {
+                    if (tracked.TryGetIncluded(identifier, out var included))
+                    {
+                        included.Converter.Write(writer, ref tracked, included.Value, options);
+                    }
+                }
+
+                writer.WriteEndArray();
+            }
 
             writer.WriteEndObject();
         }
 
-        public override void WriteWrapped(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
         {
             if (value == null)
             {
@@ -182,37 +209,59 @@ namespace JsonApi.Converters.Objects
                 return;
             }
 
-            var info = options.GetClassInfo(TypeToConvert);
+            var info = options.GetTypeInfo(TypeToConvert);
 
             ValidateResource(info);
 
-            var comparer = options.PropertyNameCaseInsensitive
-                ? StringComparer.OrdinalIgnoreCase
-                : StringComparer.Ordinal;
-
-            var valueKeys = info.GetMemberKeys()
-                .Except(new[] {JsonApiMembers.Id, JsonApiMembers.Type, JsonApiMembers.Meta}, comparer)
-                .ToArray();
+            var attributesWritten = false;
+            var relationshipsWritten = false;
 
             writer.WriteStartObject();
 
-            info.GetMember(JsonApiMembers.Id).Write(writer, value);
-            info.GetMember(JsonApiMembers.Type).Write(writer, value);
-            
-            if (valueKeys.Any())
-            {
-                writer.WritePropertyName(JsonApiMembers.Attributes);
-                writer.WriteStartObject();
+            info.GetMember(JsonApiMembers.Id).Write(writer, ref tracked, value);
+            info.GetMember(JsonApiMembers.Type).Write(writer, ref tracked, value);
 
-                foreach (var key in valueKeys)
+            foreach (var key in info.GetMemberKeys())
+            {
+                if (key == JsonApiMembers.Id || key == JsonApiMembers.Type || key == JsonApiMembers.Meta)
                 {
-                    info.GetMember(key).Write(writer, value);
+                    continue;
                 }
 
+                var member = info.GetMember(key);
+
+                if (member.IsRelationship)
+                {
+                    continue;
+                }
+
+                if (!attributesWritten)
+                {
+                    writer.WritePropertyName(JsonApiMembers.Attributes);
+                    writer.WriteStartObject();
+
+                    attributesWritten = true;
+                }
+
+                member.Write(writer, ref tracked, value);
+            }
+
+            if (attributesWritten)
+            {
                 writer.WriteEndObject();
             }
 
-            info.GetMember(JsonApiMembers.Meta).Write(writer, value);
+            foreach (var member in info.Members)
+            {
+                member.WriteRelationship(writer, ref tracked, value, ref relationshipsWritten);
+            }
+
+            if (relationshipsWritten)
+            {
+                writer.WriteEndObject();
+            }
+
+            info.GetMember(JsonApiMembers.Meta).Write(writer, ref tracked, value);
 
             writer.WriteEndObject();
         }

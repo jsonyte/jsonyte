@@ -23,15 +23,15 @@ namespace JsonApi.Converters.Objects
             }
         }
 
-        protected override void WriteData(Utf8JsonWriter writer, JsonApiDocument value, JsonSerializerOptions options)
+        protected override void WriteData(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument value, JsonSerializerOptions options)
         {
             if (value.Errors == null && value.Meta == null && value.Data == null)
             {
-                writer.WriteNull("data");
+                writer.WriteNull(JsonApiMembers.Data);
             }
             else if (value.Data != null)
             {
-                writer.WritePropertyName("data");
+                writer.WritePropertyName(JsonApiMembers.Data);
                 JsonSerializer.Serialize(writer, value.Data, options);
             }
         }
@@ -57,16 +57,16 @@ namespace JsonApi.Converters.Objects
             }
         }
 
-        protected override void WriteData(Utf8JsonWriter writer, JsonApiDocument<T> value, JsonSerializerOptions options)
+        protected override void WriteData(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument<T> value, JsonSerializerOptions options)
         {
             if (value.Errors == null && value.Meta == null && value.Data == null)
             {
-                writer.WriteNull("data");
+                writer.WriteNull(JsonApiMembers.Data);
             }
             else if (value.Data != null)
             {
-                writer.WritePropertyName("data");
-                WriteWrapped(writer, value.Data, options);
+                writer.WritePropertyName(JsonApiMembers.Data);
+                WriteWrapped(writer, ref tracked, value.Data, options);
             }
         }
     }

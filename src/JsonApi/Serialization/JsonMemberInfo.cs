@@ -2,27 +2,40 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using JsonApi.Converters;
 
 namespace JsonApi.Serialization
 {
     internal abstract class JsonMemberInfo<T> : IJsonMemberInfo
     {
-        private IJsonValueConverter? relationshipConverter;
+        private JsonApiRelationshipDetailsConverter<T>? relationshipConverter;
 
         protected JsonMemberInfo(MemberInfo member, Type memberType, JsonIgnoreCondition? ignoreCondition, JsonConverter converter, JsonSerializerOptions options)
         {
             Options = options;
             Converter = converter;
             TypedConverter = (JsonConverter<T>) converter;
+            WrappedConverter = converter as WrappedJsonConverter<T>;
             IgnoreCondition = ignoreCondition;
             Name = GetName(member);
             MemberName = member.Name;
             MemberType = memberType;
+            IsRelationship = memberType.IsResourceIdentifier() || memberType.IsResourceIdentifierCollection();
         }
 
         public JsonSerializerOptions Options { get; }
 
         public JsonConverter<T> TypedConverter { get; }
+
+        public WrappedJsonConverter<T>? WrappedConverter { get; }
+
+        public JsonApiRelationshipDetailsConverter<T> RelationshipConverter
+        {
+            get
+            {
+                return relationshipConverter ??= Options.GetRelationshipConverter<T>();
+            }
+        }
 
         public JsonIgnoreCondition? IgnoreCondition { get; }
 
@@ -40,12 +53,23 @@ namespace JsonApi.Serialization
 
         public JsonConverter Converter { get; }
 
-        public IJsonValueConverter RelationshipConverter
+        public bool IsRelationship { get; }
+
+        public object? GetValue(object resource)
         {
-            get
+            if (Get == null || Ignored)
             {
-                return relationshipConverter ??= Options.GetRelationshipValueConverter<T>();
+                return null;
             }
+
+            var value = Get(resource);
+
+            if (Options.IgnoreNullValues && value == null)
+            {
+                return null;
+            }
+
+            return value;
         }
 
         public void Read(ref Utf8JsonReader reader, object resource)
@@ -72,9 +96,7 @@ namespace JsonApi.Serialization
                 return;
             }
 
-            var converter = Options.GetRelationshipConverter<T>();
-
-            var value = converter.Read(ref reader, ref tracked, MemberType, Options);
+            var value = RelationshipConverter.Read(ref reader, ref tracked, MemberType, Options);
 
             if (Options.IgnoreNullValues && value == null)
             {
@@ -101,7 +123,7 @@ namespace JsonApi.Serialization
             return value;
         }
 
-        public void Write(Utf8JsonWriter writer, object resource)
+        public void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource)
         {
             if (Get == null || Ignored)
             {
@@ -116,10 +138,47 @@ namespace JsonApi.Serialization
             }
 
             writer.WritePropertyName(Name);
-            TypedConverter.Write(writer, value, Options);
+
+            if (WrappedConverter != null)
+            {
+                WrappedConverter.WriteWrapped(writer, ref tracked, value, Options);
+            }
+            else
+            {
+                TypedConverter.Write(writer, value, Options);
+            }
         }
 
-        public void Write(object resource, object? value)
+        public void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection)
+        {
+            if (Get == null || Ignored || !IsRelationship)
+            {
+                return;
+            }
+
+            var value = Get(resource);
+
+            if (Options.IgnoreNullValues && value == null)
+            {
+                return;
+            }
+
+            if (value != null)
+            {
+                if (!wroteSection)
+                {
+                    writer.WritePropertyName(JsonApiMembers.Relationships);
+                    writer.WriteStartObject();
+
+                    wroteSection = true;
+                }
+
+                writer.WritePropertyName(Name);
+                RelationshipConverter.Write(writer, ref tracked, value, Options);
+            }
+        }
+
+        public void SetValue(object resource, object? value)
         {
             if (Set == null)
             {

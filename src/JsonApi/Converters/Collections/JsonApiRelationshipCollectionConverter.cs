@@ -73,12 +73,42 @@ namespace JsonApi.Converters.Collections
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
-        public override void WriteWrapped(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            writer.WriteStartObject();
+            writer.WritePropertyName(JsonApiMembers.Data);
+
+            WriteWrapped(writer, ref tracked, value, options);
+
+            writer.WriteEndObject();
+        }
+
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
+        {
+            if (value == null)
+            {
+                writer.WriteNullValue();
+            }
+            else if (value is IEnumerable<TElement> collection)
+            {
+                var converter = options.GetRelationshipConverter<TElement>();
+
+                writer.WriteStartArray();
+
+                foreach (var element in collection)
+                {
+                    converter.WriteWrapped(writer, ref tracked, element, options);
+                }
+
+                writer.WriteEndArray();
+            }
+            else
+            {
+                throw new JsonApiFormatException($"JSON:API resources collection of type '{typeof(T).Name}' must be an enumerable");
+            }
         }
 
         private object GetCollection(List<TElement> relationships)

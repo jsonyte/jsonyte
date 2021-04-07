@@ -21,5 +21,12 @@
         public const string Links = "links";
 
         public const string JsonApi = "jsonapi";
+
+        public const string Status = "status";
+        public const string Code = "code";
+        public const string Title = "title";
+        public const string Detail = "detail";
+        public const string Source = "source";
+        public const string Href = "href";
     }
 }

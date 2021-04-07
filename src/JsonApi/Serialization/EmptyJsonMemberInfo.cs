@@ -12,13 +12,16 @@ namespace JsonApi.Serialization
 
         public Type MemberType { get; } = typeof(string);
 
-        public Type? ElementType { get; } = null;
-
         public bool Ignored { get; } = true;
 
         public JsonConverter Converter { get; }
 
-        public IJsonValueConverter? RelationshipConverter { get; }
+        public bool IsRelationship { get; } = false;
+
+        public object? GetValue(object resource)
+        {
+            return null;
+        }
 
         public void Read(ref Utf8JsonReader reader, object resource)
         {
@@ -30,21 +33,20 @@ namespace JsonApi.Serialization
             reader.Skip();
         }
 
-        public void ReadExisting(ref Utf8JsonReader reader, ref TrackedResources tracked, object existingValue)
-        {
-            reader.Skip();
-        }
-
         public object? Read(ref Utf8JsonReader reader)
         {
             return null;
         }
 
-        public void Write(Utf8JsonWriter writer, object resource)
+        public void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource)
         {
         }
 
-        public void Write(object resource, object? value)
+        public void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection)
+        {
+        }
+
+        public void SetValue(object resource, object? value)
         {
         }
     }

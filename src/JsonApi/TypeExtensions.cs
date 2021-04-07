@@ -13,16 +13,27 @@ namespace JsonApi
 
         public static bool IsResource(this Type type)
         {
-            var property = type.GetProperty("type", MemberFlags);
+            return HasMember(type, JsonApiMembers.Type);
+        }
 
-            if (property != null && property.PropertyType == typeof(string))
+        public static bool IsResourceIdentifier(this Type type)
+        {
+            return HasMember(type, JsonApiMembers.Id) && HasMember(type, JsonApiMembers.Type);
+        }
+
+        public static bool IsResourceIdentifierCollection(this Type type)
+        {
+            if (type.IsCollection())
             {
-                return true;
+                var elementType = type.GetCollectionElementType();
+
+                if (elementType != null && elementType.IsResourceIdentifier())
+                {
+                    return true;
+                }
             }
 
-            var field = type.GetField("type", MemberFlags);
-
-            return field != null && field.FieldType == typeof(string);
+            return false;
         }
 
         public static bool IsError(this Type type)
@@ -80,7 +91,7 @@ namespace JsonApi
             return JsonTypeCategory.List;
         }
 
-        public static Type? GetCollectionType(this Type type)
+        public static Type? GetCollectionElementType(this Type type)
         {
             if (type.IsArray)
             {
@@ -97,6 +108,20 @@ namespace JsonApi
             }
 
             return null;
+        }
+
+        private static bool HasMember(Type type, string name)
+        {
+            var property = type.GetProperty(name, MemberFlags);
+
+            if (property != null && property.PropertyType == typeof(string))
+            {
+                return true;
+            }
+
+            var field = type.GetField(name, MemberFlags);
+
+            return field != null && field.FieldType == typeof(string);
         }
 
         private static IEnumerable<Type> GetInterfaces(Type type)

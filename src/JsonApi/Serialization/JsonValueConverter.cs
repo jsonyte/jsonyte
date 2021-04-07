@@ -16,5 +16,10 @@ namespace JsonApi.Serialization
         {
             converter.ReadWrapped(ref reader, ref tracked, typeof(T), (T) existingValue, options);
         }
+
+        public void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value, JsonSerializerOptions options)
+        {
+            converter.WriteWrapped(writer, ref tracked, (T) value, options);
+        }
     }
 }

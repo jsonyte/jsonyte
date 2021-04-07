@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace JsonApi.Serialization
 {
@@ -10,9 +11,31 @@ namespace JsonApi.Serialization
         //private IncludedValue[]? included;
         private Dictionary<JsonApiResourceIdentifier, IncludedValue>? included;
 
+        private Queue<JsonApiResourceIdentifier>? stack;
+
         private int includedIndex;
 
-        public void SetIncluded(JsonApiResourceIdentifier identifier, IJsonValueConverter? converter, object value)
+        public int Count => included?.Count ?? 0;
+
+        public Queue<JsonApiResourceIdentifier> Identifiers
+        {
+            get
+            {
+                if (stack == null)
+                {
+                    stack = new Queue<JsonApiResourceIdentifier>(Count);
+
+                    foreach (var key in included!.Keys)
+                    {
+                        stack.Enqueue(key);
+                    }
+                }
+
+                return stack;
+            }
+        }
+
+        public void SetIncluded(JsonApiResourceIdentifier identifier, IJsonValueConverter converter, object value)
         {
             //included ??= ArrayPool<IncludedValue>.Shared.Rent(IncludedLength);
 
@@ -31,7 +54,12 @@ namespace JsonApi.Serialization
 
             included ??= new Dictionary<JsonApiResourceIdentifier, IncludedValue>();
 
-            included[identifier] = new IncludedValue(identifier, converter, value);
+            if (!included.ContainsKey(identifier))
+            {
+                included[identifier] = new IncludedValue(identifier, converter, value);
+
+                stack?.Enqueue(identifier);
+            }
         }
 
         public bool TryGetIncluded(JsonApiResourceIdentifier identifier, out IncludedValue value)

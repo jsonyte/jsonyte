@@ -86,9 +86,9 @@ namespace JsonApi
             return GetState(options).ValueConverters.GetOrAdd(typeof(T), _ => new JsonValueConverter<T>(options.GetWrappedConverter<T>()));
         }
 
-        internal static JsonTypeInfo GetClassInfo(this JsonSerializerOptions options, Type type)
+        internal static JsonTypeInfo GetTypeInfo(this JsonSerializerOptions options, Type type)
         {
-            return GetState(options).Classes.GetOrAdd(type, x => new JsonTypeInfo(x, options));
+            return GetState(options).Types.GetOrAdd(type, x => new JsonTypeInfo(x, options));
         }
 
         internal static IMemberAccessor GetMemberAccessor(this JsonSerializerOptions options)

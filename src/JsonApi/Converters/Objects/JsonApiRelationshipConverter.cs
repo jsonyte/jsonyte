@@ -50,7 +50,7 @@ namespace JsonApi.Converters.Objects
                 return (T) included.Value;
             }
 
-            var info = options.GetClassInfo(typeToConvert);
+            var info = options.GetTypeInfo(typeToConvert);
             var relationship = info.Creator();
 
             if (relationship == null)
@@ -58,8 +58,8 @@ namespace JsonApi.Converters.Objects
                 return default;
             }
 
-            info.GetMember(JsonApiMembers.Id).Write(relationship, identifier.Id);
-            info.GetMember(JsonApiMembers.Type).Write(relationship, identifier.Type);
+            info.GetMember(JsonApiMembers.Id).SetValue(relationship, identifier.Id);
+            info.GetMember(JsonApiMembers.Type).SetValue(relationship, identifier.Type);
 
             var converter = options.GetValueConverter<T>();
 
@@ -70,12 +70,46 @@ namespace JsonApi.Converters.Objects
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
-        public override void WriteWrapped(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            writer.WriteStartObject();
+            writer.WritePropertyName(JsonApiMembers.Data);
+
+            WriteWrapped(writer, ref tracked, value, options);
+
+            writer.WriteEndObject();
+        }
+
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
+        {
+            if (value == null)
+            {
+                writer.WriteNullValue();
+
+                return;
+            }
+
+            var info = options.GetTypeInfo(typeof(T));
+
+            var id = info.GetMember(JsonApiMembers.Id).GetValue(value) as string;
+            var type = info.GetMember(JsonApiMembers.Type).GetValue(value) as string;
+
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
+            {
+                throw new JsonApiException($"JSON:API relationship for '{typeof(T).Name}' must have both 'id' and 'type' values");
+            }
+
+            writer.WriteStartObject();
+
+            writer.WriteString(JsonApiMembers.Id, id);
+            writer.WriteString(JsonApiMembers.Type, type);
+
+            writer.WriteEndObject();
+
+            tracked.SetIncluded(new JsonApiResourceIdentifier(id!, type!), options.GetValueConverter<T>(), value);
         }
     }
 

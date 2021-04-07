@@ -16,7 +16,7 @@ namespace JsonApi.Converters.Objects
 
             var resourceState = reader.ReadResource();
 
-            var info = options.GetClassInfo(typeToConvert);
+            var info = options.GetTypeInfo(typeToConvert);
 
             ValidateResource(info);
 
@@ -62,7 +62,7 @@ namespace JsonApi.Converters.Objects
             {
                 var property = properties[i];
 
-                property.Member.Write(resource, property.Value);
+                property.Member.SetValue(resource, property.Value);
             }
 
             ArrayPool<object>.Shared.Return(parameters, true);

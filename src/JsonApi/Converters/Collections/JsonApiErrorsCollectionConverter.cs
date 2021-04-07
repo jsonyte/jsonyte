@@ -72,15 +72,17 @@ namespace JsonApi.Converters.Collections
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
-            writer.WriteStartObject();
-            writer.WritePropertyName("errors");
+            var tracked = new TrackedResources();
 
-            WriteWrapped(writer, value, options);
+            writer.WriteStartObject();
+            writer.WritePropertyName(JsonApiMembers.Errors);
+
+            WriteWrapped(writer, ref tracked, value, options);
 
             writer.WriteEndObject();
         }
 
-        public override void WriteWrapped(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
         {
             writer.WriteStartArray();
 
@@ -95,7 +97,7 @@ namespace JsonApi.Converters.Collections
                         throw new JsonApiFormatException("Invalid JSON:API errors, error item cannot be null");
                     }
 
-                    converter.WriteWrapped(writer, error, options);
+                    converter.WriteWrapped(writer, ref tracked, error, options);
                 }
             }
 

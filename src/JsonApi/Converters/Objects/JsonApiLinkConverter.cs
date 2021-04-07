@@ -24,11 +24,11 @@ namespace JsonApi.Converters.Objects
 
                     reader.Read();
 
-                    if (name == "href")
+                    if (name == JsonApiMembers.Href)
                     {
                         link.Href = reader.GetString();
                     }
-                    else if (name == "meta")
+                    else if (name == JsonApiMembers.Meta)
                     {
                         link.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                     }
@@ -55,10 +55,10 @@ namespace JsonApi.Converters.Objects
             {
                 writer.WriteStartObject();
 
-                writer.WritePropertyName("href");
+                writer.WritePropertyName(JsonApiMembers.Href);
                 writer.WriteStringValue(value.Href);
 
-                writer.WritePropertyName("meta");
+                writer.WritePropertyName(JsonApiMembers.Meta);
                 JsonSerializer.Serialize(writer, value.Meta, options);
 
                 writer.WriteEndObject();

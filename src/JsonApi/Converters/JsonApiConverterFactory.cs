@@ -75,9 +75,9 @@ namespace JsonApi.Converters
 
             if (typeToConvert.IsCollection())
             {
-                var collectionType = typeToConvert.GetCollectionType();
+                var elementType = typeToConvert.GetCollectionElementType();
 
-                if (collectionType != null && collectionType.IsError())
+                if (elementType != null && elementType.IsError())
                 {
                     return true;
                 }
@@ -105,9 +105,9 @@ namespace JsonApi.Converters
 
             if (typeToConvert.IsCollection())
             {
-                var collectionType = typeToConvert.GetCollectionType();
+                var elementType = typeToConvert.GetCollectionElementType();
 
-                if (collectionType != null && collectionType.IsError())
+                if (elementType != null && elementType.IsError())
                 {
                     return CreateConverter(typeof(JsonApiErrorsCollectionConverter<>), typeToConvert);
                 }
@@ -120,9 +120,9 @@ namespace JsonApi.Converters
         {
             if (relationshipType.IsCollection())
             {
-                var collectionType = relationshipType.GetCollectionType();
+                var elementType = relationshipType.GetCollectionElementType();
 
-                var converterType = typeof(JsonApiRelationshipCollectionConverter<,>).MakeGenericType(relationshipType, collectionType);
+                var converterType = typeof(JsonApiRelationshipCollectionConverter<,>).MakeGenericType(relationshipType, elementType);
 
                 return (JsonConverter) Activator.CreateInstance(converterType);
             }

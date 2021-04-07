@@ -63,15 +63,17 @@ namespace JsonApi.Converters.Objects
                 : document;
         }
 
-        protected abstract void WriteData(Utf8JsonWriter writer, T value, JsonSerializerOptions options);
+        protected abstract void WriteData(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
+            var tracked = new TrackedResources();
+
             ValidateDocument(value);
 
             writer.WriteStartObject();
 
-            WriteData(writer, value, options);
+            WriteData(writer, ref tracked, value, options);
 
             if (value.Included != null)
             {
@@ -82,7 +84,7 @@ namespace JsonApi.Converters.Objects
             if (value.Errors != null)
             {
                 writer.WritePropertyName(JsonApiMembers.Errors);
-                WriteWrapped(writer, value.Errors, options);
+                WriteWrapped(writer, ref tracked, value.Errors, options);
             }
 
             if (value.Links != null)
@@ -106,14 +108,14 @@ namespace JsonApi.Converters.Objects
             writer.WriteEndObject();
         }
 
-        protected void WriteWrapped<T>(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        protected void WriteWrapped<T>(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
         {
             if (options.GetConverter(typeof(T)) is not WrappedJsonConverter<T> converter)
             {
                 throw new JsonApiException($"Could not find converter for type '{typeof(T)}'");
             }
 
-            converter.WriteWrapped(writer, value, options);
+            converter.WriteWrapped(writer, ref tracked, value, options);
         }
 
         [AssertionMethod]

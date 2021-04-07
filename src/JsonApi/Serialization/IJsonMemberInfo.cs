@@ -16,7 +16,9 @@ namespace JsonApi.Serialization
 
         JsonConverter Converter { get; }
 
-        IJsonValueConverter? RelationshipConverter { get; }
+        bool IsRelationship { get; }
+
+        object? GetValue(object resource);
 
         void Read(ref Utf8JsonReader reader, object resource);
 
@@ -24,8 +26,10 @@ namespace JsonApi.Serialization
 
         object? Read(ref Utf8JsonReader reader);
 
-        void Write(Utf8JsonWriter writer, object resource);
+        void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource);
 
-        void Write(object resource, object? value);
+        void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection);
+
+        void SetValue(object resource, object? value);
     }
 }
