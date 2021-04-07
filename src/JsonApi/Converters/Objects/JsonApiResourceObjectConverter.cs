@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.Json;
 using JsonApi.Serialization;
+using JsonApi.Validation;
 
 namespace JsonApi.Converters.Objects
 {
@@ -14,7 +15,10 @@ namespace JsonApi.Converters.Objects
             var resource = default(T);
 
             var documentState = reader.ReadDocument();
-            var state = new TrackedResources();
+            var tracked = new TrackedResources();
+
+            Utf8JsonReader savedReader = default;
+            var includedReadFirst = false;
 
             while (reader.IsInObject())
             {
@@ -22,11 +26,21 @@ namespace JsonApi.Converters.Objects
 
                 if (name == JsonApiMembers.Data)
                 {
-                    resource = ReadWrapped(ref reader, ref state, typeToConvert, default, options);
+                    resource = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
                 else if (name == JsonApiMembers.Included)
                 {
-                    ReadIncluded(ref reader, ref state, options);
+                    if (documentState.HasFlag(DocumentFlags.Data))
+                    {
+                        ReadIncluded(ref reader, ref tracked, options);
+                    }
+                    else
+                    {
+                        includedReadFirst = true;
+                        savedReader = reader;
+
+                        reader.Skip();
+                    }
                 }
                 else
                 {
@@ -36,7 +50,15 @@ namespace JsonApi.Converters.Objects
                 reader.Read();
             }
 
-            state.Release();
+            // TODO
+            // Really janky way of doing this as it means parsing over included twice in some instances
+            // This needs to be re-thought
+            if (includedReadFirst)
+            {
+                ReadIncluded(ref savedReader, ref tracked, options);
+            }
+
+            tracked.Release();
 
             documentState.Validate();
 
@@ -130,7 +152,7 @@ namespace JsonApi.Converters.Objects
 
                 if (tracked.TryGetIncluded(identifier, out var included))
                 {
-                    included.Converter.Read(ref reader, ref tracked, included.Value, options);
+                    included.Converter!.Read(ref reader, ref tracked, included.Value, options);
                 }
                 else
                 {

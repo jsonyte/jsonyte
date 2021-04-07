@@ -18,6 +18,8 @@ namespace JsonApi.Serialization
 
         public JsonConverter Converter { get; }
 
+        public IJsonValueConverter? RelationshipConverter { get; }
+
         public void Read(ref Utf8JsonReader reader, object resource)
         {
             reader.Skip();

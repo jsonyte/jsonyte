@@ -4,11 +4,11 @@
     {
         public JsonApiResourceIdentifier Identifier;
 
-        public IJsonValueConverter Converter;
+        public IJsonValueConverter? Converter;
 
         public object Value;
 
-        public IncludedValue(JsonApiResourceIdentifier identifier, IJsonValueConverter converter, object value)
+        public IncludedValue(JsonApiResourceIdentifier identifier, IJsonValueConverter? converter, object value)
         {
             Identifier = identifier;
             Converter = converter;

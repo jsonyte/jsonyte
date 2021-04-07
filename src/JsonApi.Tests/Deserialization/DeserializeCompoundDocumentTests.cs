@@ -163,6 +163,69 @@ namespace JsonApi.Tests.Deserialization
         }
 
         [Fact]
+        public void CanDeserializeRelationshipCollectionWhenIncludedIsFirst()
+        {
+            const string json = @"
+                {
+                  'included': [
+                    {
+                      'type': 'comments',
+                      'id': '5',
+                      'attributes': {
+                        'body': 'first'
+                      }
+                    },
+                    {
+                      'type': 'comments',
+                      'id': '12',
+                      'attributes': {
+                        'body': 'second'
+                      }
+                    }
+                  ],
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'comments': {
+                        'data': [
+                          {
+                            'type': 'comments',
+                            'id': '5'
+                          },
+                          {
+                            'type': 'comments',
+                            'id': '12'
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }";
+
+            var article = json.Deserialize<ArticleWithAuthor>();
+
+            Assert.NotNull(article);
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal("Jsonapi", article.Title);
+
+            Assert.NotNull(article.Comments);
+            Assert.Equal(2, article.Comments.Length);
+
+            Assert.Equal("5", article.Comments[0].Id);
+            Assert.Equal("comments", article.Comments[0].Type);
+            Assert.Equal("first", article.Comments[0].Body);
+
+            Assert.Equal("12", article.Comments[1].Id);
+            Assert.Equal("comments", article.Comments[1].Type);
+            Assert.Equal("second", article.Comments[1].Body);
+        }
+
+        [Fact]
         public void CanDeserializeRelationshipWhenIncludedComesAfter()
         {
             const string json = @"

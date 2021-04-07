@@ -45,9 +45,9 @@ namespace JsonApi.Converters.Objects
         {
             var identifier = reader.Read<JsonApiResourceIdentifier>(options);
 
-            if (tracked.TryGetIncluded(identifier, out var value))
+            if (tracked.TryGetIncluded(identifier, out var included))
             {
-                return (T) value.Value;
+                return (T) included.Value;
             }
 
             var info = options.GetClassInfo(typeToConvert);
@@ -63,7 +63,7 @@ namespace JsonApi.Converters.Objects
 
             var converter = options.GetValueConverter<T>();
 
-            tracked.AddIncluded(identifier, converter, relationship);
+            tracked.SetIncluded(identifier, converter, relationship);
 
             return (T) relationship;
         }

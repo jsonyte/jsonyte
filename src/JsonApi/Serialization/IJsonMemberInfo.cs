@@ -16,6 +16,8 @@ namespace JsonApi.Serialization
 
         JsonConverter Converter { get; }
 
+        IJsonValueConverter? RelationshipConverter { get; }
+
         void Read(ref Utf8JsonReader reader, object resource);
 
         void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource);

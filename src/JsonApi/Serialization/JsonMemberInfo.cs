@@ -7,6 +7,8 @@ namespace JsonApi.Serialization
 {
     internal abstract class JsonMemberInfo<T> : IJsonMemberInfo
     {
+        private IJsonValueConverter? relationshipConverter;
+
         protected JsonMemberInfo(MemberInfo member, Type memberType, JsonIgnoreCondition? ignoreCondition, JsonConverter converter, JsonSerializerOptions options)
         {
             Options = options;
@@ -37,6 +39,14 @@ namespace JsonApi.Serialization
         public abstract bool Ignored { get; }
 
         public JsonConverter Converter { get; }
+
+        public IJsonValueConverter RelationshipConverter
+        {
+            get
+            {
+                return relationshipConverter ??= Options.GetRelationshipValueConverter<T>();
+            }
+        }
 
         public void Read(ref Utf8JsonReader reader, object resource)
         {

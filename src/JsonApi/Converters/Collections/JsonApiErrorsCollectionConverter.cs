@@ -17,7 +17,7 @@ namespace JsonApi.Converters.Collections
             var errors = default(T);
 
             var state = reader.ReadDocument();
-            var readState = new TrackedResources();
+            var tracked = new TrackedResources();
 
             while (reader.IsInObject())
             {
@@ -25,7 +25,7 @@ namespace JsonApi.Converters.Collections
 
                 if (name == JsonApiMembers.Errors)
                 {
-                    errors = ReadWrapped(ref reader, ref readState, typeToConvert, default, options);
+                    errors = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
                 else
                 {
