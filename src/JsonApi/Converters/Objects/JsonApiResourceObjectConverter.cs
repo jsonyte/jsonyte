@@ -122,7 +122,7 @@ namespace JsonApi.Converters.Objects
 
         private void ReadIncluded(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonSerializerOptions options)
         {
-            reader.ReadArray("included");
+            reader.ReadArray(JsonApiArrayCode.Included);
 
             while (reader.IsInArray())
             {

@@ -33,7 +33,7 @@ namespace JsonApi.Converters.Collections
 
             var resources = new List<JsonApiResource>();
 
-            reader.ReadArray("resources");
+            reader.ReadArray(JsonApiArrayCode.Resources);
 
             while (reader.IsInArray())
             {

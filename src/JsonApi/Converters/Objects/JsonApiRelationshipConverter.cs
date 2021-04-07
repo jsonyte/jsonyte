@@ -132,7 +132,7 @@ namespace JsonApi.Converters.Objects
 
             var identifiers = new List<JsonApiResourceIdentifier>();
 
-            reader.ReadArray("resource identifiers");
+            reader.ReadArray(JsonApiArrayCode.ResourceIdentifiers);
 
             while (reader.IsArray())
             {

@@ -47,7 +47,7 @@ namespace JsonApi.Converters.Collections
             var errors = new List<JsonApiError>();
             var converter = options.GetWrappedConverter<JsonApiError>();
 
-            reader.ReadArray("errors");
+            reader.ReadArray(JsonApiArrayCode.Errors);
 
             while (reader.IsInArray())
             {

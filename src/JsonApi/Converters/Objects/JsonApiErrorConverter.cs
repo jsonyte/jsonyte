@@ -22,7 +22,7 @@ namespace JsonApi.Converters.Objects
 
                 if (name == JsonApiMembers.Errors)
                 {
-                    reader.ReadArray("errors");
+                    reader.ReadArray(JsonApiArrayCode.Errors);
 
                     while (reader.IsInArray())
                     {

@@ -28,11 +28,11 @@ namespace JsonApi
             return reader.TokenType != JsonTokenType.EndArray;
         }
 
-        public static void ReadArray(this ref Utf8JsonReader reader, string description)
+        public static void ReadArray(this ref Utf8JsonReader reader, JsonApiArrayCode code)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
             {
-                throw new JsonApiFormatException($"Invalid JSON:API {description} array, expected array");
+                throw new JsonApiFormatException(code);
             }
 
             reader.Read();

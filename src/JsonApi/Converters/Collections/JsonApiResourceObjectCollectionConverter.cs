@@ -50,7 +50,7 @@ namespace JsonApi.Converters.Collections
                 return default;
             }
 
-            reader.ReadArray("resources");
+            reader.ReadArray(JsonApiArrayCode.Resources);
 
             var resources = new List<TElement>();
 
@@ -73,7 +73,7 @@ namespace JsonApi.Converters.Collections
 
         private void ReadIncluded(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonSerializerOptions options)
         {
-            reader.ReadArray("included");
+            reader.ReadArray(JsonApiArrayCode.Included);
 
             while (reader.IsInArray())
             {

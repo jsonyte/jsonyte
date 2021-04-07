@@ -50,7 +50,7 @@ namespace JsonApi.Converters.Collections
                 return default;
             }
 
-            reader.ReadArray("relationships");
+            reader.ReadArray(JsonApiArrayCode.Relationships);
 
             var relationships = new List<TElement>();
 

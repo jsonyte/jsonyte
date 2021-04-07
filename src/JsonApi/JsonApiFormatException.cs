@@ -12,6 +12,11 @@
         {
         }
 
+        internal JsonApiFormatException(JsonApiArrayCode code)
+            : this(GetMessage(code))
+        {
+        }
+
         private static string GetMessage(JsonApiMemberCode code, string? value = null)
         {
             var description = code switch
@@ -29,6 +34,21 @@
             return value == null
                 ? $"Invalid JSON:API {description} object, expected JSON object"
                 : $"Expected JSON:API {description} member but found '{value}'";
+        }
+
+        private static string GetMessage(JsonApiArrayCode code)
+        {
+            var description = code switch
+            {
+                JsonApiArrayCode.Errors => "errors",
+                JsonApiArrayCode.Relationships => "relationships",
+                JsonApiArrayCode.Resources => "resources",
+                JsonApiArrayCode.Included => "included",
+                JsonApiArrayCode.ResourceIdentifiers => "resource identifiers",
+                _ => throw new JsonApiException("Invalid JSON:API array code")
+            };
+
+            return $"Invalid JSON:API {description} array, expected array";
         }
     }
 }
