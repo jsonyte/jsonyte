@@ -295,7 +295,7 @@ namespace JsonApi.Tests.Deserialization
 
             var exception = Record.Exception(() => json.Deserialize<JsonApiError[]>());
 
-            Assert.IsType<JsonApiException>(exception);
+            Assert.IsType<JsonApiFormatException>(exception);
             Assert.Contains("must not contain both 'data' and 'errors'", exception.Message);
         }
 
@@ -352,7 +352,7 @@ namespace JsonApi.Tests.Deserialization
             var exception = Record.Exception(() => json.Deserialize<JsonApiError>());
 
             Assert.NotNull(exception);
-            Assert.IsType<JsonApiException>(exception);
+            Assert.IsType<JsonApiFormatException>(exception);
         }
 
         [Fact]
@@ -366,7 +366,7 @@ namespace JsonApi.Tests.Deserialization
             var exception = Record.Exception(() => json.Deserialize<JsonApiError[]>());
 
             Assert.NotNull(exception);
-            Assert.IsType<JsonApiException>(exception);
+            Assert.IsType<JsonApiFormatException>(exception);
         }
 
         [Fact]
@@ -436,7 +436,7 @@ namespace JsonApi.Tests.Deserialization
             var exception = Record.Exception(() => json.Deserialize(documentType));
 
             Assert.NotNull(exception);
-            Assert.IsType<JsonApiException>(exception);
+            Assert.IsType<JsonApiFormatException>(exception);
         }
 
         [Theory]
@@ -491,7 +491,7 @@ namespace JsonApi.Tests.Deserialization
             var exception = Record.Exception(() => json.Deserialize<JsonApiError[]>());
 
             Assert.NotNull(exception);
-            Assert.IsType<JsonApiException>(exception);
+            Assert.IsType<JsonApiFormatException>(exception);
         }
 
         [Theory]
@@ -515,7 +515,7 @@ namespace JsonApi.Tests.Deserialization
             var exception = Record.Exception(() => json.Deserialize(documentType));
 
             Assert.NotNull(exception);
-            Assert.IsType<JsonApiException>(exception);
+            Assert.IsType<JsonApiFormatException>(exception);
         }
     }
 }

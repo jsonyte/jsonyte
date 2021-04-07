@@ -104,7 +104,7 @@ namespace JsonApi.Tests.Serialization
             var exception = Record.Exception(() => resource.Serialize());
 
             Assert.NotNull(exception);
-            Assert.IsType<JsonApiException>(exception);
+            Assert.IsType<JsonApiFormatException>(exception);
         }
 
         [Fact]

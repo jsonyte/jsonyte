@@ -181,7 +181,7 @@ namespace JsonApi.Tests.Deserialization
 
             var exception = Record.Exception(() => json.Deserialize<ModelWithIntId>());
 
-            Assert.IsType<JsonApiException>(exception);
+            Assert.IsType<JsonApiFormatException>(exception);
             Assert.Contains("id must be a string", exception.Message);
         }
 
@@ -200,7 +200,7 @@ namespace JsonApi.Tests.Deserialization
 
             var exception = Record.Exception(() => json.Deserialize<Article>());
 
-            Assert.IsType<JsonApiException>(exception);
+            Assert.IsType<JsonApiFormatException>(exception);
             Assert.Contains("must contain a 'type' member", exception.Message);
         }
 
