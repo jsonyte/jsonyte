@@ -35,7 +35,7 @@ namespace JsonApi.Serialization
             }
         }
 
-        public void SetIncluded(JsonApiResourceIdentifier identifier, IJsonValueConverter converter, object value)
+        public void SetIncluded(JsonApiResourceIdentifier identifier, IJsonObjectConverter converter, object value)
         {
             //included ??= ArrayPool<IncludedValue>.Shared.Rent(IncludedLength);
 

@@ -3,11 +3,11 @@ using JsonApi.Converters;
 
 namespace JsonApi.Serialization
 {
-    internal class JsonValueConverter<T> : IJsonValueConverter
+    internal class JsonObjectConverter<T> : IJsonObjectConverter
     {
         private readonly WrappedJsonConverter<T> converter;
 
-        public JsonValueConverter(WrappedJsonConverter<T> converter)
+        public JsonObjectConverter(WrappedJsonConverter<T> converter)
         {
             this.converter = converter;
         }

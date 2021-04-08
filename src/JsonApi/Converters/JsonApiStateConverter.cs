@@ -13,7 +13,7 @@ namespace JsonApi.Converters
 
         public ConcurrentDictionary<Type, JsonConverter> RelationshipConverters { get; } = new();
 
-        public ConcurrentDictionary<Type, IJsonValueConverter> ValueConverters { get; } = new();
+        public ConcurrentDictionary<Type, IJsonObjectConverter> ObjectConverters { get; } = new();
 
 #if NETCOREAPP || NETFRAMEWORK
         public IMemberAccessor MemberAccessor { get; } = new EmitMemberAccessor();

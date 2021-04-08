@@ -58,7 +58,7 @@ namespace JsonApi.Converters.Objects
             info.GetMember(JsonApiMembers.Id).SetValue(relationship, identifier.Id);
             info.GetMember(JsonApiMembers.Type).SetValue(relationship, identifier.Type);
 
-            var converter = options.GetValueConverter<T>();
+            var converter = options.GetObjectConverter<T>();
 
             tracked.SetIncluded(identifier, converter, relationship);
 
@@ -106,7 +106,7 @@ namespace JsonApi.Converters.Objects
 
             writer.WriteEndObject();
 
-            tracked.SetIncluded(new JsonApiResourceIdentifier(id!, type!), options.GetValueConverter<T>(), value);
+            tracked.SetIncluded(new JsonApiResourceIdentifier(id!, type!), options.GetObjectConverter<T>(), value);
         }
     }
 }

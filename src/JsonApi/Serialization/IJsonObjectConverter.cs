@@ -2,7 +2,7 @@
 
 namespace JsonApi.Serialization
 {
-    internal interface IJsonValueConverter
+    internal interface IJsonObjectConverter
     {
         void Read(ref Utf8JsonReader reader, ref TrackedResources tracked, object existingValue, JsonSerializerOptions options);
 
