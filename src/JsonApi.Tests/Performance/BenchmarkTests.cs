@@ -34,11 +34,6 @@ namespace JsonApi.Tests.Performance
 
         private ArticleWithAuthor[] articles;
 
-        public BenchmarkTests(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
         [GlobalSetup]
         public void Setup()
         {
@@ -53,7 +48,7 @@ namespace JsonApi.Tests.Performance
                 Attributes = simpleModel
             };
 
-            articles = AutoFaker.Generate<ArticleWithAuthor[]>(x => x.WithRepeatCount(50));
+            articles = AutoFaker.Generate<ArticleWithAuthor[]>(x => x.WithRepeatCount(20));
 
             var author = new Author
             {
@@ -116,10 +111,9 @@ namespace JsonApi.Tests.Performance
 
             watch.Stop();
 
-            output.WriteLine($"{name}: {watch.ElapsedMilliseconds}ms");
+            //output.WriteLine($"{name}: {watch.ElapsedMilliseconds}ms");
         }
 
-        [Fact]
         [Benchmark]
         public string SerializeSimpleObject()
         {
