@@ -1,4 +1,5 @@
-﻿using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Running;
 using JsonApi.Tests.Performance;
 
 namespace JsonApi.Benchmarks
@@ -7,7 +8,13 @@ namespace JsonApi.Benchmarks
     {
         public static void Main(string[] args)
         {
-            BenchmarkRunner.Run(typeof(BenchmarkTests));
+#if DEBUG
+            var config = new DebugBuildConfig();
+#else
+            var config = DefaultConfig.Instance;
+#endif
+
+            BenchmarkRunner.Run<SerializeDeserializeBenchmarks>(config);
         }
     }
 }
