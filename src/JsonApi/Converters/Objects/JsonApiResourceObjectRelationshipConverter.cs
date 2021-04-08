@@ -6,14 +6,14 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiResourceObjectRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<T>
     {
-        public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override RelationshipResource<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }
 
-        public override T? Read(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonSerializerOptions options)
+        public override RelationshipResource<T> Read(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonSerializerOptions options)
         {
-            var relationship = default(T);
+            var relationship = default(RelationshipResource<T>);
 
             var relationshipState = reader.ReadRelationship();
 
@@ -38,13 +38,13 @@ namespace JsonApi.Converters.Objects
             return relationship;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
+        public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, RelationshipResource<T> existingValue, JsonSerializerOptions options)
         {
             var identifier = reader.Read<JsonApiResourceIdentifier>(options);
 
             if (tracked.TryGetIncluded(identifier, out var included))
             {
-                return (T) included.Value;
+                return new RelationshipResource<T>((T) included.Value);
             }
 
             var info = options.GetTypeInfo(typeToConvert);
@@ -62,15 +62,15 @@ namespace JsonApi.Converters.Objects
 
             tracked.SetIncluded(identifier, converter, relationship);
 
-            return (T) relationship;
+            return new RelationshipResource<T>((T) relationship);
         }
 
-        public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, RelationshipResource<T> value, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }
 
-        public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, RelationshipResource<T> value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
             writer.WritePropertyName(JsonApiMembers.Data);
@@ -80,9 +80,9 @@ namespace JsonApi.Converters.Objects
             writer.WriteEndObject();
         }
 
-        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, RelationshipResource<T> value, JsonSerializerOptions options)
         {
-            if (value == null)
+            if (value.Resource == null)
             {
                 writer.WriteNullValue();
 
@@ -91,8 +91,8 @@ namespace JsonApi.Converters.Objects
 
             var info = options.GetTypeInfo(typeof(T));
 
-            var id = info.GetMember(JsonApiMembers.Id).GetValue(value) as string;
-            var type = info.GetMember(JsonApiMembers.Type).GetValue(value) as string;
+            var id = info.GetMember(JsonApiMembers.Id).GetValue(value.Resource) as string;
+            var type = info.GetMember(JsonApiMembers.Type).GetValue(value.Resource) as string;
 
             if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
             {
@@ -106,7 +106,7 @@ namespace JsonApi.Converters.Objects
 
             writer.WriteEndObject();
 
-            tracked.SetIncluded(new JsonApiResourceIdentifier(id!, type!), options.GetObjectConverter<T>(), value);
+            tracked.SetIncluded(new JsonApiResourceIdentifier(id!, type!), options.GetObjectConverter<T>(), value.Resource);
         }
     }
 }

@@ -73,6 +73,11 @@ namespace JsonApi.Converters
                 return true;
             }
 
+            if (typeToConvert.IsRelationshipResource())
+            {
+                return true;
+            }
+
             if (typeToConvert.IsCollection())
             {
                 var elementType = typeToConvert.GetCollectionElementType();
@@ -98,9 +103,27 @@ namespace JsonApi.Converters
                 return CreateConverter(typeof(JsonApiDocumentDataConverter<>), typeToConvert.GenericTypeArguments.First());
             }
 
-            if (typeToConvert.IsRelationship())
+            //if (typeToConvert.IsRelationship())
+            //{
+            //    return CreateConverter(typeof(JsonApiRelationshipConverter<>), typeToConvert.GenericTypeArguments.First());
+            //}
+
+            if (typeToConvert.IsRelationshipResource())
             {
-                return CreateConverter(typeof(JsonApiRelationshipConverter<>), typeToConvert.GenericTypeArguments.First());
+                var relationshipType = typeToConvert.GenericTypeArguments.First();
+
+                if (relationshipType.IsCollection())
+                {
+                    var elementType = relationshipType.GetCollectionElementType();
+
+                    var converterType = typeof(JsonApiRelationshipCollectionConverter<,>).MakeGenericType(relationshipType, elementType);
+
+                    return (JsonConverter) Activator.CreateInstance(converterType);
+                }
+
+                var type = typeof(JsonApiResourceObjectRelationshipConverter<>).MakeGenericType(relationshipType);
+
+                return (JsonConverter) Activator.CreateInstance(type);
             }
 
             if (typeToConvert.IsCollection())
@@ -114,22 +137,6 @@ namespace JsonApi.Converters
             }
 
             return null;
-        }
-
-        public static JsonConverter GetRelationshipConverter(Type relationshipType)
-        {
-            if (relationshipType.IsCollection())
-            {
-                var elementType = relationshipType.GetCollectionElementType();
-
-                var converterType = typeof(JsonApiRelationshipCollectionConverter<,>).MakeGenericType(relationshipType, elementType);
-
-                return (JsonConverter) Activator.CreateInstance(converterType);
-            }
-
-            var converter = typeof(JsonApiResourceObjectRelationshipConverter<>).MakeGenericType(relationshipType);
-
-            return (JsonConverter) Activator.CreateInstance(converter);
         }
 
         protected JsonConverter? CreateConverter(Type converterType, params Type[] typesToConvert)

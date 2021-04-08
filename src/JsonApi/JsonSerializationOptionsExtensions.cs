@@ -67,9 +67,14 @@ namespace JsonApi
 
         internal static JsonApiRelationshipDetailsConverter<T> GetRelationshipConverter<T>(this JsonSerializerOptions options)
         {
-            var converters = GetState(options).RelationshipConverters;
+            var converter = options.GetConverter(typeof(RelationshipResource<T>));
 
-            return (JsonApiRelationshipDetailsConverter<T>) converters.GetOrAdd(typeof(T), JsonApiConverterFactory.GetRelationshipConverter);
+            if (converter is not JsonApiRelationshipDetailsConverter<T> jsonApiConverter)
+            {
+                throw new JsonApiException($"Converter not found for type {typeof(T)}");
+            }
+
+            return jsonApiConverter;
         }
 
         internal static IJsonObjectConverter GetObjectConverter<T>(this JsonSerializerOptions options)

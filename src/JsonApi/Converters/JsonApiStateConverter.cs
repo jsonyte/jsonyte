@@ -11,8 +11,6 @@ namespace JsonApi.Converters
     {
         public ConcurrentDictionary<Type, JsonTypeInfo> Types { get; } = new();
 
-        public ConcurrentDictionary<Type, JsonConverter> RelationshipConverters { get; } = new();
-
         public ConcurrentDictionary<Type, IJsonObjectConverter> ObjectConverters { get; } = new();
 
 #if NETCOREAPP || NETFRAMEWORK

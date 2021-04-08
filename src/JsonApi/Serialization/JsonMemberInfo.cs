@@ -98,12 +98,12 @@ namespace JsonApi.Serialization
 
             var value = RelationshipConverter.Read(ref reader, ref tracked, MemberType, Options);
 
-            if (Options.IgnoreNullValues && value == null)
+            if (Options.IgnoreNullValues && value.Resource == null)
             {
                 return;
             }
 
-            Set(resource, value!);
+            Set(resource, value.Resource!);
         }
 
         public object? Read(ref Utf8JsonReader reader)
@@ -174,7 +174,7 @@ namespace JsonApi.Serialization
                 }
 
                 writer.WritePropertyName(Name);
-                RelationshipConverter.Write(writer, ref tracked, value, Options);
+                RelationshipConverter.Write(writer, ref tracked, new RelationshipResource<T>(value), Options);
             }
         }
 

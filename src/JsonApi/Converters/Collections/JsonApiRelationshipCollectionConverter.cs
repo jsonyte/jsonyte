@@ -11,14 +11,14 @@ namespace JsonApi.Converters.Collections
 
         public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
 
-        public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override RelationshipResource<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }
 
-        public override T? Read(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonSerializerOptions options)
+        public override RelationshipResource<T> Read(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonSerializerOptions options)
         {
-            var relationships = default(T);
+            var relationships = default(RelationshipResource<T>);
 
             var relationshipState = reader.ReadRelationship();
 
@@ -43,7 +43,7 @@ namespace JsonApi.Converters.Collections
             return relationships;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
+        public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, RelationshipResource<T> existingValue, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
@@ -58,25 +58,25 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var resource = converter.ReadWrapped(ref reader, ref tracked, ElementType!, default, options);
+                var value = converter.ReadWrapped(ref reader, ref tracked, ElementType!, default, options);
 
-                if (resource != null)
+                if (value.Resource != null)
                 {
-                    relationships.Add(resource);
+                    relationships.Add(value.Resource);
                 }
 
                 reader.Read();
             }
 
-            return (T) GetCollection(relationships);
+            return new RelationshipResource<T>((T) GetCollection(relationships));
         }
 
-        public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, RelationshipResource<T> value, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }
 
-        public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, RelationshipResource<T> value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
             writer.WritePropertyName(JsonApiMembers.Data);
@@ -86,13 +86,13 @@ namespace JsonApi.Converters.Collections
             writer.WriteEndObject();
         }
 
-        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, RelationshipResource<T> value, JsonSerializerOptions options)
         {
-            if (value == null)
+            if (value.Resource == null)
             {
                 writer.WriteNullValue();
             }
-            else if (value is IEnumerable<TElement> collection)
+            else if (value.Resource is IEnumerable<TElement> collection)
             {
                 var converter = options.GetRelationshipConverter<TElement>();
 
@@ -100,7 +100,9 @@ namespace JsonApi.Converters.Collections
 
                 foreach (var element in collection)
                 {
-                    converter.WriteWrapped(writer, ref tracked, element, options);
+                    var resource = new RelationshipResource<TElement>(element);
+
+                    converter.WriteWrapped(writer, ref tracked, resource, options);
                 }
 
                 writer.WriteEndArray();
