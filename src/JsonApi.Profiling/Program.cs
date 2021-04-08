@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text.Json;
 using AutoBogus;
 using Bogus;
@@ -16,10 +17,15 @@ namespace JsonApi.Profiling
 
             var model = AutoFaker.Generate<ManyTypesModel>();
 
+            var watch = Stopwatch.StartNew();
+
             for (var i = 0; i < 1000000; i++)
             {
                 JsonSerializer.Serialize(model, options);
             }
+
+            watch.Stop();
+            Console.WriteLine(watch.ElapsedMilliseconds);
         }
     }
 }
