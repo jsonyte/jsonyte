@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using BenchmarkDotNet.Analysers;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Running;
@@ -19,7 +18,7 @@ namespace JsonApi.Tests.Performance
             this.testOutput = testOutput;
         }
 
-        [Fact]
+        [Fact(Skip = "Benchmark tests")]
         public void RunBenchmarks()
         {
             var logger = new XunitBenchmarkLogger(testOutput);
