@@ -232,27 +232,33 @@ namespace JsonApi.Tests.Serialization
 
             var model = new[]
             {
-                new ArticleWithAuthor
+                new ArticleWithAuthorAndLinks
                 {
                     Id = "1",
                     Type = "articles",
                     Title = "JSON:API paints my bikeshed!",
-                    Author = author,
-                    Comments = new[]
+                    Author = new JsonApiRelationship<Author>
                     {
-                        new Comment
+                        Data = author
+                    },
+                    Comments = new JsonApiRelationship<Comment[]>
+                    {
+                        Data = new[]
                         {
-                            Id = "5",
-                            Type = "comments",
-                            Body = "First!",
-                            Author = author
-                        },
-                        new Comment
-                        {
-                            Id = "12",
-                            Type = "comments",
-                            Body = "I like XML better",
-                            Author = author
+                            new Comment
+                            {
+                                Id = "5",
+                                Type = "comments",
+                                Body = "First!",
+                                Author = author
+                            },
+                            new Comment
+                            {
+                                Id = "12",
+                                Type = "comments",
+                                Body = "I like XML better",
+                                Author = author
+                            }
                         }
                     }
                 }
@@ -309,7 +315,7 @@ namespace JsonApi.Tests.Serialization
                     },
                     'relationships': {
                       'author': {
-                        'data': { 'type': 'people', 'id': '2' }
+                        'data': { 'type': 'people', 'id': '9' }
                       }
                     },
                     'links': {

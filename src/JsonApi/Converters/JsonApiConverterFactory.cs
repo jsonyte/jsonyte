@@ -127,7 +127,7 @@ namespace JsonApi.Converters
                 return (JsonConverter) Activator.CreateInstance(converterType);
             }
 
-            var converter = typeof(JsonApiRelationshipConverter<>).MakeGenericType(relationshipType);
+            var converter = typeof(JsonApiResourceObjectRelationshipConverter<>).MakeGenericType(relationshipType);
 
             return (JsonConverter) Activator.CreateInstance(converter);
         }
