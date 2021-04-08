@@ -19,8 +19,6 @@ namespace JsonApi.Serialization
 
         private readonly Dictionary<string, IJsonParameterInfo> parameterCache;
 
-        private readonly string[] keys;
-
         public JsonTypeInfo(Type type, JsonSerializerOptions options)
         {
             var constructor = GetConstructor(type);
@@ -37,7 +35,20 @@ namespace JsonApi.Serialization
             nameCache = GetNameCache(members);
             parameterCache = GetParameters(constructor, memberCache, options);
 
-            keys = memberCache.Keys.ToArray();
+            AttributeMembers = members
+                .Where(x => !x.IsRelationship)
+                .Where(x => !x.Name.Equals(JsonApiMembers.Id, StringComparison.OrdinalIgnoreCase) &&
+                            !x.Name.Equals(JsonApiMembers.Type, StringComparison.OrdinalIgnoreCase) &&
+                            !x.Name.Equals(JsonApiMembers.Meta, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            RelationshipMembers = members
+                .Where(x => x.IsRelationship)
+                .ToArray();
+
+            IdMember = GetMember(JsonApiMembers.Id);
+            TypeMember = GetMember(JsonApiMembers.Type);
+            MetaMember = GetMember(JsonApiMembers.Meta);
         }
 
         public Func<object?> Creator { get; }
@@ -48,7 +59,15 @@ namespace JsonApi.Serialization
 
         public int MemberCount => nameCache.Count;
 
-        public IEnumerable<IJsonMemberInfo> Members => nameCache.Values;
+        public IJsonMemberInfo[] AttributeMembers { get; }
+
+        public IJsonMemberInfo[] RelationshipMembers { get; }
+
+        public IJsonMemberInfo IdMember { get; }
+
+        public IJsonMemberInfo TypeMember { get; }
+
+        public IJsonMemberInfo MetaMember { get; }
 
         public IJsonMemberInfo GetMember(string? name)
         {
@@ -72,11 +91,6 @@ namespace JsonApi.Serialization
             parameterCache.TryGetValue(name, out var parameter);
 
             return parameter;
-        }
-
-        public string[] GetMemberKeys()
-        {
-            return keys;
         }
 
         private Dictionary<string, IJsonMemberInfo> GetMemberCache(IJsonMemberInfo[] members, JsonSerializerOptions options)

@@ -28,5 +28,15 @@ namespace JsonApi.Converters
         {
             throw new NotSupportedException();
         }
+
+        public JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
+        {
+            if (!Types.TryGetValue(type, out var value))
+            {
+                return Types.GetOrAdd(type, x => new JsonTypeInfo(x, options));
+            }
+
+            return value;
+        }
     }
 }

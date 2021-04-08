@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using JsonApi.Converters;
 using JsonApi.Serialization;
@@ -8,26 +9,31 @@ namespace JsonApi
 {
     internal static class Utf8JsonReaderExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsObject(this ref Utf8JsonReader reader)
         {
             return reader.TokenType == JsonTokenType.StartObject;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsInObject(this ref Utf8JsonReader reader)
         {
             return reader.TokenType != JsonTokenType.EndObject;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsArray(this ref Utf8JsonReader reader)
         {
             return reader.TokenType == JsonTokenType.StartArray;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsInArray(this ref Utf8JsonReader reader)
         {
             return reader.TokenType != JsonTokenType.EndArray;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReadArray(this ref Utf8JsonReader reader, JsonApiArrayCode code)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
@@ -38,6 +44,7 @@ namespace JsonApi
             reader.Read();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DocumentState ReadDocument(this ref Utf8JsonReader reader)
         {
             reader.ReadObject(JsonApiMemberCode.Document);
@@ -45,6 +52,7 @@ namespace JsonApi
             return new DocumentState();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ResourceState ReadResource(this ref Utf8JsonReader reader)
         {
             reader.ReadObject(JsonApiMemberCode.Resource);
@@ -52,6 +60,7 @@ namespace JsonApi
             return new ResourceState();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RelationshipState ReadRelationship(this ref Utf8JsonReader reader)
         {
             reader.ReadObject(JsonApiMemberCode.Relationship);
@@ -59,6 +68,7 @@ namespace JsonApi
             return new RelationshipState();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReadObject(this ref Utf8JsonReader reader, JsonApiMemberCode code)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
@@ -69,6 +79,7 @@ namespace JsonApi
             reader.Read();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string? ReadMember(this ref Utf8JsonReader reader, ref DocumentState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.TopLevel);
@@ -78,6 +89,7 @@ namespace JsonApi
             return name;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string? ReadMember(this ref Utf8JsonReader reader, ref ResourceState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Resource);
@@ -87,6 +99,7 @@ namespace JsonApi
             return name;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string? ReadMember(this ref Utf8JsonReader reader, ref RelationshipState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Relationship);
@@ -96,6 +109,7 @@ namespace JsonApi
             return name;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string? ReadMember(this ref Utf8JsonReader reader, JsonApiMemberCode code)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
@@ -109,6 +123,7 @@ namespace JsonApi
             return name;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? Read<T>(this ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
             if (options.GetConverter(typeof(T)) is not JsonConverter<T> converter)
@@ -119,6 +134,7 @@ namespace JsonApi
             return converter.Read(ref reader, typeof(T), options);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? ReadWrapped<T>(this ref Utf8JsonReader reader, ref TrackedResources tracked, JsonSerializerOptions options)
         {
             if (options.GetConverter(typeof(T)) is not WrappedJsonConverter<T> converter)

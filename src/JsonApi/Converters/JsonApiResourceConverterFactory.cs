@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using JsonApi.Converters.Collections;
 using JsonApi.Converters.Objects;
+using JsonApi.Serialization;
 
 namespace JsonApi.Converters
 {
@@ -48,11 +49,35 @@ namespace JsonApi.Converters
 
             var info = options.GetTypeInfo(typeToConvert);
 
+            ValidateResource(info);
+
             var converterType = info.ParameterCount == 0
                 ? typeof(JsonApiResourceObjectConverter<>)
                 : typeof(JsonApiResourceObjectConstructorConverter<>);
 
-            return CreateConverter(converterType, typeToConvert);
+            return CreateConverter(converterType, info, typeToConvert);
+        }
+
+        private void ValidateResource(JsonTypeInfo info)
+        {
+            var idProperty = info.GetMember(JsonApiMembers.Id);
+
+            if (!string.IsNullOrEmpty(idProperty.Name) && idProperty.MemberType != typeof(string))
+            {
+                throw new JsonApiFormatException("JSON:API resource id must be a string");
+            }
+
+            var typeProperty = info.GetMember(JsonApiMembers.Type);
+
+            if (string.IsNullOrEmpty(typeProperty.Name))
+            {
+                throw new JsonApiFormatException("JSON:API resource must have a 'type' member");
+            }
+
+            if (typeProperty.MemberType != typeof(string))
+            {
+                throw new JsonApiFormatException("JSON:API resource type must be a string");
+            }
         }
     }
 }

@@ -84,7 +84,7 @@ namespace JsonApi
 
         internal static JsonTypeInfo GetTypeInfo(this JsonSerializerOptions options, Type type)
         {
-            return GetState(options).Types.GetOrAdd(type, x => new JsonTypeInfo(x, options));
+            return GetState(options).GetTypeInfo(type, options);
         }
 
         internal static IMemberAccessor GetMemberAccessor(this JsonSerializerOptions options)

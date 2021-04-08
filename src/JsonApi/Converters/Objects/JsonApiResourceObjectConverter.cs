@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.Json;
 using JsonApi.Serialization;
 using JsonApi.Validation;
@@ -7,7 +8,12 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiResourceObjectConverter<T> : WrappedJsonConverter<T>
     {
-        public Type TypeToConvert { get; } = typeof(T);
+        private readonly JsonTypeInfo info;
+
+        public JsonApiResourceObjectConverter(JsonTypeInfo info)
+        {
+            this.info = info;
+        }
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -73,10 +79,7 @@ namespace JsonApi.Converters.Objects
 
             var resourceState = reader.ReadResource();
 
-            var info = options.GetTypeInfo(typeToConvert);
             var resource = existingValue ?? info.Creator();
-
-            ValidateResource(info);
 
             if (resource == null)
             {
@@ -112,7 +115,7 @@ namespace JsonApi.Converters.Objects
                 }
                 else if (name == JsonApiMembers.Relationships)
                 {
-                    ReadRelationships(ref reader, ref tracked, resource, info);
+                    ReadRelationships(ref reader, ref tracked, resource);
                 }
                 else
                 {
@@ -127,7 +130,7 @@ namespace JsonApi.Converters.Objects
             return (T) resource;
         }
 
-        private void ReadRelationships(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource, JsonTypeInfo info)
+        private void ReadRelationships(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)
         {
             reader.ReadObject(JsonApiMemberCode.Relationship);
 
@@ -168,12 +171,12 @@ namespace JsonApi.Converters.Objects
 
             writer.WriteStartObject();
 
-            writer.WritePropertyName(JsonApiMembers.Data);
+            writer.WritePropertyName(JsonApiMembers.DataEncoded);
             WriteWrapped(writer, ref tracked, value, options);
             
             if (tracked.Count > 0)
             {
-                writer.WritePropertyName(JsonApiMembers.Included);
+                writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
                 writer.WriteStartArray();
 
                 while (tracked.Identifiers.Count > 0)
@@ -209,83 +212,42 @@ namespace JsonApi.Converters.Objects
                 return;
             }
 
-            var info = options.GetTypeInfo(TypeToConvert);
-
-            ValidateResource(info);
-
-            var attributesWritten = false;
-            var relationshipsWritten = false;
-
             writer.WriteStartObject();
 
-            info.GetMember(JsonApiMembers.Id).Write(writer, ref tracked, value);
-            info.GetMember(JsonApiMembers.Type).Write(writer, ref tracked, value);
+            info.IdMember.Write(writer, ref tracked, value);
+            info.TypeMember.Write(writer, ref tracked, value);
 
-            foreach (var key in info.GetMemberKeys())
+            if (info.AttributeMembers.Any())
             {
-                if (key == JsonApiMembers.Id || key == JsonApiMembers.Type || key == JsonApiMembers.Meta)
+                writer.WritePropertyName(JsonApiMembers.AttributesEncoded);
+                writer.WriteStartObject();
+
+                foreach (var member in info.AttributeMembers)
                 {
-                    continue;
+                    member.Write(writer, ref tracked, value);
                 }
 
-                var member = info.GetMember(key);
-
-                if (member.IsRelationship)
-                {
-                    continue;
-                }
-
-                if (!attributesWritten)
-                {
-                    writer.WritePropertyName(JsonApiMembers.Attributes);
-                    writer.WriteStartObject();
-
-                    attributesWritten = true;
-                }
-
-                member.Write(writer, ref tracked, value);
-            }
-
-            if (attributesWritten)
-            {
                 writer.WriteEndObject();
             }
 
-            foreach (var member in info.Members)
+            if (info.RelationshipMembers.Any())
             {
-                member.WriteRelationship(writer, ref tracked, value, ref relationshipsWritten);
+                var relationshipsWritten = false;
+
+                foreach (var member in info.RelationshipMembers)
+                {
+                    member.WriteRelationship(writer, ref tracked, value, ref relationshipsWritten);
+                }
+
+                if (relationshipsWritten)
+                {
+                    writer.WriteEndObject();
+                }
             }
 
-            if (relationshipsWritten)
-            {
-                writer.WriteEndObject();
-            }
-
-            info.GetMember(JsonApiMembers.Meta).Write(writer, ref tracked, value);
+            info.MetaMember.Write(writer, ref tracked, value);
 
             writer.WriteEndObject();
-        }
-
-        protected void ValidateResource(JsonTypeInfo info)
-        {
-            var idProperty = info.GetMember(JsonApiMembers.Id);
-
-            if (!string.IsNullOrEmpty(idProperty.Name) && idProperty.MemberType != typeof(string))
-            {
-                throw new JsonApiFormatException("JSON:API resource id must be a string");
-            }
-
-            var typeProperty = info.GetMember(JsonApiMembers.Type);
-
-            if (string.IsNullOrEmpty(typeProperty.Name))
-            {
-                throw new JsonApiFormatException("JSON:API resource must have a 'type' member");
-            }
-
-            if (typeProperty.MemberType != typeof(string))
-            {
-                throw new JsonApiFormatException("JSON:API resource type must be a string");
-            }
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using JsonApi.Converters.Collections;
 using JsonApi.Converters.Objects;
+using JsonApi.Serialization;
 
 namespace JsonApi.Converters
 {
@@ -40,16 +41,6 @@ namespace JsonApi.Converters
             {typeof(JsonApiError[]), new JsonApiErrorsCollectionConverter<JsonApiError[]>()},
             {typeof(List<JsonApiError>), new JsonApiErrorsCollectionConverter<List<JsonApiError>>()}
         };
-
-        protected bool IsIgnoredType(Type typeToConvert)
-        {
-            if (typeToConvert.IsPrimitive)
-            {
-                return true;
-            }
-
-            return IgnoredTypes.Contains(typeToConvert);
-        }
 
         public override bool CanConvert(Type typeToConvert)
         {
@@ -116,14 +107,13 @@ namespace JsonApi.Converters
                 {
                     var elementType = relationshipType.GetCollectionElementType();
 
-                    var converterType = typeof(JsonApiRelationshipCollectionConverter<,>).MakeGenericType(relationshipType, elementType);
-
-                    return (JsonConverter) Activator.CreateInstance(converterType);
+                    if (elementType != null)
+                    {
+                        return CreateConverter(typeof(JsonApiRelationshipCollectionConverter<,>), relationshipType, elementType);
+                    }
                 }
 
-                var type = typeof(JsonApiResourceObjectRelationshipConverter<>).MakeGenericType(relationshipType);
-
-                return (JsonConverter) Activator.CreateInstance(type);
+                return CreateConverter(typeof(JsonApiResourceObjectRelationshipConverter<>), relationshipType);
             }
 
             if (typeToConvert.IsCollection())
@@ -134,9 +124,30 @@ namespace JsonApi.Converters
                 {
                     return CreateConverter(typeof(JsonApiErrorsCollectionConverter<>), typeToConvert);
                 }
+
+                if (elementType != null)
+                {
+                    var collectionTypeInfo = options.GetTypeInfo(elementType);
+
+                    var collectionConverterType = collectionTypeInfo.ParameterCount == 0
+                        ? typeof(JsonApiResourceObjectCollectionConverter<,>)
+                        : typeof(JsonApiResourceObjectCollectionConstructorConverter<,>);
+
+                    return CreateConverter(collectionConverterType, typeToConvert, elementType);
+                }
             }
 
             return null;
+        }
+
+        protected bool IsIgnoredType(Type typeToConvert)
+        {
+            if (typeToConvert.IsPrimitive)
+            {
+                return true;
+            }
+
+            return IgnoredTypes.Contains(typeToConvert);
         }
 
         protected JsonConverter? CreateConverter(Type converterType, params Type[] typesToConvert)
@@ -144,6 +155,13 @@ namespace JsonApi.Converters
             var genericType = converterType.MakeGenericType(typesToConvert);
 
             return Activator.CreateInstance(genericType) as JsonConverter;
+        }
+
+        protected JsonConverter? CreateConverter(Type converterType, JsonTypeInfo info, params Type[] typesToConvert)
+        {
+            var genericType = converterType.MakeGenericType(typesToConvert);
+
+            return Activator.CreateInstance(genericType, info) as JsonConverter;
         }
     }
 }

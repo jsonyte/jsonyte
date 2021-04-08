@@ -7,6 +7,11 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiResourceObjectConstructorConverter<T> : JsonApiResourceObjectConverter<T>
     {
+        public JsonApiResourceObjectConstructorConverter(JsonTypeInfo type)
+            : base(type)
+        {
+        }
+
         public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
@@ -17,8 +22,6 @@ namespace JsonApi.Converters.Objects
             var resourceState = reader.ReadResource();
 
             var info = options.GetTypeInfo(typeToConvert);
-
-            ValidateResource(info);
 
             var parameters = ArrayPool<object>.Shared.Rent(info.ParameterCount);
             var properties = ArrayPool<(IJsonMemberInfo Member, object? Value)>.Shared.Rent(info.MemberCount);

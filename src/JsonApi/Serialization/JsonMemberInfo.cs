@@ -18,6 +18,7 @@ namespace JsonApi.Serialization
             WrappedConverter = converter as WrappedJsonConverter<T>;
             IgnoreCondition = ignoreCondition;
             Name = GetName(member);
+            NameEncoded = JsonEncodedText.Encode(Name);
             MemberName = member.Name;
             MemberType = memberType;
             IsRelationship = memberType.IsResourceIdentifier() || memberType.IsResourceIdentifierCollection();
@@ -44,6 +45,8 @@ namespace JsonApi.Serialization
         public abstract Action<object, T>? Set { get; }
         
         public string Name { get; }
+
+        public JsonEncodedText NameEncoded { get; }
 
         public string MemberName { get; }
 
@@ -137,7 +140,7 @@ namespace JsonApi.Serialization
                 return;
             }
 
-            writer.WritePropertyName(Name);
+            writer.WritePropertyName(NameEncoded);
 
             if (WrappedConverter != null)
             {
@@ -167,13 +170,13 @@ namespace JsonApi.Serialization
             {
                 if (!wroteSection)
                 {
-                    writer.WritePropertyName(JsonApiMembers.Relationships);
+                    writer.WritePropertyName(JsonApiMembers.RelationshipsEncoded);
                     writer.WriteStartObject();
 
                     wroteSection = true;
                 }
 
-                writer.WritePropertyName(Name);
+                writer.WritePropertyName(NameEncoded);
                 RelationshipConverter.Write(writer, ref tracked, new RelationshipResource<T>(value), Options);
             }
         }

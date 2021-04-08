@@ -93,9 +93,9 @@ namespace JsonApi.Tests.Performance
             RunBenchmark(() => SerializeSimpleObject(), nameof(SerializeSimpleObject));
             RunBenchmark(() => SerializeSimpleObjectRaw(), nameof(SerializeSimpleObjectRaw));
             RunBenchmark(() => SerializeSimpleObjectWithNewtonsoft(), nameof(SerializeSimpleObjectWithNewtonsoft));
-            RunBenchmark(() => SerializeBaselineObject(), nameof(SerializeBaselineObject));
-            RunBenchmark(() => SerializeBaselineObjectRaw(), nameof(SerializeBaselineObjectRaw));
-            RunBenchmark(() => SerializeBaselineObjectWithNewtonsoft(), nameof(SerializeBaselineObjectWithNewtonsoft));
+            //RunBenchmark(() => SerializeBaselineObject(), nameof(SerializeBaselineObject));
+            //RunBenchmark(() => SerializeBaselineObjectRaw(), nameof(SerializeBaselineObjectRaw));
+            //RunBenchmark(() => SerializeBaselineObjectWithNewtonsoft(), nameof(SerializeBaselineObjectWithNewtonsoft));
             //RunBenchmark(() => SerializeLargeCompoundCollection(), nameof(SerializeLargeCompoundCollection));
             //RunBenchmark(() => SerializeLargeCompoundCollectionWithNewtonsoft(), nameof(SerializeLargeCompoundCollectionWithNewtonsoft));
         }
@@ -132,35 +132,35 @@ namespace JsonApi.Tests.Performance
             return JsonConvert.SerializeObject(simpleModel, settings);
         }
 
-        [Benchmark]
-        public string SerializeBaselineObject()
-        {
-            return JsonSerializer.Serialize(baselineModel, options);
-        }
+        //[Benchmark]
+        //public string SerializeBaselineObject()
+        //{
+        //    return JsonSerializer.Serialize(baselineModel, options);
+        //}
 
-        [Benchmark]
-        public string SerializeBaselineObjectRaw()
-        {
-            return JsonSerializer.Serialize(baselineModel);
-        }
+        //[Benchmark]
+        //public string SerializeBaselineObjectRaw()
+        //{
+        //    return JsonSerializer.Serialize(baselineModel);
+        //}
 
-        [Benchmark]
-        public string SerializeBaselineObjectWithNewtonsoft()
-        {
-            return JsonConvert.SerializeObject(baselineModel, settings);
-        }
+        //[Benchmark]
+        //public string SerializeBaselineObjectWithNewtonsoft()
+        //{
+        //    return JsonConvert.SerializeObject(baselineModel, settings);
+        //}
 
-        [Benchmark]
-        public string SerializeLargeCompoundCollection()
-        {
-            return JsonSerializer.Serialize(articles, options);
-        }
+        //[Benchmark]
+        //public string SerializeLargeCompoundCollection()
+        //{
+        //    return JsonSerializer.Serialize(articles, options);
+        //}
 
-        [Benchmark]
-        public string SerializeLargeCompoundCollectionWithNewtonsoft()
-        {
-            return JsonConvert.SerializeObject(articles, settings);
-        }
+        //[Benchmark]
+        //public string SerializeLargeCompoundCollectionWithNewtonsoft()
+        //{
+        //    return JsonConvert.SerializeObject(articles, settings);
+        //}
 
         //[Benchmark]
         //public string DeserializeSimpleObject()
