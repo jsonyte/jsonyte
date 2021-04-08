@@ -102,8 +102,10 @@ namespace JsonApi.Converters.Collections
                 writer.WritePropertyName(JsonApiMembers.Included);
                 writer.WriteStartArray();
 
-                foreach (var identifier in tracked.Identifiers)
+                while (tracked.Identifiers.Count > 0)
                 {
+                    var identifier = tracked.Identifiers.Dequeue();
+
                     if (tracked.TryGetIncluded(identifier, out var included))
                     {
                         included.Converter.Write(writer, ref tracked, included.Value, options);

@@ -17,23 +17,7 @@ namespace JsonApi.Serialization
 
         public int Count => included?.Count ?? 0;
 
-        public Queue<JsonApiResourceIdentifier> Identifiers
-        {
-            get
-            {
-                if (stack == null)
-                {
-                    stack = new Queue<JsonApiResourceIdentifier>(Count);
-
-                    foreach (var key in included!.Keys)
-                    {
-                        stack.Enqueue(key);
-                    }
-                }
-
-                return stack;
-            }
-        }
+        public Queue<JsonApiResourceIdentifier> Identifiers => stack;
 
         public void SetIncluded(JsonApiResourceIdentifier identifier, IJsonObjectConverter converter, object value)
         {
@@ -53,6 +37,7 @@ namespace JsonApi.Serialization
             //included[includedIndex++] = new IncludedValue(identifier, converter, value);
 
             included ??= new Dictionary<JsonApiResourceIdentifier, IncludedValue>();
+            stack ??= new Queue<JsonApiResourceIdentifier>();
 
             if (!included.ContainsKey(identifier))
             {
@@ -86,6 +71,7 @@ namespace JsonApi.Serialization
             //return false;
 
             included ??= new Dictionary<JsonApiResourceIdentifier, IncludedValue>();
+            stack ??= new Queue<JsonApiResourceIdentifier>();
 
             return included.TryGetValue(identifier, out value);
         }
