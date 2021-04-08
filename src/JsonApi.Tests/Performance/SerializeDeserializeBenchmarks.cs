@@ -12,36 +12,34 @@ namespace JsonApi.Tests.Performance
 {
     public class SerializeDeserializeBenchmarks
     {
-        private readonly JsonSerializerOptions options = new()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
+        private JsonSerializerOptions options;
 
-        private readonly JsonApiSerializerSettings settings = new();
+        private JsonSerializerOptions rawOptions;
 
-        public ManyTypesModel simpleModel;
+        private JsonApiSerializerSettings settings;
 
-        private Data<ManyTypesModel> simpleModelRaw;
+        private Data<ManyTypesModel> simpleModel;
 
-        private ArticleWithAuthor baselineModel;
+        private Data<ArticleWithAuthor> baselineModel;
 
-        private ArticleWithAuthor[] articles;
+        private Data<ArticleWithAuthor[]> articles;
 
         [GlobalSetup]
         public void Setup()
         {
-            options.AddJsonApi();
-
             Randomizer.Seed = new Random(56178921);
-            simpleModel = AutoFaker.Generate<ManyTypesModel>();
-            simpleModelRaw = new Data<ManyTypesModel>
-            {
-                Id = simpleModel.Id,
-                Type = simpleModel.Type,
-                Attributes = simpleModel
-            };
 
-            articles = AutoFaker.Generate<ArticleWithAuthor[]>(x => x.WithRepeatCount(20));
+            rawOptions = new JsonSerializerOptions();
+            options = GetOptions();
+            settings = GetSettings();
+
+            SetupTestData();
+        }
+
+        private void SetupTestData()
+        {
+            simpleModel = new Data<ManyTypesModel>(AutoFaker.Generate<ManyTypesModel>(), options);
+            articles = new Data<ArticleWithAuthor[]>(AutoFaker.Generate<ArticleWithAuthor[]>(x => x.WithRepeatCount(20)), options);
 
             var author = new Author
             {
@@ -51,7 +49,7 @@ namespace JsonApi.Tests.Performance
                 Twitter = "dgeb"
             };
 
-            baselineModel = new ArticleWithAuthor
+            baselineModel = new Data<ArticleWithAuthor>(new ArticleWithAuthor
             {
                 Id = "1",
                 Type = "articles",
@@ -74,91 +72,130 @@ namespace JsonApi.Tests.Performance
                         Author = author
                     }
                 }
+            }, options);
+        }
+
+        private JsonSerializerOptions GetOptions()
+        {
+            var serializerOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
+
+            return serializerOptions.AddJsonApi();
+        }
+
+        private JsonApiSerializerSettings GetSettings()
+        {
+            return new();
         }
 
         [Benchmark]
         public string SerializeSimpleObject()
         {
-            return JsonSerializer.Serialize(simpleModel, options);
+            return JsonSerializer.Serialize(simpleModel.Value, options);
         }
 
         [Benchmark]
         public string SerializeSimpleObjectRaw()
         {
-            return JsonSerializer.Serialize(simpleModel);
+            return JsonSerializer.Serialize(simpleModel.Value, rawOptions);
         }
 
-        //[Benchmark]
-        //public string SerializeSimpleObjectWithNewtonsoft()
-        //{
-        //    return JsonConvert.SerializeObject(simpleModel, settings);
-        //}
+        [Benchmark]
+        public string SerializeSimpleObjectWithNewtonsoft()
+        {
+            return JsonConvert.SerializeObject(simpleModel.Value, settings);
+        }
 
-        //[Benchmark]
-        //public string SerializeBaselineObject()
-        //{
-        //    return JsonSerializer.Serialize(baselineModel, options);
-        //}
+        [Benchmark]
+        public string SerializeBaselineObject()
+        {
+            return JsonSerializer.Serialize(baselineModel.Value, options);
+        }
 
-        //[Benchmark]
-        //public string SerializeBaselineObjectRaw()
-        //{
-        //    return JsonSerializer.Serialize(baselineModel);
-        //}
+        [Benchmark]
+        public string SerializeBaselineObjectRaw()
+        {
+            return JsonSerializer.Serialize(baselineModel.Value, rawOptions);
+        }
 
-        //[Benchmark]
-        //public string SerializeBaselineObjectWithNewtonsoft()
-        //{
-        //    return JsonConvert.SerializeObject(baselineModel, settings);
-        //}
+        [Benchmark]
+        public string SerializeBaselineObjectWithNewtonsoft()
+        {
+            return JsonConvert.SerializeObject(baselineModel.Value, settings);
+        }
 
-        //[Benchmark]
-        //public string SerializeLargeCompoundCollection()
-        //{
-        //    return JsonSerializer.Serialize(articles, options);
-        //}
+        [Benchmark]
+        public string SerializeLargeCompoundCollection()
+        {
+            return JsonSerializer.Serialize(articles.Value, options);
+        }
 
-        //[Benchmark]
-        //public string SerializeLargeCompoundCollectionWithNewtonsoft()
-        //{
-        //    return JsonConvert.SerializeObject(articles, settings);
-        //}
+        [Benchmark]
+        public string SerializeLargeCompoundCollectionRaw()
+        {
+            return JsonSerializer.Serialize(articles.Value, rawOptions);
+        }
 
-        //[Benchmark]
-        //public string DeserializeSimpleObject()
-        //{
-        //    return string.Empty;
-        //}
+        [Benchmark]
+        public string SerializeLargeCompoundCollectionWithNewtonsoft()
+        {
+            return JsonConvert.SerializeObject(articles.Value, settings);
+        }
 
-        //[Benchmark]
-        //public string DeserializeSimpleObjectWithNewtonsoft()
-        //{
-        //    return string.Empty;
-        //}
+        [Benchmark]
+        public object DeserializeSimpleObject()
+        {
+            return JsonSerializer.Deserialize<ManyTypesModel>(simpleModel.JsonApiBytes, options);
+        }
 
-        //[Benchmark]
-        //public string DeserializeBaselineObject()
-        //{
-        //    return string.Empty;
-        //}
+        [Benchmark]
+        public object DeserializeSimpleObjectRaw()
+        {
+            return JsonSerializer.Deserialize<ManyTypesModel>(simpleModel.JsonBytes, rawOptions);
+        }
 
-        //[Benchmark]
-        //public string DeserializeBaselineObjectWithNewtonsoft()
-        //{
-        //    return string.Empty;
-        //}
+        [Benchmark]
+        public object DeserializeSimpleObjectWithNewtonsoft()
+        {
+            return JsonConvert.DeserializeObject<ManyTypesModel>(simpleModel.Json, settings);
+        }
 
-        //[Benchmark]
-        //public string DeserializeLargeCompoundCollection()
-        //{
-        //    return string.Empty;
-        //}
+        [Benchmark]
+        public object DeserializeBaselineObject()
+        {
+            return JsonSerializer.Deserialize<ArticleWithAuthor>(baselineModel.JsonApiBytes, options);
+        }
 
-        //[Benchmark]
-        //public string DeserializeLargeCompoundCollectionWithNewtonsoft()
-        //{
-        //    return string.Empty;
-        //}
+        [Benchmark]
+        public object DeserializeBaselineObjectRaw()
+        {
+            return JsonSerializer.Deserialize<ArticleWithAuthor>(baselineModel.JsonApiBytes, rawOptions);
+        }
+
+        [Benchmark]
+        public object DeserializeBaselineObjectWithNewtonsoft()
+        {
+            return JsonConvert.DeserializeObject<ArticleWithAuthor>(baselineModel.Json, settings);
+        }
+
+        [Benchmark]
+        public object DeserializeLargeCompoundCollection()
+        {
+            return JsonSerializer.Deserialize<ArticleWithAuthor[]>(articles.JsonApiBytes, options);
+        }
+
+        [Benchmark]
+        public object DeserializeLargeCompoundCollectionRaw()
+        {
+            return JsonSerializer.Deserialize<ArticleWithAuthor[]>(articles.JsonBytes, rawOptions);
+        }
+
+        [Benchmark]
+        public object DeserializeLargeCompoundCollectionWithNewtonsoft()
+        {
+            return JsonConvert.DeserializeObject<ArticleWithAuthor[]>(articles.Json, settings);
+        }
     }
 }
