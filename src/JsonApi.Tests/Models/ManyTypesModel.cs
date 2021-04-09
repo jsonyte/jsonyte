@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text.Json.Serialization;
+using JsonApi.Tests.Converters;
 
 namespace JsonApi.Tests.Models
 {
@@ -22,6 +24,7 @@ namespace JsonApi.Tests.Models
 
         public Guid GuidValue { get; set; }
 
+        [JsonConverter(typeof(TimeSpanConverter))]
         public TimeSpan TimeSpanValue { get; set; }
 
         public byte ByteValue { get; set; }
