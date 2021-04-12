@@ -1,4 +1,5 @@
-﻿using BenchmarkDotNet.Configs;
+﻿using System.Diagnostics;
+using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
 using JsonApi.Tests.Performance;
 
@@ -9,7 +10,9 @@ namespace JsonApi.Benchmarks
         public static void Main(string[] args)
         {
 #if DEBUG
-            var config = new DebugBuildConfig();
+            var config = Debugger.IsAttached
+                ? (IConfig) new DebugInProcessConfig()
+                : new DebugBuildConfig();
 #else
             var config = DefaultConfig.Instance;
 #endif

@@ -31,7 +31,7 @@ namespace JsonApi.Converters.Objects
             }
             else if (value.Data != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Data);
+                writer.WritePropertyName(JsonApiMembers.DataEncoded);
                 JsonSerializer.Serialize(writer, value.Data, options);
             }
         }
@@ -65,7 +65,7 @@ namespace JsonApi.Converters.Objects
             }
             else if (value.Data != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Data);
+                writer.WritePropertyName(JsonApiMembers.DataEncoded);
                 WriteWrapped(writer, ref tracked, value.Data, options);
             }
         }

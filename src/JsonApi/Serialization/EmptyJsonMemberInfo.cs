@@ -8,6 +8,8 @@ namespace JsonApi.Serialization
     {
         public string Name { get; } = string.Empty;
 
+        public JsonEncodedText NameEncoded { get; } = default;
+
         public string MemberName { get; } = string.Empty;
 
         public Type MemberType { get; } = typeof(string);

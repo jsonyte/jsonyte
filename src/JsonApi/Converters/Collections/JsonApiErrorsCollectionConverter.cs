@@ -75,7 +75,7 @@ namespace JsonApi.Converters.Collections
             var tracked = new TrackedResources();
 
             writer.WriteStartObject();
-            writer.WritePropertyName(JsonApiMembers.Errors);
+            writer.WritePropertyName(JsonApiMembers.ErrorsEncoded);
 
             WriteWrapped(writer, ref tracked, value, options);
 

@@ -27,13 +27,13 @@ namespace JsonApi.Converters.Objects
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(ref documentState);
+                var name = reader.ReadMemberFast(ref documentState);
 
-                if (name == JsonApiMembers.Data)
+                if (name.SequenceEqual(JsonApiMembers.DataEncoded.EncodedUtf8Bytes))
                 {
                     resource = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
-                else if (name == JsonApiMembers.Included)
+                else if (name.SequenceEqual(JsonApiMembers.IncludedEncoded.EncodedUtf8Bytes))
                 {
                     if (documentState.HasFlag(DocumentFlags.Data))
                     {
@@ -56,14 +56,13 @@ namespace JsonApi.Converters.Objects
             }
 
             // TODO
-            // Really janky way of doing this as it means parsing over included twice in some instances
-            // This needs to be re-thought
+            // Really janky way of doing this as it means parsing over
+            // included twice if included appears first in the document.
+            // This needs to be re-thought.
             if (includedReadFirst)
             {
                 ReadIncluded(ref savedReader, ref tracked, options);
             }
-
-            tracked.Release();
 
             documentState.Validate();
 
@@ -88,32 +87,30 @@ namespace JsonApi.Converters.Objects
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(ref resourceState);
+                var name = reader.ReadMemberFast(ref resourceState);
 
-                var property = info.GetMember(name);
-
-                if (name == JsonApiMembers.Id || name == JsonApiMembers.Type)
+                if (name.IsEqual(JsonApiMembers.IdEncoded) || name.IsEqual(JsonApiMembers.TypeEncoded))
                 {
-                    property.Read(ref reader, resource);
+                    info.GetMember(name).Read(ref reader, resource);
                 }
-                else if (name == JsonApiMembers.Attributes)
+                else if (name.IsEqual(JsonApiMembers.AttributesEncoded))
                 {
                     reader.ReadObject(JsonApiMemberCode.ResourceAttributes);
 
                     while (reader.IsInObject())
                     {
-                        var attributeName = reader.ReadMember(JsonApiMemberCode.Resource);
+                        var attributeName = reader.ReadMemberFast(JsonApiMemberCode.Resource);
 
                         info.GetMember(attributeName).Read(ref reader, resource);
 
                         reader.Read();
                     }
                 }
-                else if (name == JsonApiMembers.Meta)
+                else if (name.IsEqual(JsonApiMembers.MetaEncoded))
                 {
-                    property.Read(ref reader, resource);
+                    info.GetMember(name).Read(ref reader, resource);
                 }
-                else if (name == JsonApiMembers.Relationships)
+                else if (name.IsEqual(JsonApiMembers.RelationshipsEncoded))
                 {
                     ReadRelationships(ref reader, ref tracked, resource);
                 }
@@ -136,7 +133,7 @@ namespace JsonApi.Converters.Objects
 
             while (reader.IsInObject())
             {
-                var relationshipName = reader.ReadMember(JsonApiMemberCode.Relationship);
+                var relationshipName = reader.ReadMemberFast(JsonApiMemberCode.Relationship);
 
                 info.GetMember(relationshipName).ReadRelationship(ref reader, ref tracked, resource);
 
@@ -179,22 +176,14 @@ namespace JsonApi.Converters.Objects
                 writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
                 writer.WriteStartArray();
 
-                while (tracked.Identifiers.Count > 0)
-                {
-                    var identifier = tracked.Identifiers.Dequeue();
+                var index = 0;
 
-                    if (tracked.TryGetIncluded(identifier, out var included))
-                    {
-                        included.Converter.Write(writer, ref tracked, included.Value, options);
-                    }
-                }
-
-                foreach (var identifier in tracked.Identifiers)
+                while (index < tracked.Count)
                 {
-                    if (tracked.TryGetIncluded(identifier, out var included))
-                    {
-                        included.Converter.Write(writer, ref tracked, included.Value, options);
-                    }
+                    var included = tracked.Get(index);
+                    included.Converter.Write(writer, ref tracked, included.Value, options);
+
+                    index++;
                 }
 
                 writer.WriteEndArray();

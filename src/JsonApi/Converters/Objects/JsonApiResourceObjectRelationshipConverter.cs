@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Text.Json;
 using JsonApi.Serialization;
 
@@ -6,6 +7,15 @@ namespace JsonApi.Converters.Objects
 {
     internal class JsonApiResourceObjectRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<T>
     {
+        private readonly JsonTypeInfo info;
+
+        private IJsonObjectConverter? objectConverter;
+
+        public JsonApiResourceObjectRelationshipConverter(JsonTypeInfo info)
+        {
+            this.info = info;
+        }
+
         public override RelationshipResource<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
@@ -19,9 +29,9 @@ namespace JsonApi.Converters.Objects
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(ref relationshipState);
+                var name = reader.ReadMemberFast(ref relationshipState);
 
-                if (name == JsonApiMembers.Data)
+                if (name.IsEqual(JsonApiMembers.DataEncoded))
                 {
                     relationship = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
@@ -40,14 +50,13 @@ namespace JsonApi.Converters.Objects
 
         public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, RelationshipResource<T> existingValue, JsonSerializerOptions options)
         {
-            var identifier = reader.Read<JsonApiResourceIdentifier>(options);
+            var identifier = reader.ReadResourceIdentifier();
 
             if (tracked.TryGetIncluded(identifier, out var included))
             {
                 return new RelationshipResource<T>((T) included.Value);
             }
 
-            var info = options.GetTypeInfo(typeToConvert);
             var relationship = info.Creator();
 
             if (relationship == null)
@@ -55,12 +64,13 @@ namespace JsonApi.Converters.Objects
                 return default;
             }
 
-            info.GetMember(JsonApiMembers.Id).SetValue(relationship, identifier.Id);
-            info.GetMember(JsonApiMembers.Type).SetValue(relationship, identifier.Type);
+            var id = identifier.Id;
+            var type = identifier.Type;
 
-            var converter = options.GetObjectConverter<T>();
+            info.IdMember.SetValue(relationship, id.GetString());
+            info.TypeMember.SetValue(relationship, type.GetString());
 
-            tracked.SetIncluded(identifier, converter, relationship);
+            tracked.SetIncluded(identifier, GetConverter(options), relationship);
 
             return new RelationshipResource<T>((T) relationship);
         }
@@ -73,7 +83,7 @@ namespace JsonApi.Converters.Objects
         public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, RelationshipResource<T> value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
-            writer.WritePropertyName(JsonApiMembers.Data);
+            writer.WritePropertyName(JsonApiMembers.DataEncoded);
 
             WriteWrapped(writer, ref tracked, value, options);
 
@@ -89,24 +99,30 @@ namespace JsonApi.Converters.Objects
                 return;
             }
 
-            var info = options.GetTypeInfo(typeof(T));
-
-            var id = info.GetMember(JsonApiMembers.Id).GetValue(value.Resource) as string;
-            var type = info.GetMember(JsonApiMembers.Type).GetValue(value.Resource) as string;
+            var id = info.IdMember.GetValue(value.Resource) as string;
+            var type = info.TypeMember.GetValue(value.Resource) as string;
 
             if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
             {
                 throw new JsonApiException($"JSON:API relationship for '{typeof(T).Name}' must have both 'id' and 'type' values");
             }
 
+            var idBytes = Encoding.UTF8.GetBytes(id);
+            var typeBytes = Encoding.UTF8.GetBytes(type);
+
             writer.WriteStartObject();
 
-            writer.WriteString(JsonApiMembers.Id, id);
-            writer.WriteString(JsonApiMembers.Type, type);
+            writer.WriteString(JsonApiMembers.IdEncoded, idBytes);
+            writer.WriteString(JsonApiMembers.TypeEncoded, typeBytes);
 
             writer.WriteEndObject();
 
-            tracked.SetIncluded(new JsonApiResourceIdentifier(id!, type!), options.GetObjectConverter<T>(), value.Resource);
+            tracked.SetIncluded(new ResourceIdentifier(idBytes, typeBytes), GetConverter(options), value.Resource);
+        }
+
+        private IJsonObjectConverter GetConverter(JsonSerializerOptions options)
+        {
+            return objectConverter ??= options.GetObjectConverter<T>();
         }
     }
 }

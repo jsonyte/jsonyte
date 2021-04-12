@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using AutoBogus;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
 using Bogus;
 using Bogus.Extensions;
 using JsonApi.Tests.Models;
@@ -13,17 +12,11 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace JsonApi.Tests.Performance
 {
-    [CategoriesColumn]
-    [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class SerializeDeserializeBenchmarks
     {
         private const string Serialize = nameof(Serialize);
 
         private const string Deserialize = nameof(Deserialize);
-
-        private const string JsonApi = nameof(JsonApi);
-
-        private const string NoJsonApi = nameof(NoJsonApi);
 
         private JsonSerializerOptions options;
 
@@ -33,7 +26,9 @@ namespace JsonApi.Tests.Performance
 
         private JsonApiSerializerSettings jsonApiSettings;
 
-        [Params("Simple", "Compound", "LargeCompound")]
+        private Data data;
+
+        [Params("Simple", "Compound", "LargeCompound", "SingleError", "ErrorCollection", "Document")]
         public string Case { get; set; }
 
         [GlobalSetup]
@@ -45,83 +40,64 @@ namespace JsonApi.Tests.Performance
             jsonApiOptions = new JsonSerializerOptions().AddJsonApi();
             settings = new JsonSerializerSettings();
             jsonApiSettings = new JsonApiSerializerSettings();
+
+            data = TestData.Cases[Case];
         }
 
-        [Benchmark(Baseline = true)]
-        [BenchmarkCategory(Serialize, NoJsonApi)]
+        [Benchmark]
+        [BenchmarkCategory(Serialize)]
         public string SerializeNoJsonApi()
         {
-            var data = GetTestCase();
-
             return JsonSerializer.Serialize(data.Value, options);
         }
 
         [Benchmark]
-        [BenchmarkCategory(Serialize, JsonApi)]
+        [BenchmarkCategory(Serialize)]
         public string SerializeJsonApi()
         {
-            var data = GetTestCase();
-
             return JsonSerializer.Serialize(data.Value, jsonApiOptions);
         }
 
         [Benchmark]
-        [BenchmarkCategory(Serialize, NoJsonApi)]
+        [BenchmarkCategory(Serialize)]
         public string SerializeNewtonsoftNoJsonApi()
         {
-            var data = GetTestCase();
-
             return JsonConvert.SerializeObject(data.Value, settings);
         }
 
         [Benchmark]
-        [BenchmarkCategory(Serialize, JsonApi)]
+        [BenchmarkCategory(Serialize)]
         public string SerializeNewtonsoftJsonApi()
         {
-            var data = GetTestCase();
-
             return JsonConvert.SerializeObject(data.Value, jsonApiSettings);
         }
 
         [Benchmark(Baseline = true)]
-        [BenchmarkCategory(Deserialize, NoJsonApi)]
+        [BenchmarkCategory(Deserialize)]
         public object DeserializeNoJsonApi()
         {
-            var data = GetTestCase();
-
             return JsonSerializer.Deserialize(data.JsonBytes, data.Type, options);
         }
 
         [Benchmark]
-        [BenchmarkCategory(Deserialize, JsonApi)]
+        [BenchmarkCategory(Deserialize)]
         public object DeserializeJsonApi()
         {
-            var data = GetTestCase();
-
             return JsonSerializer.Deserialize(data.JsonApiBytes, data.Type, jsonApiOptions);
         }
 
         [Benchmark]
-        [BenchmarkCategory(Deserialize, NoJsonApi)]
+        [BenchmarkCategory(Deserialize)]
         public object DeserializeNewtonsoftNoJsonApi()
         {
-            var data = GetTestCase();
-
             return JsonConvert.DeserializeObject(data.Json, data.Type, settings);
         }
 
         [Benchmark]
-        [BenchmarkCategory(Deserialize, JsonApi)]
+        [BenchmarkCategory(Deserialize)]
         public object DeserializeNewtonsoftJsonApi()
         {
-            var data = GetTestCase();
-
             return JsonConvert.DeserializeObject(data.Json, data.Type, jsonApiSettings);
-        }
-
-        private Data GetTestCase()
-        {
-            return TestData.Cases[Case];
         }
 
         public static class TestData

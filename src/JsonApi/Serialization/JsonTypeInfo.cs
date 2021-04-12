@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,6 +13,8 @@ namespace JsonApi.Serialization
     {
         private const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
+        private const int CachedMembers = 64;
+
         private static readonly EmptyJsonMemberInfo EmptyMember = new();
 
         private static readonly EmptyJsonParameterInfo EmptyParameter = new(-1);
@@ -18,6 +22,8 @@ namespace JsonApi.Serialization
         private readonly Dictionary<string, IJsonMemberInfo> nameCache;
 
         private readonly Dictionary<string, IJsonParameterInfo> parameterCache;
+
+        private readonly MemberRef[] memberCache;
 
         public JsonTypeInfo(Type type, JsonSerializerOptions options)
         {
@@ -30,10 +36,8 @@ namespace JsonApi.Serialization
                 .Concat(GetFields(type, options))
                 .ToArray();
 
-            var memberCache = GetMemberCache(members, options);
-
             nameCache = GetNameCache(members);
-            parameterCache = GetParameters(constructor, memberCache, options);
+            parameterCache = GetParameters(constructor, members, options);
 
             AttributeMembers = members
                 .Where(x => !x.IsRelationship)
@@ -49,6 +53,11 @@ namespace JsonApi.Serialization
             IdMember = GetMember(JsonApiMembers.Id);
             TypeMember = GetMember(JsonApiMembers.Type);
             MetaMember = GetMember(JsonApiMembers.Meta);
+
+            memberCache = members
+                .Take(CachedMembers)
+                .Select(x => new MemberRef(GetKey(x.NameEncoded.EncodedUtf8Bytes), x, x.NameEncoded.EncodedUtf8Bytes.ToArray()))
+                .ToArray();
         }
 
         public Func<object?> Creator { get; }
@@ -81,6 +90,31 @@ namespace JsonApi.Serialization
                 : EmptyMember;
         }
 
+        public IJsonMemberInfo GetMember(ReadOnlySpan<byte> name)
+        {
+            if (name.IsEmpty)
+            {
+                return EmptyMember;
+            }
+
+            var key = GetKey(name);
+
+            foreach (var item in memberCache)
+            {
+                if (item.Key == key)
+                {
+                    if (name.Length < 8 || name.SequenceEqual(item.Name))
+                    {
+                        return item.Member;
+                    }
+                }
+            }
+
+            return nameCache.TryGetValue(name.GetString(), out var member)
+                ? member
+                : EmptyMember;
+        }
+
         public IJsonParameterInfo? GetParameter(string? name)
         {
             if (name == null)
@@ -91,11 +125,6 @@ namespace JsonApi.Serialization
             parameterCache.TryGetValue(name, out var parameter);
 
             return parameter;
-        }
-
-        private Dictionary<string, IJsonMemberInfo> GetMemberCache(IJsonMemberInfo[] members, JsonSerializerOptions options)
-        {
-            return members.ToDictionary(x => x.Name, options.GetPropertyComparer());
         }
 
         private Dictionary<string, IJsonMemberInfo> GetNameCache(IJsonMemberInfo[] members)
@@ -236,15 +265,17 @@ namespace JsonApi.Serialization
             return publicConstructors.First();
         }
 
-        private Dictionary<string, IJsonParameterInfo> GetParameters(ConstructorInfo constructor, Dictionary<string, IJsonMemberInfo> members, JsonSerializerOptions options)
+        private Dictionary<string, IJsonParameterInfo> GetParameters(ConstructorInfo constructor, IJsonMemberInfo[] members, JsonSerializerOptions options)
         {
+            var membersByName = members.ToDictionary(x => x.Name, options.GetPropertyComparer());
+
             var parameters = constructor.GetParameters();
 
             var jsonParameters = new Dictionary<string, IJsonParameterInfo>(parameters.Length, options.GetPropertyComparer());
 
             foreach (var parameter in parameters)
             {
-                var property = members.GetValueOrDefault(parameter.Name!, EmptyMember);
+                var property = membersByName.GetValueOrDefault(parameter.Name!, EmptyMember);
 
                 if (property.Ignored)
                 {
@@ -265,6 +296,89 @@ namespace JsonApi.Serialization
             }
 
             return jsonParameters;
+        }
+
+        /// <summary>
+        /// Takes the first 7 bytes from the name plus the length.
+        ///
+        /// Code is borrowed from JsonClassInfo in System.Text.Json.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ulong GetKey(ReadOnlySpan<byte> span)
+        {
+            var length = span.Length;
+            ref var reference = ref MemoryMarshal.GetReference(span);
+
+            if (length > 7)
+            {
+                var key = Unsafe.ReadUnaligned<ulong>(ref reference) & 0x00ffffffffffffffL;
+                key |= (ulong) Math.Min(length, 0xff) << 56;
+
+                return key;
+            }
+
+            if (length == 7)
+            {
+                var key = (ulong) Unsafe.ReadUnaligned<uint>(ref reference);
+                key |= (ulong) Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref reference, 4)) << 32;
+                key |= (ulong) Unsafe.Add(ref reference, 6) << 48;
+                key |= (ulong) length << 56;
+
+                return key;
+            }
+
+            if (length == 6)
+            {
+                var key = (ulong) Unsafe.ReadUnaligned<uint>(ref reference);
+                key |= (ulong) Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref reference, 4)) << 32;
+                key |= (ulong) length << 56;
+
+                return key;
+            }
+
+            if (length == 5)
+            {
+                var key = (ulong) Unsafe.ReadUnaligned<uint>(ref reference);
+                key |= (ulong) Unsafe.Add(ref reference, 4) << 32;
+                key |= (ulong) length << 56;
+
+                return key;
+            }
+
+            if (length == 4)
+            {
+                var key = (ulong) Unsafe.ReadUnaligned<uint>(ref reference);
+                key |= (ulong) length << 56;
+
+                return key;
+            }
+
+            if (length == 3)
+            {
+                var key = (ulong) Unsafe.ReadUnaligned<ushort>(ref reference);
+                key |= (ulong) Unsafe.Add(ref reference, 2) << 16;
+                key |= (ulong) length << 56;
+
+                return key;
+            }
+
+            if (length == 2)
+            {
+                var key = (ulong) Unsafe.ReadUnaligned<ushort>(ref reference);
+                key |= (ulong) length << 56;
+
+                return key;
+            }
+
+            if (length == 1)
+            {
+                var key = (ulong) reference;
+                key |= (ulong) length << 56;
+
+                return key;
+            }
+
+            return 0;
         }
     }
 }

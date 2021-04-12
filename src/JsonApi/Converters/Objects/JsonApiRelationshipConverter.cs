@@ -3,41 +3,9 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
-using JsonApi.Serialization;
 
 namespace JsonApi.Converters.Objects
 {
-    //internal class JsonApiRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<JsonApiRelationship<T>>
-    //{
-    //    public override JsonApiRelationship<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    //    {
-    //        throw new NotSupportedException();
-    //    }
-
-    //    public override JsonApiRelationship<T>? Read(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonSerializerOptions options)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public override JsonApiRelationship<T>? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonApiRelationship<T>? existingValue, JsonSerializerOptions options)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public override void Write(Utf8JsonWriter writer, JsonApiRelationship<T> value, JsonSerializerOptions options)
-    //    {
-    //        throw new NotSupportedException();
-    //    }
-
-    //    public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiRelationship<T> value, JsonSerializerOptions options)
-    //    {
-    //    }
-
-    //    public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiRelationship<T> value, JsonSerializerOptions options)
-    //    {
-    //    }
-    //}
-
     internal class JsonApiRelationshipConverter : JsonConverter<JsonApiRelationship>
     {
         public override JsonApiRelationship Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

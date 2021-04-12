@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using JsonApi.Converters;
@@ -90,9 +91,29 @@ namespace JsonApi
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ReadOnlySpan<byte> ReadMemberFast(this ref Utf8JsonReader reader, ref DocumentState state)
+        {
+            var name = reader.ReadMemberFast(JsonApiMemberCode.TopLevel);
+
+            state.AddFlag(name);
+
+            return name;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string? ReadMember(this ref Utf8JsonReader reader, ref ResourceState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Resource);
+
+            state.AddFlag(name);
+
+            return name;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ReadOnlySpan<byte> ReadMemberFast(this ref Utf8JsonReader reader, ref ResourceState state)
+        {
+            var name = reader.ReadMemberFast(JsonApiMemberCode.Resource);
 
             state.AddFlag(name);
 
@@ -110,6 +131,16 @@ namespace JsonApi
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ReadOnlySpan<byte> ReadMemberFast(this ref Utf8JsonReader reader, ref RelationshipState state)
+        {
+            var name = reader.ReadMemberFast(JsonApiMemberCode.Relationship);
+
+            state.AddFlag(name);
+
+            return name;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string? ReadMember(this ref Utf8JsonReader reader, JsonApiMemberCode code)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
@@ -118,6 +149,20 @@ namespace JsonApi
             }
 
             var name = reader.GetString();
+            reader.Read();
+
+            return name;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ReadOnlySpan<byte> ReadMemberFast(this ref Utf8JsonReader reader, JsonApiMemberCode code)
+        {
+            if (reader.TokenType != JsonTokenType.PropertyName)
+            {
+                throw new JsonApiFormatException(code, reader.GetString());
+            }
+
+            var name = reader.ValueSpan;
             reader.Read();
 
             return name;
@@ -145,32 +190,31 @@ namespace JsonApi
             return converter.ReadWrapped(ref reader, ref tracked, typeof(T), default, options);
         }
 
-        public static JsonApiResourceIdentifier ReadAheadIdentifier(this Utf8JsonReader reader)
+        public static ResourceIdentifier ReadAheadIdentifier(this Utf8JsonReader reader)
         {
-            string? id = null;
-            string? type = null;
+            ReadOnlySpan<byte> id = default;
+            ReadOnlySpan<byte> type = default;
 
             reader.ReadObject(JsonApiMemberCode.ResourceIdentifier);
 
             while (reader.IsInObject())
             {
-                var name = reader.GetString();
-                reader.Read();
+                var name = reader.ReadMemberFast(JsonApiMemberCode.ResourceIdentifier);
 
-                if (name == JsonApiMembers.Id)
+                if (name.IsEqual(JsonApiMembers.IdEncoded))
                 {
-                    id = reader.GetString();
+                    id = reader.ValueSpan;
                 }
-                else if (name == JsonApiMembers.Type)
+                else if (name.IsEqual(JsonApiMembers.TypeEncoded))
                 {
-                    type = reader.GetString();
+                    type = reader.ValueSpan;
                 }
                 else
                 {
                     reader.Skip();
                 }
 
-                if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(type))
+                if (!id.IsEmpty && !type.IsEmpty)
                 {
                     break;
                 }
@@ -178,12 +222,42 @@ namespace JsonApi
                 reader.Read();
             }
 
-            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
+            return new ResourceIdentifier(id, type);
+        }
+
+        public static ResourceIdentifier ReadResourceIdentifier(this ref Utf8JsonReader reader)
+        {
+            ReadOnlySpan<byte> id = default;
+            ReadOnlySpan<byte> type = default;
+
+            reader.ReadObject(JsonApiMemberCode.ResourceIdentifier);
+
+            while (reader.IsInObject())
+            {
+                var name = reader.ReadMemberFast(JsonApiMemberCode.ResourceIdentifier);
+
+                if (name.IsEqual(JsonApiMembers.IdEncoded))
+                {
+                    id = reader.ValueSpan;
+                }
+                else if (name.IsEqual(JsonApiMembers.TypeEncoded))
+                {
+                    type = reader.ValueSpan;
+                }
+                else
+                {
+                    reader.Skip();
+                }
+
+                reader.Read();
+            }
+
+            if (id.IsEmpty || type.IsEmpty)
             {
                 throw new JsonApiFormatException("JSON:API resource identifier must contain 'id' and 'type' members");
             }
 
-            return new JsonApiResourceIdentifier(id!, type!);
+            return new ResourceIdentifier(id, type);
         }
     }
 }

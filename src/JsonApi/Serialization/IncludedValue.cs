@@ -1,18 +1,23 @@
 ﻿namespace JsonApi.Serialization
 {
-    internal struct IncludedValue
+    internal ref struct IncludedValue
     {
-        public JsonApiResourceIdentifier Identifier;
+        public ResourceIdentifier Identifier;
 
         public IJsonObjectConverter Converter;
 
         public object Value;
 
-        public IncludedValue(JsonApiResourceIdentifier identifier, IJsonObjectConverter converter, object value)
+        public IncludedValue(ResourceIdentifier identifier, IJsonObjectConverter converter, object value)
         {
             Identifier = identifier;
             Converter = converter;
             Value = value;
+        }
+
+        public bool HasIdentifier(ResourceIdentifier identifier)
+        {
+            return Identifier.Equals(identifier);
         }
     }
 }

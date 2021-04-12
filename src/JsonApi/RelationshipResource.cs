@@ -2,7 +2,7 @@
 {
     internal struct RelationshipResource<T>
     {
-        public T Resource;
+        public readonly T Resource;
 
         public RelationshipResource(T resource)
         {

@@ -3,7 +3,7 @@
 namespace JsonApi.Validation
 {
     [Flags]
-    internal enum DocumentFlags
+    internal enum DocumentFlags : byte
     {
         None = 0,
         Data = 1,

@@ -20,15 +20,15 @@ namespace JsonApi.Converters.Objects
 
                 while (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    var name = reader.GetString();
+                    var name = reader.ValueSpan;
 
                     reader.Read();
 
-                    if (name == JsonApiMembers.Href)
+                    if (name.IsEqual(JsonApiMembers.HrefEncoded))
                     {
                         link.Href = reader.GetString();
                     }
-                    else if (name == JsonApiMembers.Meta)
+                    else if (name.IsEqual(JsonApiMembers.MetaEncoded))
                     {
                         link.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                     }
@@ -55,10 +55,10 @@ namespace JsonApi.Converters.Objects
             {
                 writer.WriteStartObject();
 
-                writer.WritePropertyName(JsonApiMembers.Href);
+                writer.WritePropertyName(JsonApiMembers.HrefEncoded);
                 writer.WriteStringValue(value.Href);
 
-                writer.WritePropertyName(JsonApiMembers.Meta);
+                writer.WritePropertyName(JsonApiMembers.MetaEncoded);
                 JsonSerializer.Serialize(writer, value.Meta, options);
 
                 writer.WriteEndObject();

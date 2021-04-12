@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using AutoBogus;
 using Bogus;
+using JsonApi.Tests.Performance;
 
 namespace JsonApi.Profiling
 {
@@ -15,13 +17,16 @@ namespace JsonApi.Profiling
 
             Randomizer.Seed = new Random(56178921);
 
-            var model = AutoFaker.Generate<ManyTypesModel>();
+            var model = SerializeDeserializeBenchmarks.TestData.Cases["Compound"];
+
+            var json = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(model.Value, options));
 
             var watch = Stopwatch.StartNew();
 
             for (var i = 0; i < 1000000; i++)
             {
-                JsonSerializer.Serialize(model, options);
+                JsonSerializer.Deserialize(json, model.Type, options);
+                //JsonSerializer.Serialize(model.Value, options);
             }
 
             watch.Stop();

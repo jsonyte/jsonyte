@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\JsonApi.Tests\JsonApi.Tests.csproj" />
     <ProjectReference Include="..\JsonApi\JsonApi.csproj" />
   </ItemGroup>
 

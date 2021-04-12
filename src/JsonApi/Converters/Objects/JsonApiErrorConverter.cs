@@ -18,9 +18,9 @@ namespace JsonApi.Converters.Objects
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(ref state);
+                var name = reader.ReadMemberFast(ref state);
 
-                if (name == JsonApiMembers.Errors)
+                if (name.IsEqual(JsonApiMembers.ErrorsEncoded))
                 {
                     reader.ReadArray(JsonApiArrayCode.Errors);
 
@@ -46,8 +46,6 @@ namespace JsonApi.Converters.Objects
                 reader.Read();
             }
 
-            tracked.Release();
-
             state.Validate();
 
             return state.HasFlag(DocumentFlags.Errors)
@@ -63,45 +61,43 @@ namespace JsonApi.Converters.Objects
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(JsonApiMemberCode.Error);
+                var name = reader.ReadMemberFast(JsonApiMemberCode.Error);
 
-                switch (name)
+                if (name.IsEqual(JsonApiMembers.IdEncoded))
                 {
-                    case JsonApiMembers.Id:
-                        error.Id = JsonSerializer.Deserialize<string>(ref reader, options);
-                        break;
-
-                    case JsonApiMembers.Links:
-                        error.Links = JsonSerializer.Deserialize<JsonApiErrorLinks>(ref reader, options);
-                        break;
-
-                    case JsonApiMembers.Status:
-                        error.Status = JsonSerializer.Deserialize<string>(ref reader, options);
-                        break;
-
-                    case JsonApiMembers.Code:
-                        error.Code = JsonSerializer.Deserialize<string>(ref reader, options);
-                        break;
-
-                    case JsonApiMembers.Title:
-                        error.Title = JsonSerializer.Deserialize<string>(ref reader, options);
-                        break;
-
-                    case JsonApiMembers.Detail:
-                        error.Detail = JsonSerializer.Deserialize<string>(ref reader, options);
-                        break;
-
-                    case JsonApiMembers.Source:
-                        error.Source = JsonSerializer.Deserialize<JsonApiErrorSource>(ref reader, options);
-                        break;
-
-                    case JsonApiMembers.Meta:
-                        error.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
-                        break;
-
-                    default:
-                        reader.Skip();
-                        break;
+                    error.Id = JsonSerializer.Deserialize<string>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.LinksEncoded))
+                {
+                    error.Links = JsonSerializer.Deserialize<JsonApiErrorLinks>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.StatusEncoded))
+                {
+                    error.Status = JsonSerializer.Deserialize<string>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.CodeEncoded))
+                {
+                    error.Code = JsonSerializer.Deserialize<string>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.TitleEncoded))
+                {
+                    error.Title = JsonSerializer.Deserialize<string>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.DetailEncoded))
+                {
+                    error.Detail = JsonSerializer.Deserialize<string>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.SourceEncoded))
+                {
+                    error.Source = JsonSerializer.Deserialize<JsonApiErrorSource>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.MetaEncoded))
+                {
+                    error.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
+                }
+                else
+                {
+                    reader.Skip();
                 }
 
                 reader.Read();
@@ -115,7 +111,7 @@ namespace JsonApi.Converters.Objects
             var tracked = new TrackedResources();
 
             writer.WriteStartObject();
-            writer.WritePropertyName(JsonApiMembers.Errors);
+            writer.WritePropertyName(JsonApiMembers.ErrorsEncoded);
 
             writer.WriteStartArray();
             WriteWrapped(writer, ref tracked, value, options);
@@ -130,44 +126,44 @@ namespace JsonApi.Converters.Objects
 
             if (value.Id != null)
             {
-                writer.WriteString(JsonApiMembers.Id, value.Id);
+                writer.WriteString(JsonApiMembers.IdEncoded, value.Id);
             }
 
             if (value.Links != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Links);
+                writer.WritePropertyName(JsonApiMembers.LinksEncoded);
                 JsonSerializer.Serialize(writer, value.Links, options);
             }
 
             if (value.Status != null)
             {
-                writer.WriteString(JsonApiMembers.Status, value.Status);
+                writer.WriteString(JsonApiMembers.StatusEncoded, value.Status);
             }
 
             if (value.Code != null)
             {
-                writer.WriteString(JsonApiMembers.Code, value.Code);
+                writer.WriteString(JsonApiMembers.CodeEncoded, value.Code);
             }
 
             if (value.Title != null)
             {
-                writer.WriteString(JsonApiMembers.Title, value.Title);
+                writer.WriteString(JsonApiMembers.TitleEncoded, value.Title);
             }
 
             if (value.Detail != null)
             {
-                writer.WriteString(JsonApiMembers.Detail, value.Detail);
+                writer.WriteString(JsonApiMembers.DetailEncoded, value.Detail);
             }
 
             if (value.Source != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Source);
+                writer.WritePropertyName(JsonApiMembers.SourceEncoded);
                 JsonSerializer.Serialize(writer, value.Source, options);
             }
 
             if (value.Meta != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Meta);
+                writer.WritePropertyName(JsonApiMembers.MetaEncoded);
                 JsonSerializer.Serialize(writer, value.Meta, options);
             }
 

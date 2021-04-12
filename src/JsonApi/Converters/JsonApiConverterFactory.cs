@@ -113,7 +113,9 @@ namespace JsonApi.Converters
                     }
                 }
 
-                return CreateConverter(typeof(JsonApiResourceObjectRelationshipConverter<>), relationshipType);
+                var info = options.GetTypeInfo(relationshipType);
+
+                return CreateConverter(typeof(JsonApiResourceObjectRelationshipConverter<>), info, relationshipType);
             }
 
             if (typeToConvert.IsCollection())
@@ -162,6 +164,13 @@ namespace JsonApi.Converters
             var genericType = converterType.MakeGenericType(typesToConvert);
 
             return Activator.CreateInstance(genericType, info) as JsonConverter;
+        }
+
+        protected JsonConverter? CreateConverter(Type converterType, IJsonObjectConverter converter, params Type[] typesToConvert)
+        {
+            var genericType = converterType.MakeGenericType(typesToConvert);
+
+            return Activator.CreateInstance(genericType, converter) as JsonConverter;
         }
     }
 }

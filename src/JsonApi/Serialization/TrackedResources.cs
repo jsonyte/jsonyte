@@ -1,89 +1,202 @@
-﻿using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace JsonApi.Serialization
 {
     internal ref struct TrackedResources
     {
-        private const int IncludedLength = 8;
+        private const int OverflowCount = 16;
 
-        //private IncludedValue[]? included;
-        private Dictionary<JsonApiResourceIdentifier, IncludedValue>? included;
+        private IncludedValue value0;
 
-        private Queue<JsonApiResourceIdentifier>? stack;
+        private IncludedValue value1;
 
-        private int includedIndex;
+        private IncludedValue value2;
 
-        public int Count => included?.Count ?? 0;
+        private IncludedValue value3;
 
-        public Queue<JsonApiResourceIdentifier> Identifiers => stack;
+        private IncludedValue value4;
 
-        public void SetIncluded(JsonApiResourceIdentifier identifier, IJsonObjectConverter converter, object value)
+        private IncludedValue value5;
+
+        private IncludedValue value6;
+
+        private IncludedValue value7;
+
+        private IncludedValue value8;
+
+        private IncludedValue value9;
+
+        private IncludedValue value10;
+
+        private IncludedValue value11;
+
+        private IncludedValue value12;
+
+        private IncludedValue value13;
+
+        private IncludedValue value14;
+
+        private IncludedValue value15;
+
+        private List<(byte[] id, byte[] type, IJsonObjectConverter converter, object value)>? overflow;
+
+        public int Count;
+
+        public IncludedValue Get(int index)
         {
-            //included ??= ArrayPool<IncludedValue>.Shared.Rent(IncludedLength);
-
-            //if (includedIndex >= included.Length)
-            //{
-            //    var array = ArrayPool<IncludedValue>.Shared.Rent(included.Length * 2);
-
-            //    included.CopyTo(array, 0);
-
-            //    ArrayPool<IncludedValue>.Shared.Return(included);
-
-            //    included = array;
-            //}
-
-            //included[includedIndex++] = new IncludedValue(identifier, converter, value);
-
-            included ??= new Dictionary<JsonApiResourceIdentifier, IncludedValue>();
-            stack ??= new Queue<JsonApiResourceIdentifier>();
-
-            if (!included.ContainsKey(identifier))
+            return index switch
             {
-                included[identifier] = new IncludedValue(identifier, converter, value);
+                0 => value0,
+                1 => value1,
+                2 => value2,
+                3 => value3,
+                4 => value4,
+                5 => value5,
+                6 => value6,
+                7 => value7,
+                8 => value8,
+                9 => value9,
+                10 => value10,
+                11 => value11,
+                12 => value12,
+                13 => value13,
+                14 => value14,
+                15 => value15,
+                _ => GetOverflow(index)
+            };
+        }
 
-                stack?.Enqueue(identifier);
+        public void SetIncluded(ResourceIdentifier identifier, IJsonObjectConverter converter, object value)
+        {
+            var included = new IncludedValue(identifier, converter, value);
+
+            if (HasIdentifier(identifier))
+            {
+                return;
             }
+
+            if (Count == 0)
+            {
+                value0 = included;
+            }
+            else if (Count == 1)
+            {
+                value1 = included;
+            }
+            else if (Count == 2)
+            {
+                value2 = included;
+            }
+            else if (Count == 3)
+            {
+                value3 = included;
+            }
+            else if (Count == 4)
+            {
+                value4 = included;
+            }
+            else if (Count == 5)
+            {
+                value5 = included;
+            }
+            else if (Count == 6)
+            {
+                value6 = included;
+            }
+            else if (Count == 7)
+            {
+                value7 = included;
+            }
+            else if (Count == 8)
+            {
+                value8 = included;
+            }
+            else if (Count == 9)
+            {
+                value9 = included;
+            }
+            else if (Count == 10)
+            {
+                value10 = included;
+            }
+            else if (Count == 11)
+            {
+                value11 = included;
+            }
+            else if (Count == 12)
+            {
+                value12 = included;
+            }
+            else if (Count == 13)
+            {
+                value13 = included;
+            }
+            else if (Count == 14)
+            {
+                value14 = included;
+            }
+            else if (Count == 15)
+            {
+                value15 = included;
+            }
+            else
+            {
+                overflow ??= new List<(byte[], byte[], IJsonObjectConverter, object)>(OverflowCount);
+
+                var id = identifier.Id;
+                var type = identifier.Type;
+
+                overflow.Add((id.ToArray(), type.ToArray(), converter, value));
+            }
+
+            Count++;
         }
 
-        public bool TryGetIncluded(JsonApiResourceIdentifier identifier, out IncludedValue value)
+        public bool TryGetIncluded(ResourceIdentifier identifier, out IncludedValue value)
         {
-            //value = default;
+            for (var i = 0; i < Count; i++)
+            {
+                var included = Get(i);
 
-            //if (included == null)
-            //{
-            //    return false;
-            //}
+                if (included.HasIdentifier(identifier))
+                {
+                    value = included;
+                    return true;
+                }
+            }
 
-            //for (var i = 0; i < includedIndex; i++)
-            //{
-            //    var include = included[i];
+            value = default;
 
-            //    if (include.Identifier.Equals(identifier))
-            //    {
-            //        value = include;
-
-            //        return true;
-            //    }
-            //}
-
-            //return false;
-
-            included ??= new Dictionary<JsonApiResourceIdentifier, IncludedValue>();
-            stack ??= new Queue<JsonApiResourceIdentifier>();
-
-            return included.TryGetValue(identifier, out value);
+            return false;
         }
 
-        public void Release()
+        private IncludedValue GetOverflow(int index)
         {
-            //if (included != null)
-            //{
-            //    ArrayPool<IncludedValue>.Shared.Return(included, true);
-            //}
+            if (overflow == null)
+            {
+                return default;
+            }
 
-            //included = null;
+            var item = overflow[index - OverflowCount];
+
+            var identifier = new ResourceIdentifier(item.id, item.type);
+
+            return new IncludedValue(identifier, item.converter, item.value);
+        }
+
+        private bool HasIdentifier(ResourceIdentifier identifier)
+        {
+            for (var i = 0; i < Count; i++)
+            {
+                var included = Get(i);
+
+                if (included.HasIdentifier(identifier))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

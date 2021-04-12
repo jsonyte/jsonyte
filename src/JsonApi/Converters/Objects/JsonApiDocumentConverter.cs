@@ -54,8 +54,6 @@ namespace JsonApi.Converters.Objects
                 reader.Read();
             }
 
-            tracked.Release();
-
             state.Validate();
 
             return state.IsEmpty()
@@ -77,42 +75,42 @@ namespace JsonApi.Converters.Objects
 
             if (value.Included != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Included);
+                writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
                 JsonSerializer.Serialize(writer, value.Included, options);
             }
 
             if (value.Errors != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Errors);
+                writer.WritePropertyName(JsonApiMembers.ErrorsEncoded);
                 WriteWrapped(writer, ref tracked, value.Errors, options);
             }
 
             if (value.Links != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Links);
+                writer.WritePropertyName(JsonApiMembers.LinksEncoded);
                 JsonSerializer.Serialize(writer, value.Links, options);
             }
 
             if (value.Meta != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Meta);
+                writer.WritePropertyName(JsonApiMembers.MetaEncoded);
                 JsonSerializer.Serialize(writer, value.Meta, options);
             }
 
             if (value.JsonApi != null)
             {
-                writer.WritePropertyName(JsonApiMembers.JsonApi);
+                writer.WritePropertyName(JsonApiMembers.JsonApiEncoded);
                 JsonSerializer.Serialize(writer, value.JsonApi, options);
             }
 
             writer.WriteEndObject();
         }
 
-        protected void WriteWrapped<T>(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options)
+        protected void WriteWrapped<TElement>(Utf8JsonWriter writer, ref TrackedResources tracked, TElement value, JsonSerializerOptions options)
         {
-            if (options.GetConverter(typeof(T)) is not WrappedJsonConverter<T> converter)
+            if (options.GetConverter(typeof(TElement)) is not WrappedJsonConverter<TElement> converter)
             {
-                throw new JsonApiException($"Could not find converter for type '{typeof(T)}'");
+                throw new JsonApiException($"Could not find converter for type '{typeof(TElement)}'");
             }
 
             converter.WriteWrapped(writer, ref tracked, value, options);

@@ -7,6 +7,8 @@ namespace JsonApi.Converters.Collections
 {
     internal class JsonApiRelationshipCollectionConverter<T, TElement> : JsonApiRelationshipDetailsConverter<T>
     {
+        private JsonApiRelationshipDetailsConverter<TElement>? relationshipConverter;
+
         public Type? ElementType { get; } = typeof(TElement);
 
         public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
@@ -24,9 +26,9 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(ref relationshipState);
+                var name = reader.ReadMemberFast(ref relationshipState);
 
-                if (name == JsonApiMembers.Data)
+                if (name.IsEqual(JsonApiMembers.DataEncoded))
                 {
                     relationships = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
@@ -54,7 +56,7 @@ namespace JsonApi.Converters.Collections
 
             var relationships = new List<TElement>();
 
-            var converter = options.GetRelationshipConverter<TElement>();
+            var converter = GetRelationshipConverter(options);
 
             while (reader.IsInArray())
             {
@@ -79,7 +81,7 @@ namespace JsonApi.Converters.Collections
         public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, RelationshipResource<T> value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
-            writer.WritePropertyName(JsonApiMembers.Data);
+            writer.WritePropertyName(JsonApiMembers.DataEncoded);
 
             WriteWrapped(writer, ref tracked, value, options);
 
@@ -94,7 +96,7 @@ namespace JsonApi.Converters.Collections
             }
             else if (value.Resource is IEnumerable<TElement> collection)
             {
-                var converter = options.GetRelationshipConverter<TElement>();
+                var converter = GetRelationshipConverter(options);
 
                 writer.WriteStartArray();
 
@@ -111,6 +113,11 @@ namespace JsonApi.Converters.Collections
             {
                 throw new JsonApiFormatException($"JSON:API resources collection of type '{typeof(T).Name}' must be an enumerable");
             }
+        }
+
+        private JsonApiRelationshipDetailsConverter<TElement> GetRelationshipConverter(JsonSerializerOptions options)
+        {
+            return relationshipConverter ??= options.GetRelationshipConverter<TElement>();
         }
 
         private object GetCollection(List<TElement> relationships)

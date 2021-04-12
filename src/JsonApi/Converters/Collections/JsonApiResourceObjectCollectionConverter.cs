@@ -7,6 +7,8 @@ namespace JsonApi.Converters.Collections
 {
     internal class JsonApiResourceObjectCollectionConverter<T, TElement> : WrappedJsonConverter<T>
     {
+        private WrappedJsonConverter<TElement>? wrappedConverter;
+
         public Type? ElementType { get; } = typeof(TElement);
 
         public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
@@ -20,13 +22,13 @@ namespace JsonApi.Converters.Collections
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(ref state);
+                var name = reader.ReadMemberFast(ref state);
 
-                if (name == JsonApiMembers.Data)
+                if (name.IsEqual(JsonApiMembers.DataEncoded))
                 {
                     resources = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
-                else if (name == JsonApiMembers.Included)
+                else if (name.IsEqual(JsonApiMembers.IncludedEncoded))
                 {
                     ReadIncluded(ref reader, ref tracked, options);
                 }
@@ -37,8 +39,6 @@ namespace JsonApi.Converters.Collections
 
                 reader.Read();
             }
-
-            tracked.Release();
 
             return resources;
         }
@@ -54,7 +54,7 @@ namespace JsonApi.Converters.Collections
 
             var resources = new List<TElement>();
 
-            var converter = options.GetWrappedConverter<TElement>();
+            var converter = GetWrappedConverter(options);
 
             while (reader.IsInArray())
             {
@@ -93,23 +93,23 @@ namespace JsonApi.Converters.Collections
             var tracked = new TrackedResources();
 
             writer.WriteStartObject();
-            writer.WritePropertyName(JsonApiMembers.Data);
+            writer.WritePropertyName(JsonApiMembers.DataEncoded);
 
             WriteWrapped(writer, ref tracked, value, options);
 
             if (tracked.Count > 0)
             {
-                writer.WritePropertyName(JsonApiMembers.Included);
+                writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
                 writer.WriteStartArray();
 
-                while (tracked.Identifiers.Count > 0)
-                {
-                    var identifier = tracked.Identifiers.Dequeue();
+                var index = 0;
 
-                    if (tracked.TryGetIncluded(identifier, out var included))
-                    {
-                        included.Converter.Write(writer, ref tracked, included.Value, options);
-                    }
+                while (index < tracked.Count)
+                {
+                    var included = tracked.Get(index);
+                    included.Converter.Write(writer, ref tracked, included.Value, options);
+
+                    index++;
                 }
 
                 writer.WriteEndArray();
@@ -126,7 +126,7 @@ namespace JsonApi.Converters.Collections
             }
             else if (value is IEnumerable<TElement> collection)
             {
-                var converter = options.GetWrappedConverter<TElement>();
+                var converter = GetWrappedConverter(options);
 
                 writer.WriteStartArray();
 
@@ -148,6 +148,11 @@ namespace JsonApi.Converters.Collections
             return TypeCategory == JsonTypeCategory.Array
                 ? resources.ToArray()
                 : resources;
+        }
+
+        private WrappedJsonConverter<TElement> GetWrappedConverter(JsonSerializerOptions options)
+        {
+            return wrappedConverter ??= options.GetWrappedConverter<TElement>();
         }
     }
 }
