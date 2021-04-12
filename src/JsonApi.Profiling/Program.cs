@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using AutoBogus;
 using Bogus;
 using JsonApi.Tests.Performance;
 
@@ -26,7 +25,6 @@ namespace JsonApi.Profiling
             for (var i = 0; i < 1000000; i++)
             {
                 JsonSerializer.Deserialize(json, model.Type, options);
-                //JsonSerializer.Serialize(model.Value, options);
             }
 
             watch.Stop();

@@ -36,6 +36,15 @@ namespace JsonApi.Serialization
                 .Concat(GetFields(type, options))
                 .ToArray();
 
+            var duplicates = members
+                .GroupBy(x => x.Name)
+                .Any(x => x.Count() > 1);
+
+            if (duplicates)
+            {
+                throw new InvalidOperationException($"Type contains duplicate property names: {type.FullName}");
+            }
+
             nameCache = GetNameCache(members);
             parameterCache = GetParameters(constructor, members, options);
 

@@ -94,11 +94,6 @@ namespace JsonApi.Converters
                 return CreateConverter(typeof(JsonApiDocumentDataConverter<>), typeToConvert.GenericTypeArguments.First());
             }
 
-            //if (typeToConvert.IsRelationship())
-            //{
-            //    return CreateConverter(typeof(JsonApiRelationshipConverter<>), typeToConvert.GenericTypeArguments.First());
-            //}
-
             if (typeToConvert.IsRelationshipResource())
             {
                 var relationshipType = typeToConvert.GenericTypeArguments.First();

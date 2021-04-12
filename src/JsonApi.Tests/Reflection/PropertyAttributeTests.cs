@@ -1,13 +1,46 @@
-﻿using Xunit;
+﻿using System;
+using JsonApi.Tests.Models;
+using Xunit;
 
 namespace JsonApi.Tests.Reflection
 {
     public class PropertyAttributeTests
     {
-        [Fact(Skip = "not sure")]
-        public void DuplicatePropertyNamesThrows()
+        [Fact]
+        public void DuplicatePropertyNamesThrowsWhenSerializing()
         {
-            // does it?
+            var model = new ModelWithDuplicateProperties
+            {
+                Id = "1",
+                Type = "type",
+                Name = "abc",
+                AlsoName = "def"
+            };
+
+            var exception = Record.Exception(() => model.Serialize());
+
+            Assert.IsType<InvalidOperationException>(exception);
+            Assert.Contains("contains duplicate property names", exception.Message);
+        }
+
+        [Fact]
+        public void DuplicatePropertyNamesThrowsWhenDeserializing()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '4',
+                    'type': 'newType',
+                    'attributes': {
+                      'name': 'abc'
+                    }
+                  }
+                }";
+
+            var exception = Record.Exception(() => json.Deserialize<ModelWithDuplicateProperties>());
+
+            Assert.IsType<InvalidOperationException>(exception);
+            Assert.Contains("contains duplicate property names", exception.Message);
         }
     }
 }
