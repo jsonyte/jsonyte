@@ -5,57 +5,50 @@ using System.Text.Json.Serialization;
 
 namespace JsonApi.Serialization
 {
-    internal sealed class JsonPropertyInfo<T> : IJsonPropertyInfo
+    internal sealed class JsonPropertyInfo<T> : JsonMemberInfo<T>
     {
-        public JsonPropertyInfo(PropertyInfo property, JsonConverter converter, JsonSerializerOptions options)
+        public JsonPropertyInfo(PropertyInfo property, JsonIgnoreCondition? ignoreCondition, JsonConverter converter, JsonSerializerOptions options)
+            : base(property, property.PropertyType, ignoreCondition, converter, options)
         {
-            Options = options;
-            TypedConverter = converter as JsonConverter<T>;
-            Get = options.GetMemberAccessor().CreatePropertyGetter<T>(property);
-            Set = options.GetMemberAccessor().CreatePropertySetter<T>(property);
-            PropertyName = GetPropertyName(property, options);
+            Get = CreateGetter(property);
+            Set = CreateSetter(property);
+            Ignored = IsIgnored(property);
         }
 
-        public JsonSerializerOptions Options { get; }
+        public override Func<object, T>? Get { get; }
 
-        public JsonConverter<T> TypedConverter { get; }
+        public override Action<object, T>? Set { get; }
 
-        public Func<object, T> Get { get; }
+        public override bool Ignored { get; }
 
-        public Action<object, T> Set { get; }
-
-        public string PropertyName { get; }
-
-        public void Read(ref Utf8JsonReader reader, object resource)
+        private Func<object, T>? CreateGetter(PropertyInfo property)
         {
-            var value = TypedConverter.Read(ref reader, typeof(T), Options);
-
-            Set(resource, value);
-        }
-
-        public void Write(Utf8JsonWriter writer, object resource)
-        {
-            var value = Get(resource);
-
-            writer.WritePropertyName(PropertyName);
-            TypedConverter.Write(writer, value, Options);
-        }
-
-        private string GetPropertyName(PropertyInfo property, JsonSerializerOptions options)
-        {
-            var attribute = property.GetCustomAttribute<JsonPropertyNameAttribute>(false);
-
-            if (attribute != null)
+            if (!IsPublic(property.GetMethod))
             {
-                return attribute.Name;
+                return null;
             }
 
-            if (options.PropertyNamingPolicy != null)
+            return Options.GetMemberAccessor().CreatePropertyGetter<T>(property);
+        }
+
+        private Action<object, T>? CreateSetter(PropertyInfo property)
+        {
+            if (!IsPublic(property.SetMethod))
             {
-                return options.PropertyNamingPolicy.ConvertName(property.Name);
+                return null;
             }
 
-            return property.Name;
+            return Options.GetMemberAccessor().CreatePropertySetter<T>(property);
+        }
+        
+        private bool IsIgnored(PropertyInfo property)
+        {
+            return IsReadOnly(property) && Options.IgnoreReadOnlyProperties;
+        }
+
+        private bool IsReadOnly(PropertyInfo property)
+        {
+            return IsPublic(property.GetMethod) && !IsPublic(property.SetMethod);
         }
     }
 }

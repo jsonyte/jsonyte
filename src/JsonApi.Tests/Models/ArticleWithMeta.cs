@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace JsonApi.Tests.Models
 {
@@ -13,6 +11,6 @@ namespace JsonApi.Tests.Models
         public string Type { get; set; }
 
         [JsonPropertyName("meta")]
-        public Dictionary<string, JsonElement> Meta { get; set; }
+        public JsonApiMeta Meta { get; set; }
     }
 }

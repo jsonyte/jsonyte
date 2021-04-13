@@ -1,41 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using JsonApi.Converters.Collections;
+using JsonApi.Converters.Objects;
+using JsonApi.Serialization;
 
 namespace JsonApi.Converters
 {
-    /// <summary>
-    /// Top level converters:
-    /// 
-    /// Error/Errors
-    /// Resource/Resource list
-    /// Document/Document of T
-    /// </summary>
     internal class JsonApiConverterFactory : JsonConverterFactory
     {
-        private static readonly HashSet<Type> DefaultTypes = new()
+        private static readonly HashSet<Type> IgnoredTypes = new()
         {
+            typeof(JsonApiDocumentLinks),
+            typeof(JsonApiErrorLinks),
+            typeof(JsonApiErrorSource),
+            typeof(JsonApiLinks),
+            typeof(JsonApiMeta),
+            typeof(JsonApiObject),
+            typeof(JsonApiRelationshipLinks),
+            typeof(JsonApiResource),
+            typeof(JsonApiResourceIdentifier),
+            typeof(JsonApiResourceLinks),
+            typeof(JsonApiResourceIdentifier[]),
+            typeof(JsonElement),
+            typeof(string),
+            typeof(Dictionary<string, JsonElement>),
+            typeof(Dictionary<string, JsonApiRelationship>)
+        };
 
+        private static readonly Dictionary<Type, JsonConverter> JsonApiConverters = new()
+        {
+            {typeof(JsonApiError), new JsonApiErrorConverter()},
+            {typeof(JsonApiDocument), new JsonApiDocumentDataConverter()},
+            {typeof(JsonApiLink), new JsonApiLinkConverter()},
+            {typeof(JsonApiPointer), new JsonApiPointerConverter()},
+            {typeof(JsonApiRelationship), new JsonApiRelationshipConverter()},
+            {typeof(JsonApiResource[]), new JsonApiResourceArrayConverter()},
+            {typeof(JsonApiError[]), new JsonApiErrorsCollectionConverter<JsonApiError[]>()},
+            {typeof(List<JsonApiError>), new JsonApiErrorsCollectionConverter<List<JsonApiError>>()}
         };
 
         public override bool CanConvert(Type typeToConvert)
         {
-            if (DefaultTypes.Contains(typeToConvert))
+            if (IsIgnoredType(typeToConvert))
             {
                 return false;
             }
 
-            if (typeToConvert.IsError())
+            if (JsonApiConverters.ContainsKey(typeToConvert))
+            {
+                return true;
+            }
+
+            if (typeToConvert.IsDocument())
+            {
+                return true;
+            }
+
+            if (typeToConvert.IsRelationship())
+            {
+                return true;
+            }
+
+            if (typeToConvert.IsRelationshipResource())
             {
                 return true;
             }
 
             if (typeToConvert.IsCollection())
             {
-                var collectionType = typeToConvert.GetCollectionType();
+                var elementType = typeToConvert.GetCollectionElementType();
 
-                if (collectionType != null && collectionType.IsError())
+                if (elementType != null && elementType.IsError())
                 {
                     return true;
                 }
@@ -46,95 +84,88 @@ namespace JsonApi.Converters
 
         public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
-            if (typeToConvert.IsError())
+            if (JsonApiConverters.TryGetValue(typeToConvert, out var converter))
             {
-                return new JsonApiErrorConverter();
+                return converter;
+            }
+
+            if (typeToConvert.IsDocument())
+            {
+                return CreateConverter(typeof(JsonApiDocumentDataConverter<>), typeToConvert.GenericTypeArguments.First());
+            }
+
+            if (typeToConvert.IsRelationshipResource())
+            {
+                var relationshipType = typeToConvert.GenericTypeArguments.First();
+
+                if (relationshipType.IsCollection())
+                {
+                    var elementType = relationshipType.GetCollectionElementType();
+
+                    if (elementType != null)
+                    {
+                        return CreateConverter(typeof(JsonApiRelationshipCollectionConverter<,>), relationshipType, elementType);
+                    }
+                }
+
+                var info = options.GetTypeInfo(relationshipType);
+
+                return CreateConverter(typeof(JsonApiResourceObjectRelationshipConverter<>), info, relationshipType);
             }
 
             if (typeToConvert.IsCollection())
             {
-                var collectionType = typeToConvert.GetCollectionType();
+                var elementType = typeToConvert.GetCollectionElementType();
 
-                if (collectionType != null && collectionType.IsError())
+                if (elementType != null && elementType.IsError())
                 {
-                    return CreateConverter(typeof(JsonApiErrorsConverter<>), typeToConvert);
+                    return CreateConverter(typeof(JsonApiErrorsCollectionConverter<>), typeToConvert);
+                }
+
+                if (elementType != null)
+                {
+                    var collectionTypeInfo = options.GetTypeInfo(elementType);
+
+                    var collectionConverterType = collectionTypeInfo.ParameterCount == 0
+                        ? typeof(JsonApiResourceObjectCollectionConverter<,>)
+                        : typeof(JsonApiResourceObjectCollectionConstructorConverter<,>);
+
+                    return CreateConverter(collectionConverterType, typeToConvert, elementType);
                 }
             }
 
             return null;
         }
 
-        private JsonConverter? CreateConverter(Type converterType, params Type[] typesToConvert)
+        protected bool IsIgnoredType(Type typeToConvert)
         {
-            var genericType = converterType.MakeGenericType(typesToConvert);
-
-            return Activator.CreateInstance(genericType) as JsonConverter;
-        }
-
-#if false
-        private static readonly HashSet<Type> DefaultTypes = new()
-        {
-            typeof(JsonApiError),
-            typeof(JsonApiResource),
-            typeof(JsonApiResourceIdentifier)
-        };
-
-        public override bool CanConvert(Type typeToConvert)
-        {
-            if (DefaultTypes.Contains(typeToConvert))
-            {
-                return false;
-            }
-
-            if (typeToConvert.IsDocument())
+            if (typeToConvert.IsPrimitive)
             {
                 return true;
             }
 
-            if (typeToConvert.IsCollection())
-            {
-                var collectionType = typeToConvert.GetCollectionType();
-
-                if (collectionType.IsError() || collectionType.IsResource())
-                {
-                    return true;
-                }
-            }
-
-            return typeToConvert.IsResource();
+            return IgnoredTypes.Contains(typeToConvert);
         }
 
-        public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
-        {
-            if (typeToConvert.IsDocument())
-            {
-                return CreateConverter(typeof(JsonApiDocumentConverter<>), typeToConvert);
-            }
-
-            if (typeToConvert.IsCollection())
-            {
-                var collectionType = typeToConvert.GetCollectionType();
-
-                if (collectionType.IsError())
-                {
-                    return CreateConverter(typeof(NewJsonApiErrorsConverter<>), typeToConvert);
-                }
-
-                if (collectionType.IsResource())
-                {
-                    return CreateConverter(typeof(JsonApiResourceCollectionConverter<,>), typeToConvert, collectionType);
-                }
-            }
-
-            return CreateConverter(typeof(JsonApiResourceConverter<>), typeToConvert);
-        }
-
-        private JsonConverter CreateConverter(Type converterType, params Type[] typesToConvert)
+        protected JsonConverter? CreateConverter(Type converterType, params Type[] typesToConvert)
         {
             var genericType = converterType.MakeGenericType(typesToConvert);
 
             return Activator.CreateInstance(genericType) as JsonConverter;
         }
-#endif
+
+        protected JsonConverter? CreateConverter(Type converterType, JsonTypeInfo info, params Type[] typesToConvert)
+        {
+            var genericType = converterType.MakeGenericType(typesToConvert);
+
+            return Activator.CreateInstance(genericType, info) as JsonConverter;
+        }
+
+        protected JsonConverter? CreateConverter(Type converterType, IJsonObjectConverter converter, params Type[] typesToConvert)
+        {
+            var genericType = converterType.MakeGenericType(typesToConvert);
+
+            return Activator.CreateInstance(genericType, converter) as JsonConverter;
+        }
     }
 }

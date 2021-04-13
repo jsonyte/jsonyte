@@ -15,5 +15,8 @@ namespace JsonApi.Tests.Models
 
         [JsonPropertyName("author")]
         public Author Author { get; set; }
+
+        [JsonPropertyName("comments")]
+        public Comment[] Comments { get; set; }
     }
 }

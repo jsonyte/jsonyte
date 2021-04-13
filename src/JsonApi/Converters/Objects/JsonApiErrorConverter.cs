@@ -1,0 +1,173 @@
+﻿using System;
+using System.Text.Json;
+using JsonApi.Serialization;
+using JsonApi.Validation;
+
+namespace JsonApi.Converters.Objects
+{
+    internal class JsonApiErrorConverter : WrappedJsonConverter<JsonApiError>
+    {
+        public Type TypeToConvert { get; } = typeof(JsonApiError);
+
+        public override JsonApiError? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            JsonApiError? firstError = null;
+
+            var state = reader.ReadDocument();
+            var tracked = new TrackedResources();
+
+            while (reader.IsInObject())
+            {
+                var name = reader.ReadMemberFast(ref state);
+
+                if (name.IsEqual(JsonApiMembers.ErrorsEncoded))
+                {
+                    reader.ReadArray(JsonApiArrayCode.Errors);
+
+                    while (reader.IsInArray())
+                    {
+                        if (firstError == null)
+                        {
+                            firstError = ReadWrapped(ref reader, ref tracked, TypeToConvert!, null, options);
+                        }
+                        else
+                        {
+                            reader.Skip();
+                        }
+                        
+                        reader.Read();
+                    }
+                }
+                else
+                {
+                    reader.Skip();
+                }
+
+                reader.Read();
+            }
+
+            state.Validate();
+
+            return state.HasFlag(DocumentFlags.Errors)
+                ? firstError
+                : default;
+        }
+
+        public override JsonApiError ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonApiError? existingValue, JsonSerializerOptions options)
+        {
+            var error = new JsonApiError();
+
+            reader.ReadObject(JsonApiMemberCode.Error);
+
+            while (reader.IsInObject())
+            {
+                var name = reader.ReadMemberFast(JsonApiMemberCode.Error);
+
+                if (name.IsEqual(JsonApiMembers.IdEncoded))
+                {
+                    error.Id = JsonSerializer.Deserialize<string>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.LinksEncoded))
+                {
+                    error.Links = JsonSerializer.Deserialize<JsonApiErrorLinks>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.StatusEncoded))
+                {
+                    error.Status = JsonSerializer.Deserialize<string>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.CodeEncoded))
+                {
+                    error.Code = JsonSerializer.Deserialize<string>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.TitleEncoded))
+                {
+                    error.Title = JsonSerializer.Deserialize<string>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.DetailEncoded))
+                {
+                    error.Detail = JsonSerializer.Deserialize<string>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.SourceEncoded))
+                {
+                    error.Source = JsonSerializer.Deserialize<JsonApiErrorSource>(ref reader, options);
+                }
+                else if (name.IsEqual(JsonApiMembers.MetaEncoded))
+                {
+                    error.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
+                }
+                else
+                {
+                    reader.Skip();
+                }
+
+                reader.Read();
+            }
+
+            return error;
+        }
+
+        public override void Write(Utf8JsonWriter writer, JsonApiError value, JsonSerializerOptions options)
+        {
+            var tracked = new TrackedResources();
+
+            writer.WriteStartObject();
+            writer.WritePropertyName(JsonApiMembers.ErrorsEncoded);
+
+            writer.WriteStartArray();
+            WriteWrapped(writer, ref tracked, value, options);
+            writer.WriteEndArray();
+
+            writer.WriteEndObject();
+        }
+
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiError value, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+
+            if (value.Id != null)
+            {
+                writer.WriteString(JsonApiMembers.IdEncoded, value.Id);
+            }
+
+            if (value.Links != null)
+            {
+                writer.WritePropertyName(JsonApiMembers.LinksEncoded);
+                JsonSerializer.Serialize(writer, value.Links, options);
+            }
+
+            if (value.Status != null)
+            {
+                writer.WriteString(JsonApiMembers.StatusEncoded, value.Status);
+            }
+
+            if (value.Code != null)
+            {
+                writer.WriteString(JsonApiMembers.CodeEncoded, value.Code);
+            }
+
+            if (value.Title != null)
+            {
+                writer.WriteString(JsonApiMembers.TitleEncoded, value.Title);
+            }
+
+            if (value.Detail != null)
+            {
+                writer.WriteString(JsonApiMembers.DetailEncoded, value.Detail);
+            }
+
+            if (value.Source != null)
+            {
+                writer.WritePropertyName(JsonApiMembers.SourceEncoded);
+                JsonSerializer.Serialize(writer, value.Source, options);
+            }
+
+            if (value.Meta != null)
+            {
+                writer.WritePropertyName(JsonApiMembers.MetaEncoded);
+                JsonSerializer.Serialize(writer, value.Meta, options);
+            }
+
+            writer.WriteEndObject();
+        }
+    }
+}

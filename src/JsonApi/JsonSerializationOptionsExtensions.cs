@@ -3,9 +3,25 @@ using System.Linq;
 using System.Text.Json;
 using JsonApi.Converters;
 using JsonApi.Serialization;
+using JsonApi.Serialization.Reflection;
 
 namespace JsonApi
 {
+    /*
+        https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-ignore-properties?pivots=dotnet-5-0
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        DONE public bool IgnoreNullValues { get; set; }
+
+        public JsonIgnoreCondition DefaultIgnoreCondition { get; set; }
+
+        public bool IgnoreReadOnlyProperties { get; set; }
+
+        public bool IgnoreReadOnlyFields { get; set; }
+
+        public bool IncludeFields { get; set; }
+
+     */
     public static class JsonSerializationOptionsExtensions
     {
         public static JsonSerializerOptions AddJsonApi(this JsonSerializerOptions options)
@@ -20,14 +36,28 @@ namespace JsonApi
                 options.Converters.Add(new JsonApiConverterFactory());
             }
 
+            if (!options.Converters.OfType<JsonApiResourceConverterFactory>().Any())
+            {
+                options.Converters.Add(new JsonApiResourceConverterFactory());
+            }
+
+            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
             return options;
         }
 
-        internal static JsonApiConverter<T> GetConverter<T>(this JsonSerializerOptions options)
+        internal static StringComparer GetPropertyComparer(this JsonSerializerOptions options)
+        {
+            return options.PropertyNameCaseInsensitive
+                ? StringComparer.OrdinalIgnoreCase
+                : StringComparer.Ordinal;
+        }
+
+        internal static WrappedJsonConverter<T> GetWrappedConverter<T>(this JsonSerializerOptions options)
         {
             var converter = options.GetConverter(typeof(T));
 
-            if (converter is not JsonApiConverter<T> jsonApiConverter)
+            if (converter is not WrappedJsonConverter<T> jsonApiConverter)
             {
                 throw new JsonApiException($"Converter not found for type {typeof(T)}");
             }
@@ -35,9 +65,26 @@ namespace JsonApi
             return jsonApiConverter;
         }
 
-        internal static JsonClassInfo GetClassInfo(this JsonSerializerOptions options, Type type)
+        internal static JsonApiRelationshipDetailsConverter<T> GetRelationshipConverter<T>(this JsonSerializerOptions options)
         {
-            return GetState(options).Classes.GetOrAdd(type, x => new JsonClassInfo(x, options));
+            var converter = options.GetConverter(typeof(RelationshipResource<T>));
+
+            if (converter is not JsonApiRelationshipDetailsConverter<T> jsonApiConverter)
+            {
+                throw new JsonApiException($"Converter not found for type {typeof(T)}");
+            }
+
+            return jsonApiConverter;
+        }
+
+        internal static IJsonObjectConverter GetObjectConverter<T>(this JsonSerializerOptions options)
+        {
+            return GetState(options).ObjectConverters.GetOrAdd(typeof(T), _ => new JsonObjectConverter<T>(options.GetWrappedConverter<T>()));
+        }
+
+        internal static JsonTypeInfo GetTypeInfo(this JsonSerializerOptions options, Type type)
+        {
+            return GetState(options).GetTypeInfo(type, options);
         }
 
         internal static IMemberAccessor GetMemberAccessor(this JsonSerializerOptions options)
@@ -49,7 +96,7 @@ namespace JsonApi
         {
             if (options.GetConverter(typeof(JsonApiStateConverter)) is not JsonApiStateConverter state)
             {
-                throw new JsonApiException("JSON:API extensions not initialized, please call use 'AddJsonApi' on 'JsonSerializerOptions' first");
+                throw new JsonApiException("JSON:API extensions not initialized, please use 'AddJsonApi' on 'JsonSerializerOptions' first");
             }
 
             return state;

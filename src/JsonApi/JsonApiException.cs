@@ -1,10 +1,10 @@
-﻿using System;
+﻿using System.Text.Json;
 
 namespace JsonApi
 {
-    public class JsonApiException : Exception
+    public class JsonApiException : JsonException
     {
-        public JsonApiException(string message)
+        public JsonApiException(string? message)
             : base(message)
         {
         }

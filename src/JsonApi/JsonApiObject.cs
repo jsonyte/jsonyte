@@ -1,18 +1,15 @@
-﻿using System;
-using System.Text.Json.Serialization;
-using JsonApi.Converters;
+﻿using System.Text.Json.Serialization;
 
 namespace JsonApi
 {
-    public class JsonApiObject
+    public sealed class JsonApiObject
     {
         [JsonPropertyName("version")]
-        [JsonConverter(typeof(JsonApiVersionConverter))]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public Version Version { get; set; }
+        public string? Version { get; set; } = "1.0";
 
         [JsonPropertyName("meta")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public JsonApiMeta Meta { get; set; }
+        public JsonApiMeta? Meta { get; set; }
     }
 }

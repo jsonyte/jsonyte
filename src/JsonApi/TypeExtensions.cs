@@ -9,11 +9,31 @@ namespace JsonApi
 {
     internal static class TypeExtensions
     {
+        private const BindingFlags MemberFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase;
+
         public static bool IsResource(this Type type)
         {
-            var typeProperty = type.GetProperty("Type", BindingFlags.Instance | BindingFlags.Public);
+            return HasMember(type, JsonApiMembers.Type);
+        }
 
-            return typeProperty?.PropertyType == typeof(string);
+        public static bool IsResourceIdentifier(this Type type)
+        {
+            return HasMember(type, JsonApiMembers.Id) && HasMember(type, JsonApiMembers.Type);
+        }
+
+        public static bool IsResourceIdentifierCollection(this Type type)
+        {
+            if (type.IsCollection())
+            {
+                var elementType = type.GetCollectionElementType();
+
+                if (elementType != null && elementType.IsResourceIdentifier())
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static bool IsError(this Type type)
@@ -27,7 +47,37 @@ namespace JsonApi
             {
                 var genericType = type.GetGenericTypeDefinition();
 
-                if (genericType == typeof(JsonApiResourceDocument<>))
+                if (genericType == typeof(JsonApiDocument<>))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsRelationshipResource(this Type type)
+        {
+            if (type.IsGenericType)
+            {
+                var genericType = type.GetGenericTypeDefinition();
+
+                if (genericType == typeof(RelationshipResource<>))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsRelationship(this Type type)
+        {
+            if (type.IsGenericType)
+            {
+                var genericType = type.GetGenericTypeDefinition();
+
+                if (genericType == typeof(JsonApiRelationship<>))
                 {
                     return true;
                 }
@@ -38,36 +88,26 @@ namespace JsonApi
 
         public static bool IsCollection(this Type type)
         {
-            if (type == typeof(string))
-            {
-                return false;
-            }
-
             return type.IsArray || typeof(IEnumerable).IsAssignableFrom(type);
         }
 
-        public static JsonClassType GetClassType(this Type type)
+        public static JsonTypeCategory GetTypeCategory(this Type type)
         {
             if (!type.IsCollection())
             {
-                return JsonClassType.Object;
+                return JsonTypeCategory.Object;
             }
 
             if (type.IsArray)
             {
-                return JsonClassType.Array;
+                return JsonTypeCategory.Array;
             }
 
-            return JsonClassType.List;
+            return JsonTypeCategory.List;
         }
 
-        public static Type? GetCollectionType(this Type type)
+        public static Type? GetCollectionElementType(this Type type)
         {
-            if (type == typeof(string))
-            {
-                return null;
-            }
-
             if (type.IsArray)
             {
                 return type.GetElementType();
@@ -83,6 +123,20 @@ namespace JsonApi
             }
 
             return null;
+        }
+
+        private static bool HasMember(Type type, string name)
+        {
+            var property = type.GetProperty(name, MemberFlags);
+
+            if (property != null && property.PropertyType == typeof(string))
+            {
+                return true;
+            }
+
+            var field = type.GetField(name, MemberFlags);
+
+            return field != null && field.FieldType == typeof(string);
         }
 
         private static IEnumerable<Type> GetInterfaces(Type type)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
+using JsonApi.Tests.Models;
 using Xunit;
 
 namespace JsonApi.Tests.Deserialization
@@ -14,46 +15,24 @@ namespace JsonApi.Tests.Deserialization
             }}";
 
         [Theory]
+        [InlineData("0.1")]
         [InlineData("1.0")]
         [InlineData("1.1")]
         [InlineData("1.1.1")]
+        [InlineData("2.0")]
         [InlineData("2.0.1")]
-        public void CanConvertNewJsonApiVersions(string version)
+        public void CanConvertJsonApiVersions(string version)
         {
-            var document = Json.Format(version).Deserialize<Document>();
+            var document = string.Format(Json, version).Deserialize<Document>();
 
             Assert.NotNull(document.JsonApi);
-            Assert.Equal(document.JsonApi.Version, Version.Parse(version));
+            Assert.Equal(document.JsonApi.Version, version);
         }
 
         [Theory]
-        [InlineData("1.b")]
-        [InlineData("1.0-beta.1")]
-        [InlineData("abcdef")]
-        [InlineData("1.#.0")]
-        public void InvalidVersionThrows(string version)
-        {
-            var exception = Record.Exception(() => Json.Format(version).Deserialize<Document>());
-
-            Assert.IsType<JsonApiException>(exception);
-            Assert.Contains("invalid", exception.Message.ToLower());
-        }
-
-        [Theory]
-        [InlineData("0.9")]
-        [InlineData("0.1")]
-        [InlineData("0.0.1")]
-        [InlineData("0.9.9")]
-        public void LessThanMinimumVersionThrows(string version)
-        {
-            var exception = Record.Exception(() => Json.Format(version).Deserialize<Document>());
-
-            Assert.IsType<JsonApiException>(exception);
-            Assert.Contains("minimum required", exception.Message.ToLower());
-        }
-
-        [Fact]
-        public void CanDeserializeObjectInDocument()
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeObjectInDocument(Type documentType)
         {
             const string json = @"
                 {
@@ -67,13 +46,58 @@ namespace JsonApi.Tests.Deserialization
                   }
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document);
             Assert.NotNull(document.JsonApi);
-            Assert.Equal("1.0", document.JsonApi.Version.ToString());
-            Assert.Equal(10, document.JsonApi.Meta["count"].GetInt32());
-            Assert.Equal("something", document.JsonApi.Meta["feature"].GetString());
+            Assert.Equal("1.0", document.JsonApi.Version);
+            Assert.Equal(10, document.JsonApi.Meta?["count"].GetInt32());
+            Assert.Equal("something", document.JsonApi.Meta?["feature"].GetString());
+        }
+
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void DeserializingJsonApiWithNoMembersHasDefaultVersion(Type documentType)
+        {
+            const string json = @"
+                {
+                  'data': null,
+                  'jsonapi': {
+                  }
+                }";
+
+            var document = json.DeserializeDocument(documentType);
+
+            Assert.NotNull(document);
+            Assert.NotNull(document.JsonApi);
+            Assert.Equal("1.0", document.JsonApi.Version);
+            Assert.Null(document.JsonApi.Meta);
+        }
+
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeJsonApiWithOnlyMetaAndDefaultVersion(Type documentType)
+        {
+            const string json = @"
+                {
+                  'data': null,
+                  'jsonapi': {
+                    'meta': {
+                      'count': 10,
+                      'feature': 'something'
+                    }
+                  }
+                }";
+
+            var document = json.DeserializeDocument(documentType);
+
+            Assert.NotNull(document);
+            Assert.NotNull(document.JsonApi);
+            Assert.Equal("1.0", document.JsonApi.Version);
+            Assert.Equal(10, document.JsonApi.Meta?["count"].GetInt32());
+            Assert.Equal("something", document.JsonApi.Meta?["feature"].GetString());
         }
 
         private class Document

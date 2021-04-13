@@ -1,11 +1,15 @@
-﻿using Xunit;
+﻿using System;
+using JsonApi.Tests.Models;
+using Xunit;
 
 namespace JsonApi.Tests.Deserialization
 {
     public class DeserializeLinksTests
     {
-        [Fact]
-        public void JsonMustHaveRequiredMembers()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void JsonMustHaveRequiredMembers(Type documentType)
         {
             const string json = @"
                 {
@@ -16,14 +20,16 @@ namespace JsonApi.Tests.Deserialization
                   }
                 }";
 
-            var exception = Record.Exception(() => json.Deserialize<JsonApiDocument>());
+            var exception = Record.Exception(() => json.Deserialize(documentType));
 
             Assert.NotNull(exception);
             Assert.Contains("document must contain 'data', 'errors' or 'meta'", exception.Message);
         }
 
-        [Fact]
-        public void CanDeserializeSimpleLinks()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeSimpleLinks(Type documentType)
         {
             const string json = @"
                 {
@@ -38,19 +44,21 @@ namespace JsonApi.Tests.Deserialization
                   'data': null
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document.Links);
-            Assert.Equal("http://example.com/articles", document.Links.Self.Href);
-            Assert.Equal("http://example.com/articles?page[offset]=2", document.Links.Next.Href);
-            Assert.Equal("http://example.com/articles?page[offset]=10", document.Links.Last.Href);
-            Assert.Equal("http://example.com/articles?page[offset]=1", document.Links.Prev.Href);
-            Assert.Equal("http://example.com/articles?page[offset]=0", document.Links.First.Href);
-            Assert.Equal("http://example.com/related", document.Links.Related.Href);
+            Assert.Equal("http://example.com/articles", document.Links.Self?.Href);
+            Assert.Equal("http://example.com/articles?page[offset]=2", document.Links.Next?.Href);
+            Assert.Equal("http://example.com/articles?page[offset]=10", document.Links.Last?.Href);
+            Assert.Equal("http://example.com/articles?page[offset]=1", document.Links.Prev?.Href);
+            Assert.Equal("http://example.com/articles?page[offset]=0", document.Links.First?.Href);
+            Assert.Equal("http://example.com/related", document.Links.Related?.Href);
         }
 
-        [Fact]
-        public void CanDeserializeSimpleNonStandardLink()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeSimpleNonStandardLink(Type documentType)
         {
             const string json = @"
                 {
@@ -61,15 +69,17 @@ namespace JsonApi.Tests.Deserialization
                   'data': null
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document.Links);
             Assert.Equal("http://example.com/articles", document.Links["articles"].Href);
             Assert.Equal("http://example.com/blogs", document.Links["blogs"].Href);
         }
 
-        [Fact]
-        public void CanDeserializeComplexLinks()
+        [Theory]
+        [InlineData(typeof(JsonApiDocument))]
+        [InlineData(typeof(JsonApiDocument<Article>))]
+        public void CanDeserializeComplexLinks(Type documentType)
         {
             const string json = @"
                 {
@@ -92,17 +102,17 @@ namespace JsonApi.Tests.Deserialization
                   'data': null
                 }";
 
-            var document = json.Deserialize<JsonApiDocument>();
+            var document = json.DeserializeDocument(documentType);
 
             Assert.NotNull(document.Links);
 
-            Assert.Equal("http://example.com/articles", document.Links.Self.Href);
-            Assert.Equal(10, document.Links.Self.Meta["count"].GetInt32());
-            Assert.Equal("articles", document.Links.Self.Meta["title"].GetString());
+            Assert.Equal("http://example.com/articles", document.Links.Self?.Href);
+            Assert.Equal(10, document.Links.Self?.Meta!["count"].GetInt32());
+            Assert.Equal("articles", document.Links.Self?.Meta!["title"].GetString());
 
-            Assert.Equal("http://example.com/articles?page[offset]=2", document.Links.Next.Href);
-            Assert.Equal(4, document.Links.Next.Meta["count"].GetInt32());
-            Assert.Equal("blogs", document.Links.Next.Meta["title"].GetString());
+            Assert.Equal("http://example.com/articles?page[offset]=2", document.Links.Next?.Href);
+            Assert.Equal(4, document.Links.Next?.Meta!["count"].GetInt32());
+            Assert.Equal("blogs", document.Links.Next?.Meta!["title"].GetString());
         }
     }
 }

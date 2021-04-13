@@ -9,5 +9,11 @@ namespace JsonApi.Tests.Models
 
         [JsonPropertyName("type")]
         public string Type { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("twitter")]
+        public string Twitter { get; set; }
     }
 }

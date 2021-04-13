@@ -1,14 +1,10 @@
-﻿using System.Text.Json.Serialization;
-using JsonApi.Converters;
-
-namespace JsonApi
+﻿namespace JsonApi
 {
-    [JsonConverter(typeof(JsonApiPointerConverter))]
-    public class JsonApiPointer
+    public sealed class JsonApiPointer
     {
-        private readonly string? value;
+        private readonly string value;
 
-        public JsonApiPointer(string? value)
+        public JsonApiPointer(string value)
         {
             this.value = value;
         }
@@ -18,7 +14,12 @@ namespace JsonApi
             return new(value);
         }
 
-        public override string? ToString()
+        public static implicit operator string(JsonApiPointer value)
+        {
+            return value.ToString();
+        }
+
+        public override string ToString()
         {
             return value;
         }
