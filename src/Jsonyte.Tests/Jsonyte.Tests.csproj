@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JsonApi\JsonApi.csproj" />
+    <ProjectReference Include="..\Jsonyte\Jsonyte.csproj" />
   </ItemGroup>
 
 </Project>
