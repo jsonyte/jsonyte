@@ -2,11 +2,11 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JsonApi.Converters;
-using JsonApi.Serialization;
-using JsonApi.Validation;
+using Jsonyte.Converters;
+using Jsonyte.Serialization;
+using Jsonyte.Validation;
 
-namespace JsonApi
+namespace Jsonyte
 {
     internal static class Utf8JsonReaderExtensions
     {

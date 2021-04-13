@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
-namespace JsonApi
+namespace Jsonyte
 {
     public static class ReadOnlySpanExtensions
     {

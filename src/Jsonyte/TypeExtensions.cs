@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using JsonApi.Serialization;
+using Jsonyte.Serialization;
 
-namespace JsonApi
+namespace Jsonyte
 {
     internal static class TypeExtensions
     {

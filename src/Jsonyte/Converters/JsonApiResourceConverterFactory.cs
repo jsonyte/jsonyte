@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JsonApi.Converters.Collections;
-using JsonApi.Converters.Objects;
-using JsonApi.Serialization;
+using Jsonyte.Converters.Collections;
+using Jsonyte.Converters.Objects;
+using Jsonyte.Serialization;
 
-namespace JsonApi.Converters
+namespace Jsonyte.Converters
 {
     internal class JsonApiResourceConverterFactory : JsonApiConverterFactory
     {

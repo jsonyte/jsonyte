@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using JsonApi.Tests.Models;
+using Jsonyte.Tests.Models;
 using Xunit;
 
-namespace JsonApi.Tests.Deserialization
+namespace Jsonyte.Tests.Deserialization
 {
     public class DeserializeErrorTests
     {

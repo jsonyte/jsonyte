@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace JsonApi.Validation
+namespace Jsonyte.Validation
 {
     internal ref struct ResourceState
     {

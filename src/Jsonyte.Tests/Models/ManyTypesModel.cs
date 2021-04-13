@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text.Json.Serialization;
-using JsonApi.Tests.Converters;
+using Jsonyte.Tests.Converters;
 
-namespace JsonApi.Tests.Models
+namespace Jsonyte.Tests.Models
 {
     public class ManyTypesModel
     {

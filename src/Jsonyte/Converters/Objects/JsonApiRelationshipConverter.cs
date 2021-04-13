@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
-namespace JsonApi.Converters.Objects
+namespace Jsonyte.Converters.Objects
 {
     internal class JsonApiRelationshipConverter : JsonConverter<JsonApiRelationship>
     {

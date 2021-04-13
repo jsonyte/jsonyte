@@ -1,7 +1,7 @@
-﻿using JsonApi.Tests.Models;
+﻿using Jsonyte.Tests.Models;
 using Xunit;
 
-namespace JsonApi.Tests.Serialization
+namespace Jsonyte.Tests.Serialization
 {
     public class CustomSerializationTests
     {

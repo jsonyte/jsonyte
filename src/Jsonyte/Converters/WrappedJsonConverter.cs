@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JsonApi.Serialization;
+using Jsonyte.Serialization;
 
-namespace JsonApi.Converters
+namespace Jsonyte.Converters
 {
     internal abstract class WrappedJsonConverter<T> : JsonConverter<T>
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 
-namespace JsonApi.Tests
+namespace Jsonyte.Tests
 {
     public static class ObjectExtensions
     {

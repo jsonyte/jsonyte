@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace JsonApi
+namespace Jsonyte
 {
     internal static class JsonApiMembers
     {

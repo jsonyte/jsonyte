@@ -10,13 +10,13 @@
     <Authors>Robert Coltheart</Authors>
     <Description>A JSON:API serializer/deserializer for System.Text.Json</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/robertcoltheart/Jsonapi</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/jsonyte/jsonyte</PackageProjectUrl>
     <PackageTags>jsonapi json api json:api serializer deserializer serialization deserialization</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" PrivateAssets="All" />
-    <PackageReference Include="System.Text.Json" Version="5.0.2" />
+    <PackageReference Include="System.Text.Json" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

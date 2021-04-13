@@ -1,7 +1,7 @@
-﻿using JsonApi.Tests.Models;
+﻿using Jsonyte.Tests.Models;
 using Xunit;
 
-namespace JsonApi.Tests.Deserialization
+namespace Jsonyte.Tests.Deserialization
 {
     public class DeserializeResourceTests : ValidationTests
     {

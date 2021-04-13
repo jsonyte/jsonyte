@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonApi.Profiling
+namespace Jsonyte.Profiling
 {
     public class ManyTypesModel
     {

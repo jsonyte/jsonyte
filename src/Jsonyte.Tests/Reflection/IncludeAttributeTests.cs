@@ -1,4 +1,4 @@
-﻿namespace JsonApi.Tests.Reflection
+﻿namespace Jsonyte.Tests.Reflection
 {
     public class IncludeAttributeTests
     {

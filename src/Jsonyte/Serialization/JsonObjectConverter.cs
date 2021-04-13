@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
-using JsonApi.Converters;
+using Jsonyte.Converters;
 
-namespace JsonApi.Serialization
+namespace Jsonyte.Serialization
 {
     internal class JsonObjectConverter<T> : IJsonObjectConverter
     {

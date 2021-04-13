@@ -1,4 +1,4 @@
-﻿namespace JsonApi
+﻿namespace Jsonyte
 {
     public class JsonApiFormatException : JsonApiException
     {

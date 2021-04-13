@@ -2,10 +2,10 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JsonApi.Serialization;
-using JsonApi.Serialization.Reflection;
+using Jsonyte.Serialization;
+using Jsonyte.Serialization.Reflection;
 
-namespace JsonApi.Converters
+namespace Jsonyte.Converters
 {
     internal class JsonApiStateConverter : JsonConverter<JsonApiStateConverter>
     {

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace JsonApi.Tests.Models
+namespace Jsonyte.Tests.Models
 {
 #if NET5_0_OR_GREATER
     public class ModelWithInitProperty

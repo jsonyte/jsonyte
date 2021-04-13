@@ -1,8 +1,8 @@
 ﻿using System;
-using JsonApi.Tests.Models;
+using Jsonyte.Tests.Models;
 using Xunit;
 
-namespace JsonApi.Tests.Reflection
+namespace Jsonyte.Tests.Reflection
 {
     public class PropertyAttributeTests
     {

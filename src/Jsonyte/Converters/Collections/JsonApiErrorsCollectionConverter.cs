@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using JsonApi.Serialization;
-using JsonApi.Validation;
+using Jsonyte.Serialization;
+using Jsonyte.Validation;
 
-namespace JsonApi.Converters.Collections
+namespace Jsonyte.Converters.Collections
 {
     internal class JsonApiErrorsCollectionConverter<T> : WrappedJsonConverter<T>
     {

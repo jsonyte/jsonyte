@@ -5,7 +5,7 @@ using JsonApiSerializer;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace JsonApi.Tests.Performance
+namespace Jsonyte.Tests.Performance
 {
     public class Data
     {

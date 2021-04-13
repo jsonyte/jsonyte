@@ -2,9 +2,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
-using JsonApi.Serialization;
+using Jsonyte.Serialization;
 
-namespace JsonApi.Converters.Objects
+namespace Jsonyte.Converters.Objects
 {
     internal abstract class JsonApiDocumentConverter<T> : JsonConverter<T>
         where T : IJsonApiDocument, new()

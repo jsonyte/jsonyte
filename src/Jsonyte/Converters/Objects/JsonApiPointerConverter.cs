@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace JsonApi.Converters.Objects
+namespace Jsonyte.Converters.Objects
 {
     internal class JsonApiPointerConverter : JsonConverter<JsonApiPointer>
     {

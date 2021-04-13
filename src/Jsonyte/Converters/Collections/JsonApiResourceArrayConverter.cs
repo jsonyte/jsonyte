@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace JsonApi.Converters.Collections
+namespace Jsonyte.Converters.Collections
 {
     internal class JsonApiResourceArrayConverter : JsonConverter<JsonApiResource[]>
     {

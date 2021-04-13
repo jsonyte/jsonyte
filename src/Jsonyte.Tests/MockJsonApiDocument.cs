@@ -1,4 +1,4 @@
-﻿namespace JsonApi.Tests
+﻿namespace Jsonyte.Tests
 {
     public class MockJsonApiDocument
     {

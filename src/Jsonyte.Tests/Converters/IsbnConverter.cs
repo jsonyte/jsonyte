@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JsonApi.Tests.Models;
+using Jsonyte.Tests.Models;
 
-namespace JsonApi.Tests.Converters
+namespace Jsonyte.Tests.Converters
 {
     public class IsbnConverter : JsonConverter<Isbn>
     {

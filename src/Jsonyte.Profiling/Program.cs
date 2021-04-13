@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Bogus;
-using JsonApi.Tests.Performance;
+using Jsonyte.Tests.Performance;
 
-namespace JsonApi.Profiling
+namespace Jsonyte.Profiling
 {
     public class Program
     {

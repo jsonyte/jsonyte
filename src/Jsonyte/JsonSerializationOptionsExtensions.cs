@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Text.Json;
-using JsonApi.Converters;
-using JsonApi.Serialization;
-using JsonApi.Serialization.Reflection;
+using Jsonyte.Converters;
+using Jsonyte.Serialization;
+using Jsonyte.Serialization.Reflection;
 
-namespace JsonApi
+namespace Jsonyte
 {
     /*
         https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-ignore-properties?pivots=dotnet-5-0

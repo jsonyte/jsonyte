@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace JsonApi.Serialization
+namespace Jsonyte.Serialization
 {
     internal ref struct TrackedResources
     {

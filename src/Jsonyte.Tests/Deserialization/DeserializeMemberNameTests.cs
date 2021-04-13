@@ -1,4 +1,4 @@
-﻿namespace JsonApi.Tests.Deserialization
+﻿namespace Jsonyte.Tests.Deserialization
 {
     public class DeserializeMemberNameTests
     {

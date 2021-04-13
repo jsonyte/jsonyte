@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Text.Json;
-using JsonApi.Serialization;
-using JsonApi.Validation;
+using Jsonyte.Serialization;
+using Jsonyte.Validation;
 
-namespace JsonApi.Converters.Objects
+namespace Jsonyte.Converters.Objects
 {
     internal class JsonApiResourceObjectConverter<T> : WrappedJsonConverter<T>
     {

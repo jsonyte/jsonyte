@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text.Json;
 
-namespace JsonApi.Tests
+namespace Jsonyte.Tests
 {
     public static class StringExtensions
     {

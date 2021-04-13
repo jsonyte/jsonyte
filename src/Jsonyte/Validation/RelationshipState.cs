@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace JsonApi.Validation
+namespace Jsonyte.Validation
 {
     internal ref struct RelationshipState
     {

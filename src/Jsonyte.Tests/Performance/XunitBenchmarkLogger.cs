@@ -2,7 +2,7 @@
 using BenchmarkDotNet.Loggers;
 using Xunit.Abstractions;
 
-namespace JsonApi.Tests.Performance
+namespace Jsonyte.Tests.Performance
 {
     public class XunitBenchmarkLogger : ILogger
     {

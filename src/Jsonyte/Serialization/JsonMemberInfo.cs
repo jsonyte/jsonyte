@@ -2,9 +2,9 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JsonApi.Converters;
+using Jsonyte.Converters;
 
-namespace JsonApi.Serialization
+namespace Jsonyte.Serialization
 {
     internal abstract class JsonMemberInfo<T> : IJsonMemberInfo
     {

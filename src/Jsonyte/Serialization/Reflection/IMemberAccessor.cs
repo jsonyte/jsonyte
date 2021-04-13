@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace JsonApi.Serialization.Reflection
+namespace Jsonyte.Serialization.Reflection
 {
     internal interface IMemberAccessor
     {

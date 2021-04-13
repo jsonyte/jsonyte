@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 
-namespace JsonApi.Tests
+namespace Jsonyte.Tests
 {
     public class JsonElementEqualityComparer : IEqualityComparer<JsonElement>
     {

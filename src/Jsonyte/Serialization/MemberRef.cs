@@ -1,4 +1,4 @@
-﻿namespace JsonApi.Serialization
+﻿namespace Jsonyte.Serialization
 {
     internal readonly struct MemberRef
     {

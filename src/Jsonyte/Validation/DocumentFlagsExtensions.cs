@@ -1,4 +1,4 @@
-﻿namespace JsonApi.Validation
+﻿namespace Jsonyte.Validation
 {
     internal static class DocumentFlagsExtensions
     {

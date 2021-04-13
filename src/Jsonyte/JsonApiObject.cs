@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace JsonApi
+namespace Jsonyte
 {
     public sealed class JsonApiObject
     {

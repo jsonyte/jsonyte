@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
-using JsonApi.Serialization;
+using Jsonyte.Serialization;
 
-namespace JsonApi.Converters.Objects
+namespace Jsonyte.Converters.Objects
 {
     internal class JsonApiDocumentDataConverter : JsonApiDocumentConverter<JsonApiDocument>
     {

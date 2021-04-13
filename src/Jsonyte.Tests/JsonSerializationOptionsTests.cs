@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JsonApi.Tests.Models;
+using Jsonyte.Tests.Models;
 using Xunit;
 
-namespace JsonApi.Tests
+namespace Jsonyte.Tests
 {
     public class JsonSerializationOptionsTests
     {

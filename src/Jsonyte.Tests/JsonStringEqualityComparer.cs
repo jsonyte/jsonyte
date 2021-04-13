@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json;
 
-namespace JsonApi.Tests
+namespace Jsonyte.Tests
 {
     public class JsonStringEqualityComparer : IEqualityComparer<string>
     {

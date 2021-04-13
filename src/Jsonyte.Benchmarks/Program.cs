@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
-using JsonApi.Tests.Performance;
+using Jsonyte.Tests.Performance;
 
-namespace JsonApi.Benchmarks
+namespace Jsonyte.Benchmarks
 {
     public class Program
     {

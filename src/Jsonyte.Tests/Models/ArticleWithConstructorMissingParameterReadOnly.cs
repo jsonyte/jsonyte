@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace JsonApi.Tests.Models
+namespace Jsonyte.Tests.Models
 {
     public class ArticleWithConstructorMissingParameterReadOnly
     {

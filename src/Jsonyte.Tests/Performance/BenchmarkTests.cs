@@ -7,7 +7,7 @@ using BenchmarkDotNet.Running;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace JsonApi.Tests.Performance
+namespace Jsonyte.Tests.Performance
 {
     public class BenchmarkTests
     {

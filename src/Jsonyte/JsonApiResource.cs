@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace JsonApi
+namespace Jsonyte
 {
     public sealed class JsonApiResource<T>
     {

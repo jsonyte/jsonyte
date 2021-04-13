@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text.Json;
-using JsonApi.Serialization;
+using Jsonyte.Serialization;
 
-namespace JsonApi.Converters
+namespace Jsonyte.Converters
 {
     internal abstract class JsonApiRelationshipDetailsConverter<T> : WrappedJsonConverter<RelationshipResource<T>>
     {

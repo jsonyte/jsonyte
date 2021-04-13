@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonApi.Validation
+namespace Jsonyte.Validation
 {
     [Flags]
     internal enum RelationshipFlags : byte

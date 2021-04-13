@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace JsonApi
+namespace Jsonyte
 {
     internal static class DictionaryExtensions
     {

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace JsonApi.Serialization
+namespace Jsonyte.Serialization
 {
     internal class JsonTypeInfo
     {

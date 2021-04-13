@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace JsonApi.Tests.Converters
+namespace Jsonyte.Tests.Converters
 {
     public class TimeSpanConverter : JsonConverter<TimeSpan>
     {

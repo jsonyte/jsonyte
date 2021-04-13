@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using JsonApi.Serialization;
+using Jsonyte.Serialization;
 
-namespace JsonApi.Converters.Collections
+namespace Jsonyte.Converters.Collections
 {
     internal class JsonApiRelationshipCollectionConverter<T, TElement> : JsonApiRelationshipDetailsConverter<T>
     {
