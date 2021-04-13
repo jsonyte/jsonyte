@@ -41,7 +41,7 @@ namespace Jsonyte
                 options.Converters.Add(new JsonApiResourceConverterFactory());
             }
 
-            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.PropertyNamingPolicy ??= JsonNamingPolicy.CamelCase;
 
             return options;
         }
