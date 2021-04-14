@@ -65,8 +65,6 @@ namespace Jsonyte.Converters.Objects
             }
             else if (value.Data != null)
             {
-                var a = value.Data.GetType();
-
                 writer.WritePropertyName(JsonApiMembers.DataEncoded);
                 WriteWrapped(writer, ref tracked, value.Data, options);
             }
