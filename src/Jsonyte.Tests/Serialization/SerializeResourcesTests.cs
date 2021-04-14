@@ -105,6 +105,96 @@ namespace Jsonyte.Tests.Serialization
         }
 
         [Fact]
+        public void CanSerializeAnonymousEnumerableCastAsObject()
+        {
+            IEnumerable<object> GetResources()
+            {
+                return new[]
+                {
+                    new
+                    {
+                        id = "1",
+                        type = "articles",
+                        title = "Jsonapi"
+                    },
+                    new
+                    {
+                        id = "2",
+                        type = "articles",
+                        title = "Jsonapi 2"
+                    }
+                };
+            }
+
+            var json = GetResources().Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'Jsonapi'
+                      }
+                    },
+                    {
+                      'id': '2',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'Jsonapi 2'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeAnonymousArrayCastAsObject()
+        {
+            object[] GetResources()
+            {
+                return new object[]
+                {
+                    new
+                    {
+                        id = "1",
+                        type = "articles",
+                        title = "Jsonapi"
+                    },
+                    new
+                    {
+                        id = "2",
+                        type = "articles",
+                        title = "Jsonapi 2"
+                    }
+                };
+            }
+
+            var json = GetResources().Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'Jsonapi'
+                      }
+                    },
+                    {
+                      'id': '2',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'Jsonapi 2'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
         public void CanSerializeArrayInDocument()
         {
             var document = new JsonApiDocument

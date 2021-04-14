@@ -37,11 +37,7 @@ namespace Jsonyte.Converters
 
                 if (elementType != null)
                 {
-                    var collectionTypeInfo = options.GetTypeInfo(elementType);
-
-                    var collectionConverterType = collectionTypeInfo.ParameterCount == 0
-                        ? typeof(JsonApiResourceObjectCollectionConverter<,>)
-                        : typeof(JsonApiResourceObjectCollectionConstructorConverter<,>);
+                    var collectionConverterType = typeof(JsonApiResourceObjectCollectionConverter<,>);
 
                     return CreateConverter(collectionConverterType, typeToConvert, elementType);
                 }
@@ -49,7 +45,10 @@ namespace Jsonyte.Converters
 
             var info = options.GetTypeInfo(typeToConvert);
 
-            ValidateResource(info);
+            if (typeToConvert != typeof(object))
+            {
+                ValidateResource(info);
+            }
 
             var converterType = info.ParameterCount == 0
                 ? typeof(JsonApiResourceObjectConverter<>)

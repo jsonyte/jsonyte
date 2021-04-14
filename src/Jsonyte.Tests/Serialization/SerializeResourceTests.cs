@@ -148,5 +148,32 @@ namespace Jsonyte.Tests.Serialization
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeAnonymousResourceCastAsObject()
+        {
+            object GetResource()
+            {
+                return new
+                {
+                    id = "1",
+                    type = "articles",
+                    title = "Jsonapi"
+                };
+            }
+
+            var json = GetResource().Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

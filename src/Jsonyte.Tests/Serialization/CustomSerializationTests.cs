@@ -1,4 +1,9 @@
-﻿using Jsonyte.Tests.Models;
+﻿using System;
+using System.Text.Json;
+using JsonApiSerializer;
+using Jsonyte.Tests.Converters;
+using Jsonyte.Tests.Models;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Jsonyte.Tests.Serialization
@@ -29,6 +34,26 @@ namespace Jsonyte.Tests.Serialization
                     }
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void TimeSpanConverterCanParseLikeNewtonsoft()
+        {
+            var model = new
+            {
+                id = "1",
+                type = "type",
+                time = TimeSpan.FromSeconds(265)
+            };
+
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new TimeSpanConverter());
+
+            var settings = new JsonApiSerializerSettings();
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(JsonConvert.SerializeObject(model, settings), json, JsonStringEqualityComparer.Default);
         }
     }
 }

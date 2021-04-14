@@ -13,7 +13,8 @@ namespace Jsonyte
 
         public static bool IsResource(this Type type)
         {
-            return HasMember(type, JsonApiMembers.Type);
+            // Anonymous objects in arrays are cast down to object, so we'll just accept them in good faith
+            return type == typeof(object) || HasMember(type, JsonApiMembers.Type);
         }
 
         public static bool IsResourceIdentifier(this Type type)
