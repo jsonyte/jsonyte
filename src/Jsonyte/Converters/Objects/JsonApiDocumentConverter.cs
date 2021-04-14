@@ -108,12 +108,24 @@ namespace Jsonyte.Converters.Objects
 
         protected void WriteWrapped<TElement>(Utf8JsonWriter writer, ref TrackedResources tracked, TElement value, JsonSerializerOptions options)
         {
-            if (options.GetConverter(typeof(TElement)) is not WrappedJsonConverter<TElement> converter)
+            var type = value == null
+                ? typeof(TElement)
+                : value.GetType();
+
+            var converter = options.GetConverter(type);
+
+            if (converter is WrappedJsonConverter<TElement> genericConverter)
+            {
+                genericConverter.WriteWrapped(writer, ref tracked, value, options);
+            }
+            else if (converter is IWrappedObjectConverter anonymousConverter)
+            {
+                anonymousConverter.WriteWrappedObject(writer, ref tracked, value, options);
+            }
+            else
             {
                 throw new JsonApiException($"Could not find converter for type '{typeof(TElement)}'");
             }
-
-            converter.WriteWrapped(writer, ref tracked, value, options);
         }
 
         [AssertionMethod]

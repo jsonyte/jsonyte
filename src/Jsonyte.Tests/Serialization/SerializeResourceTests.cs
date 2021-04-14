@@ -175,5 +175,31 @@ namespace Jsonyte.Tests.Serialization
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeListOfObjectsInResource()
+        {
+            var model = new
+            {
+                id = "1",
+                type = "type",
+                name = "Bob",
+                measurements = new object[] {1, "five", 7}
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'type',
+                    'attributes': {
+                      'name': 'Bob',
+                      'measurements': [1, 'five', 7]
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

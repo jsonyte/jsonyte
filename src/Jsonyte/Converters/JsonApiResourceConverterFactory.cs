@@ -50,9 +50,7 @@ namespace Jsonyte.Converters
                 ValidateResource(info);
             }
 
-            var converterType = info.ParameterCount == 0
-                ? typeof(JsonApiResourceObjectConverter<>)
-                : typeof(JsonApiResourceObjectConstructorConverter<>);
+            var converterType = typeof(JsonApiResourceObjectConverter<>);
 
             return CreateConverter(converterType, info, typeToConvert);
         }

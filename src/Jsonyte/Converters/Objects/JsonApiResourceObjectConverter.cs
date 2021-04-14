@@ -8,11 +8,11 @@ namespace Jsonyte.Converters.Objects
 {
     internal class JsonApiResourceObjectConverter<T> : WrappedJsonConverter<T>
     {
-        private readonly JsonTypeInfo readInfo;
+        private readonly JsonTypeInfo info;
 
-        public JsonApiResourceObjectConverter(JsonTypeInfo readInfo)
+        public JsonApiResourceObjectConverter(JsonTypeInfo info)
         {
-            this.readInfo = readInfo;
+            this.info = info;
         }
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -78,7 +78,7 @@ namespace Jsonyte.Converters.Objects
 
             var resourceState = reader.ReadResource();
 
-            var resource = existingValue ?? readInfo.Creator();
+            var resource = existingValue ?? info.Creator();
 
             if (resource == null)
             {
@@ -91,7 +91,7 @@ namespace Jsonyte.Converters.Objects
 
                 if (name.IsEqual(JsonApiMembers.IdEncoded) || name.IsEqual(JsonApiMembers.TypeEncoded))
                 {
-                    readInfo.GetMember(name).Read(ref reader, resource);
+                    info.GetMember(name).Read(ref reader, resource);
                 }
                 else if (name.IsEqual(JsonApiMembers.AttributesEncoded))
                 {
@@ -101,14 +101,14 @@ namespace Jsonyte.Converters.Objects
                     {
                         var attributeName = reader.ReadMemberFast(JsonApiMemberCode.Resource);
 
-                        readInfo.GetMember(attributeName).Read(ref reader, resource);
+                        info.GetMember(attributeName).Read(ref reader, resource);
 
                         reader.Read();
                     }
                 }
                 else if (name.IsEqual(JsonApiMembers.MetaEncoded))
                 {
-                    readInfo.GetMember(name).Read(ref reader, resource);
+                    info.GetMember(name).Read(ref reader, resource);
                 }
                 else if (name.IsEqual(JsonApiMembers.RelationshipsEncoded))
                 {
@@ -135,7 +135,7 @@ namespace Jsonyte.Converters.Objects
             {
                 var relationshipName = reader.ReadMemberFast(JsonApiMemberCode.Relationship);
 
-                readInfo.GetMember(relationshipName).ReadRelationship(ref reader, ref tracked, resource);
+                info.GetMember(relationshipName).ReadRelationship(ref reader, ref tracked, resource);
 
                 reader.Read();
             }
@@ -201,25 +201,17 @@ namespace Jsonyte.Converters.Objects
                 return;
             }
 
-            // Anonymous objects are cast as object and se we need to dynamically get their type info.
-            // However we can skip this step if it's an actual type and just use the cached info.
-            var writeInfo = typeof(T) == typeof(object)
-                ? options.GetTypeInfo(value.GetType())
-                : readInfo;
-
-            ValidateResource(writeInfo);
-
             writer.WriteStartObject();
 
-            writeInfo.IdMember.Write(writer, ref tracked, value);
-            writeInfo.TypeMember.Write(writer, ref tracked, value);
+            info.IdMember.Write(writer, ref tracked, value);
+            info.TypeMember.Write(writer, ref tracked, value);
 
-            if (writeInfo.AttributeMembers.Any())
+            if (info.AttributeMembers.Any())
             {
                 writer.WritePropertyName(JsonApiMembers.AttributesEncoded);
                 writer.WriteStartObject();
 
-                foreach (var member in writeInfo.AttributeMembers)
+                foreach (var member in info.AttributeMembers)
                 {
                     member.Write(writer, ref tracked, value);
                 }
@@ -227,11 +219,11 @@ namespace Jsonyte.Converters.Objects
                 writer.WriteEndObject();
             }
 
-            if (writeInfo.RelationshipMembers.Any())
+            if (info.RelationshipMembers.Any())
             {
                 var relationshipsWritten = false;
 
-                foreach (var member in writeInfo.RelationshipMembers)
+                foreach (var member in info.RelationshipMembers)
                 {
                     member.WriteRelationship(writer, ref tracked, value, ref relationshipsWritten);
                 }
@@ -242,31 +234,9 @@ namespace Jsonyte.Converters.Objects
                 }
             }
 
-            writeInfo.MetaMember.Write(writer, ref tracked, value);
+            info.MetaMember.Write(writer, ref tracked, value);
 
             writer.WriteEndObject();
-        }
-
-        private void ValidateResource(JsonTypeInfo info)
-        {
-            var idProperty = info.IdMember;
-
-            if (!string.IsNullOrEmpty(idProperty.Name) && idProperty.MemberType != typeof(string))
-            {
-                throw new JsonApiFormatException("JSON:API resource id must be a string");
-            }
-
-            var typeProperty = info.TypeMember;
-
-            if (string.IsNullOrEmpty(typeProperty.Name))
-            {
-                throw new JsonApiFormatException("JSON:API resource must have a 'type' member");
-            }
-
-            if (typeProperty.MemberType != typeof(string))
-            {
-                throw new JsonApiFormatException("JSON:API resource type must be a string");
-            }
         }
     }
 }
