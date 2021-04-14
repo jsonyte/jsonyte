@@ -27,6 +27,14 @@ namespace Jsonyte
         [JsonPropertyName("included")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiResource[]? Included { get; set; }
+
+        public JsonApiDocument<T> Create(T data)
+        {
+            return new()
+            {
+                Data = data
+            };
+        }
     }
 
     public sealed class JsonApiDocument : IJsonApiDocument
@@ -54,5 +62,13 @@ namespace Jsonyte
         [JsonPropertyName("included")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiResource[]? Included { get; set; }
+
+        public static JsonApiDocument<T> Create<T>(T value)
+        {
+            return new()
+            {
+                Data = value
+            };
+        }
     }
 }

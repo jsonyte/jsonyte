@@ -171,7 +171,7 @@ namespace Jsonyte.Tests.Reflection
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled until constructor support is better")]
         public void CanDeserializeRecordTypes()
         {
             const string json = @"

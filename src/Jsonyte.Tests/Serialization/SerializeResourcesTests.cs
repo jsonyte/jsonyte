@@ -126,7 +126,7 @@ namespace Jsonyte.Tests.Serialization
                 };
             }
 
-            var json = GetResources().Serialize();
+            var json = JsonApiDocument.Create(GetResources()).Serialize();
 
             Assert.Equal(@"
                 {
@@ -150,11 +150,11 @@ namespace Jsonyte.Tests.Serialization
         }
 
         [Fact]
-        public void CanSerializeAnonymousArrayCastAsObject()
+        public void CanSerializeAnonymousArrayPreservingType()
         {
             object[] GetResources()
             {
-                return new object[]
+                return new[]
                 {
                     new
                     {
@@ -171,7 +171,7 @@ namespace Jsonyte.Tests.Serialization
                 };
             }
 
-            var json = GetResources().Serialize();
+            var json = JsonApiDocument.Create(GetResources()).Serialize();
 
             Assert.Equal(@"
                 {
@@ -192,6 +192,33 @@ namespace Jsonyte.Tests.Serialization
                     }
                   ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CannotSerializeArrayCastingToObjectAndLosingAnonymousType()
+        {
+            object[] GetResources()
+            {
+                return new object[]
+                {
+                    new
+                    {
+                        id = "1",
+                        type = "articles",
+                        title = "Jsonapi"
+                    },
+                    new
+                    {
+                        id = "2",
+                        type = "articles",
+                        title = "Jsonapi 2"
+                    }
+                };
+            }
+
+            var exception = Record.Exception(() => JsonApiDocument.Create(GetResources()).Serialize());
+
+            Assert.NotNull(exception);
         }
 
         [Fact]
