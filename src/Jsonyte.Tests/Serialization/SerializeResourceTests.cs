@@ -201,5 +201,81 @@ namespace Jsonyte.Tests.Serialization
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeMetaAndLinksUsingGenericObject()
+        {
+            var model = new ArticleWithMetaAndLinks
+            {
+                Id = "1",
+                Type = "type",
+                Title = "Jsonapi",
+                Links = new Dictionary<string, string>
+                {
+                    {"self", "http://me"}
+                },
+                Meta = new Dictionary<string, object>
+                {
+                    {"count", 1}
+                }
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'type',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'links': {
+                      'self': 'http://me'
+                    },
+                    'meta': {
+                      'count': 1
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeMetaAndLinksFromAnonymousObject()
+        {
+            var model = new
+            {
+                id = "1",
+                type = "articles",
+                title = "Jsonapi",
+                links = new
+                {
+                    self = "http://me"
+                },
+                meta = new
+                {
+                    count = 1
+                }
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'links': {
+                      'self': 'http://me'
+                    },
+                    'meta': {
+                      'count': 1
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

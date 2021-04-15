@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Converters.Collections;
@@ -9,11 +10,22 @@ namespace Jsonyte.Converters
 {
     internal class JsonApiResourceConverterFactory : JsonApiConverterFactory
     {
+        private static readonly Dictionary<Type, JsonConverter> JsonApiConverters = new()
+        {
+            {typeof(AnonymousResource), new JsonApiAnonymousResourceConverter()},
+            {typeof(AnonymousResourceCollection), new JsonApiAnonymousResourceCollectionConverter()}
+        };
+
         public override bool CanConvert(Type typeToConvert)
         {
             if (IsIgnoredType(typeToConvert))
             {
                 return false;
+            }
+
+            if (JsonApiConverters.ContainsKey(typeToConvert))
+            {
+                return true;
             }
 
             if (typeToConvert.IsCollection())
@@ -31,6 +43,11 @@ namespace Jsonyte.Converters
 
         public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
+            if (JsonApiConverters.TryGetValue(typeToConvert, out var converter))
+            {
+                return converter;
+            }
+
             if (typeToConvert.IsCollection())
             {
                 var elementType = typeToConvert.GetCollectionElementType();
@@ -45,10 +62,7 @@ namespace Jsonyte.Converters
 
             var info = options.GetTypeInfo(typeToConvert);
 
-            if (typeToConvert != typeof(object))
-            {
-                ValidateResource(info);
-            }
+            ValidateResource(info);
 
             var converterType = typeof(JsonApiResourceObjectConverter<>);
 

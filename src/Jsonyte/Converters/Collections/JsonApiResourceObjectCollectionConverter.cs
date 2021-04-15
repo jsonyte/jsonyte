@@ -5,7 +5,7 @@ using Jsonyte.Serialization;
 
 namespace Jsonyte.Converters.Collections
 {
-    internal class JsonApiResourceObjectCollectionConverter<T, TElement> : WrappedJsonConverter<T>, IWrappedObjectConverter
+    internal class JsonApiResourceObjectCollectionConverter<T, TElement> : WrappedJsonConverter<T>
     {
         private WrappedJsonConverter<TElement>? wrappedConverter;
 
@@ -22,7 +22,7 @@ namespace Jsonyte.Converters.Collections
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMemberFast(ref state);
+                var name = reader.ReadMember(ref state);
 
                 if (name.IsEqual(JsonApiMembers.DataEncoded))
                 {
@@ -95,7 +95,7 @@ namespace Jsonyte.Converters.Collections
             writer.WriteStartObject();
             writer.WritePropertyName(JsonApiMembers.DataEncoded);
 
-            WriteWrappedObject(writer, ref tracked, value, options);
+            WriteWrapped(writer, ref tracked, value, options);
 
             if (tracked.Count > 0)
             {
@@ -153,23 +153,6 @@ namespace Jsonyte.Converters.Collections
         private WrappedJsonConverter<TElement> GetWrappedConverter(JsonSerializerOptions options)
         {
             return wrappedConverter ??= options.GetWrappedConverter<TElement>();
-        }
-
-        public void WriteWrappedObject(Utf8JsonWriter writer, ref TrackedResources tracked, object? value, JsonSerializerOptions options)
-        {
-            if (value == null)
-            {
-                writer.WriteNullValue();
-
-                return;
-            }
-
-            if (value is not T typedValue)
-            {
-                throw new JsonApiException($"Object type cannot be determined for serialization in a collection: {value.GetType()}");
-            }
-
-            WriteWrapped(writer, ref tracked, typedValue, options);
         }
     }
 }

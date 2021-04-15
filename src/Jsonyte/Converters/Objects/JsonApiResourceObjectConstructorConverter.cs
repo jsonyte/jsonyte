@@ -5,6 +5,7 @@ using Jsonyte.Serialization;
 
 namespace Jsonyte.Converters.Objects
 {
+#if false
     internal class JsonApiResourceObjectConstructorConverter<T> : JsonApiResourceObjectConverter<T>
     {
         public JsonApiResourceObjectConstructorConverter(JsonTypeInfo type)
@@ -19,7 +20,7 @@ namespace Jsonyte.Converters.Objects
                 return default;
             }
 
-            var resourceState = reader.ReadResource();
+            var state = reader.ReadResource();
 
             var info = options.GetTypeInfo(typeToConvert);
 
@@ -29,7 +30,7 @@ namespace Jsonyte.Converters.Objects
             
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(ref resourceState);
+                var name = reader.ReadMember(ref state);
 
                 if (name == JsonApiMembers.Attributes)
                 {
@@ -52,7 +53,7 @@ namespace Jsonyte.Converters.Objects
                 reader.Read();
             }
 
-            resourceState.Validate();
+            state.Validate();
 
             var resource = info.CreatorWithArguments(parameters);
 
@@ -103,4 +104,5 @@ namespace Jsonyte.Converters.Objects
             }
         }
     }
+#endif
 }

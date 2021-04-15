@@ -312,40 +312,45 @@ namespace Jsonyte.Tests.Deserialization
         {
             const string json = @"
                 {
-                  'data': null,
+                  'data': {
+                    'id': '1',
+                    'type': 'article',
+                    'attributes': {
+                      'title': 'Cereal-eyes'
+                    },
+                    'relationships': {
+                      'author': {
+                        'data': {
+                          'id': '9',
+                          'type': 'people'
+                        }
+                      }
+                    }
+                  },
                   'included': [
                     {
-                      'type': 'people',
                       'id': '9',
+                      'type': 'people',
                       'attributes': {
-                        'name': 'Joe'
-                      }
-                    },
-                    {
-                      'type': 'comments',
-                      'id': '5',
-                      'attributes': {
-                        'body': 'first'
+                        'name': 'Joe',
+                        'twitter': 'joe'
                       }
                     }
                   ]
                 }";
 
-            var document = json.Deserialize<JsonApiDocument<Article>>();
+            var document = json.Deserialize<JsonApiDocument<ArticleWithAuthor>>();
 
-            Assert.NotNull(document.Included);
-            Assert.NotEmpty(document.Included);
-            Assert.Equal(2, document.Included.Length);
+            Assert.NotNull(document.Data);
+            Assert.Equal("1", document.Data.Id);
+            Assert.Equal("article", document.Data.Type);
+            Assert.Equal("Cereal-eyes", document.Data.Title);
 
-            Assert.Equal("9", document.Included[0].Id);
-            Assert.Equal("people", document.Included[0].Type);
-            Assert.NotNull(document.Included[0].Attributes);
-            Assert.Equal("Joe", document.Included[0].Attributes["name"].GetString());
-
-            Assert.Equal("5", document.Included[1].Id);
-            Assert.Equal("comments", document.Included[1].Type);
-            Assert.NotNull(document.Included[1].Attributes);
-            Assert.Equal("first", document.Included[1].Attributes["body"].GetString());
+            Assert.NotNull(document.Data.Author);
+            Assert.Equal("9", document.Data.Author.Id);
+            Assert.Equal("people", document.Data.Author.Type);
+            Assert.Equal("Joe", document.Data.Author.Name);
+            Assert.Equal("joe", document.Data.Author.Twitter);
         }
 
         [Fact]
@@ -353,39 +358,51 @@ namespace Jsonyte.Tests.Deserialization
         {
             const string json = @"
                 {
-                  'data': null,
-                  'included': [
+                  'data': [
                     {
-                      'type': 'people',
-                      'id': '9',
+                      'id': '1',
+                      'type': 'articles',
                       'attributes': {
-                        'name': 'Joe'
+                        'title': 'Highway or My Way'
                       },
                       'relationships': {
                         'author': {
                           'data': {
-                            'type': 'people',
-                            'id': '2'
+                            'id': '9',
+                            'type': 'people'
                           }
+                        },
+                        'comments': {
+                          'data': [
+                            {
+                              'id': '5',
+                              'type': 'comments'
+                            }
+                          ]
                         }
-                      },
-                      'links': {
-                        'self': 'http://example.com/comments/5'
+                      }
+                    }
+                  ],
+                  'included': [
+                    {
+                      'id': '9',
+                      'type': 'people',
+                      'attributes': {
+                        'name': 'Joe',
+                        'twitter': 'joe'
                       }
                     },
                     {
-                      'type': 'comments',
                       'id': '5',
+                      'type': 'comments',
                       'attributes': {
-                        'body': 'first'
+                        'body': 'Hi!'
                       },
                       'relationships': {
-                        'tags': {
-                          'links': {
-                            'self': '/tags'
-                          },
-                          'meta': {
-                            'count': 5
+                        'author': {
+                          'data': {
+                            'id': '9',
+                            'type': 'people'
                           }
                         }
                       }
@@ -393,30 +410,26 @@ namespace Jsonyte.Tests.Deserialization
                   ]
                 }";
 
-            var document = json.Deserialize<JsonApiDocument<Article>>();
+            var document = json.Deserialize<JsonApiDocument<ArticleWithAuthor[]>>();
 
-            Assert.NotNull(document.Included);
-            Assert.NotEmpty(document.Included);
-            Assert.Equal(2, document.Included.Length);
+            Assert.NotNull(document.Data);
+            Assert.Single(document.Data);
+            Assert.Equal("1", document.Data[0].Id);
+            Assert.Equal("articles", document.Data[0].Type);
+            Assert.Equal("Highway or My Way", document.Data[0].Title);
 
-            Assert.Equal("9", document.Included[0].Id);
-            Assert.Equal("people", document.Included[0].Type);
-            Assert.NotNull(document.Included[0].Attributes);
-            Assert.Equal("Joe", document.Included[0].Attributes["name"].GetString());
-            Assert.NotNull(document.Included[0].Relationships?["author"].Data);
-            Assert.Single(document.Included[0].Relationships?["author"].Data);
-            Assert.Equal("people", document.Included[0].Relationships?["author"].Data[0].Type);
-            Assert.Equal("2", document.Included[0].Relationships?["author"].Data[0].Id);
-            Assert.Equal("http://example.com/comments/5", document.Included[0].Links?.Self);
+            Assert.NotNull(document.Data[0].Author);
+            Assert.Equal("9", document.Data[0].Author.Id);
+            Assert.Equal("people", document.Data[0].Author.Type);
+            Assert.Equal("Joe", document.Data[0].Author.Name);
+            Assert.Equal("joe", document.Data[0].Author.Twitter);
 
-            Assert.Equal("5", document.Included[1].Id);
-            Assert.Equal("comments", document.Included[1].Type);
-            Assert.NotNull(document.Included[1].Attributes);
-            Assert.Equal("first", document.Included[1].Attributes["body"].GetString());
-            Assert.NotNull(document.Included[1].Relationships?["tags"].Links);
-            Assert.Equal("/tags", document.Included[1].Relationships["tags"].Links.Self);
-            Assert.NotNull(document.Included[1].Relationships?["tags"].Meta);
-            Assert.Equal(5, document.Included[1].Relationships["tags"].Meta["count"].GetInt32());
+            Assert.NotNull(document.Data[0].Comments);
+            Assert.Single(document.Data[0].Comments);
+            Assert.Equal("5", document.Data[0].Comments[0].Id);
+            Assert.Equal("comments", document.Data[0].Comments[0].Type);
+            Assert.Equal("Hi!", document.Data[0].Comments[0].Body);
+            Assert.Same(document.Data[0].Author, document.Data[0].Comments[0].Author);
         }
 
         [Fact]

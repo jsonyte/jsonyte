@@ -293,50 +293,50 @@ namespace Jsonyte.Tests.Serialization
         [Fact]
         public void CanSerializeIncludedWithTypedDocument()
         {
-            var document = new JsonApiDocument<Article[]>
+            var article = new ArticleWithAuthor
             {
-                Data = Array.Empty<Article>(),
-                Included = new[]
+                Id = "1",
+                Type = "article",
+                Title = "Cereal-eyes",
+                Author = new Author
                 {
-                    new JsonApiResource
-                    {
-                        Id = "9",
-                        Type = "people",
-                        Attributes = new Dictionary<string, JsonElement>
-                        {
-                            {"name", "Joe".ToElement()}
-                        }
-                    },
-                    new JsonApiResource
-                    {
-                        Id = "5",
-                        Type = "comments",
-                        Attributes = new Dictionary<string, JsonElement>
-                        {
-                            {"body", "first".ToElement()}
-                        }
-                    }
+                    Id = "9",
+                    Type = "people",
+                    Name = "Joe",
+                    Twitter = "joe"
                 }
             };
+
+            var document = JsonApiDocument.Create(new[] {article});
 
             var json = document.Serialize();
 
             Assert.Equal(@"
                 {
-                  'data': [],
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'article',
+                      'attributes': {
+                        'title': 'Cereal-eyes'
+                      },
+                      'relationships': {
+                        'author': {
+                          'data': {
+                            'id': '9',
+                            'type': 'people'
+                          }
+                        }
+                      }
+                    }
+                  ],
                   'included': [
                     {
-                      'type': 'people',
                       'id': '9',
+                      'type': 'people',
                       'attributes': {
-                        'name': 'Joe'
-                      }
-                    },
-                    {
-                      'type': 'comments',
-                      'id': '5',
-                      'attributes': {
-                        'body': 'first'
+                        'name': 'Joe',
+                        'twitter': 'joe'
                       }
                     }
                   ]
@@ -452,101 +452,86 @@ namespace Jsonyte.Tests.Serialization
         [Fact]
         public void CanSerializeIncludedAndRelationshipsWithTypedDocument()
         {
-            var document = new JsonApiDocument<Article[]>
+            var author = new Author
             {
-                Data = Array.Empty<Article>(),
-                Included = new[]
+                Id = "9",
+                Type = "people",
+                Name = "Joe",
+                Twitter = "joe"
+            };
+
+            var article = new ArticleWithAuthor
+            {
+                Id = "1",
+                Type = "articles",
+                Title = "Highway or My Way",
+                Author = author,
+                Comments = new[]
                 {
-                    new JsonApiResource
-                    {
-                        Id = "9",
-                        Type = "people",
-                        Attributes = new Dictionary<string, JsonElement>
-                        {
-                            {"name", "Joe".ToElement()}
-                        },
-                        Relationships = new Dictionary<string, JsonApiRelationship>
-                        {
-                            {
-                                "author", new JsonApiRelationship
-                                {
-                                    Data = new[]
-                                    {
-                                        new JsonApiResourceIdentifier("2", "people")
-                                    }
-                                }
-                            }
-                        },
-                        Links = new JsonApiResourceLinks
-                        {
-                            Self = "http://example.com/comments/5"
-                        }
-                    },
-                    new JsonApiResource
+                    new Comment
                     {
                         Id = "5",
                         Type = "comments",
-                        Attributes = new Dictionary<string, JsonElement>
-                        {
-                            {"body", "first".ToElement()}
-                        },
-                        Relationships = new Dictionary<string, JsonApiRelationship>
-                        {
-                            {
-                                "tags", new JsonApiRelationship
-                                {
-                                    Links = new JsonApiRelationshipLinks
-                                    {
-                                        Self = "/tags"
-                                    },
-                                    Meta = new JsonApiMeta
-                                    {
-                                        {"count", 5.ToElement()}
-                                    }
-                                }
-                            }
-                        }
+                        Body = "Hi!",
+                        Author = author
                     }
                 }
+            };
+
+            var document = new JsonApiDocument<ArticleWithAuthor[]>
+            {
+                Data = new[] {article}
             };
 
             var json = document.Serialize();
 
             Assert.Equal(@"
                 {
-                  'data': [],
-                  'included': [
+                  'data': [
                     {
-                      'type': 'people',
-                      'id': '9',
+                      'id': '1',
+                      'type': 'articles',
                       'attributes': {
-                        'name': 'Joe'
+                        'title': 'Highway or My Way'
                       },
                       'relationships': {
                         'author': {
                           'data': {
-                            'type': 'people',
-                            'id': '2'
+                            'id': '9',
+                            'type': 'people'
                           }
+                        },
+                        'comments': {
+                          'data': [
+                            {
+                              'id': '5',
+                              'type': 'comments'
+                            }
+                          ]
                         }
-                      },
-                      'links': {
-                        'self': 'http://example.com/comments/5'
+                      }
+                    }
+                  ],
+                  'included': [
+                    {
+                      'id': '9',
+                      'type': 'people',
+                      'attributes': {
+                        'name': 'Joe',
+                        'twitter': 'joe'
                       }
                     },
                     {
-                      'type': 'comments',
                       'id': '5',
+                      'type': 'comments',
                       'attributes': {
-                        'body': 'first'
+                        'body': 'Hi!'
                       },
                       'relationships': {
-                        'tags': {
-                          'links': {
-                            'self': '/tags'
-                          },
-                          'meta': {
-                            'count': 5
+                        'author': {
+                          'data': {
+                            'id': '9',
+                            'type': 'people'
                           }
                         }
                       }
