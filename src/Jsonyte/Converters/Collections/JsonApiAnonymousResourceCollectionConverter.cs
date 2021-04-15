@@ -5,21 +5,21 @@ using Jsonyte.Serialization;
 
 namespace Jsonyte.Converters.Collections
 {
-    internal class JsonApiAnonymousResourceCollectionConverter : WrappedJsonConverter<ResourceCollectionContainer>
+    internal class JsonApiAnonymousResourceCollectionConverter : WrappedJsonConverter<AnonymousResourceCollection>
     {
-        private WrappedJsonConverter<ResourceContainer>? wrappedConverter;
+        private WrappedJsonConverter<AnonymousResource>? wrappedConverter;
 
-        public override ResourceCollectionContainer Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override AnonymousResourceCollection Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }
 
-        public override ResourceCollectionContainer ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, ResourceCollectionContainer existingValue, JsonSerializerOptions options)
+        public override AnonymousResourceCollection ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, AnonymousResourceCollection existingValue, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }
 
-        public override void Write(Utf8JsonWriter writer, ResourceCollectionContainer value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, AnonymousResourceCollection value, JsonSerializerOptions options)
         {
             var tracked = new TrackedResources();
 
@@ -49,7 +49,7 @@ namespace Jsonyte.Converters.Collections
             writer.WriteEndObject();
         }
 
-        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, ResourceCollectionContainer container, JsonSerializerOptions options)
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, AnonymousResourceCollection container, JsonSerializerOptions options)
         {
             var value = container.Value;
 
@@ -65,7 +65,7 @@ namespace Jsonyte.Converters.Collections
 
                 foreach (var element in collection)
                 {
-                    converter.WriteWrapped(writer, ref tracked, new ResourceContainer(element), options);
+                    converter.WriteWrapped(writer, ref tracked, new AnonymousResource(element), options);
                 }
 
                 writer.WriteEndArray();
@@ -76,9 +76,9 @@ namespace Jsonyte.Converters.Collections
             }
         }
 
-        private WrappedJsonConverter<ResourceContainer> GetWrappedConverter(JsonSerializerOptions options)
+        private WrappedJsonConverter<AnonymousResource> GetWrappedConverter(JsonSerializerOptions options)
         {
-            return wrappedConverter ??= options.GetWrappedConverter<ResourceContainer>();
+            return wrappedConverter ??= options.GetWrappedConverter<AnonymousResource>();
         }
     }
 }

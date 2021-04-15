@@ -12,8 +12,8 @@ namespace Jsonyte.Converters
     {
         private static readonly Dictionary<Type, JsonConverter> JsonApiConverters = new()
         {
-            {typeof(ResourceContainer), new JsonApiAnonymousResourceConverter()},
-            {typeof(ResourceCollectionContainer), new JsonApiAnonymousResourceCollectionConverter()}
+            {typeof(AnonymousResource), new JsonApiAnonymousResourceConverter()},
+            {typeof(AnonymousResourceCollection), new JsonApiAnonymousResourceCollectionConverter()}
         };
 
         public override bool CanConvert(Type typeToConvert)

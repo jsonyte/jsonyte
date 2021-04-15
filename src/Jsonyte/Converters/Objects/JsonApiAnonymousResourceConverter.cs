@@ -5,19 +5,19 @@ using Jsonyte.Serialization;
 
 namespace Jsonyte.Converters.Objects
 {
-    internal class JsonApiAnonymousResourceConverter : WrappedJsonConverter<ResourceContainer>
+    internal class JsonApiAnonymousResourceConverter : WrappedJsonConverter<AnonymousResource>
     {
-        public override ResourceContainer Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override AnonymousResource Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }
 
-        public override ResourceContainer ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, ResourceContainer existingValue, JsonSerializerOptions options)
+        public override AnonymousResource ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, AnonymousResource existingValue, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }
 
-        public override void Write(Utf8JsonWriter writer, ResourceContainer value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, AnonymousResource value, JsonSerializerOptions options)
         {
             var tracked = new TrackedResources();
 
@@ -47,7 +47,7 @@ namespace Jsonyte.Converters.Objects
             writer.WriteEndObject();
         }
 
-        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, ResourceContainer container, JsonSerializerOptions options)
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, AnonymousResource container, JsonSerializerOptions options)
         {
             var value = container.Value;
 

@@ -1,10 +1,10 @@
 ﻿namespace Jsonyte
 {
-    internal readonly struct ResourceCollectionContainer
+    internal readonly struct AnonymousResource
     {
         public readonly object? Value;
 
-        public ResourceCollectionContainer(object? value)
+        public AnonymousResource(object? value)
         {
             Value = value;
         }

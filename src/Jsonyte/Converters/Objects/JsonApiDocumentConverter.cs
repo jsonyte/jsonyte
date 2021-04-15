@@ -10,9 +10,9 @@ namespace Jsonyte.Converters.Objects
     internal abstract class JsonApiDocumentConverter<T> : JsonConverter<T>
         where T : IJsonApiDocument, new()
     {
-        private WrappedJsonConverter<ResourceContainer>? containerConverter;
+        private WrappedJsonConverter<AnonymousResource>? containerConverter;
 
-        private WrappedJsonConverter<ResourceCollectionContainer>? containerCollectionConverter;
+        private WrappedJsonConverter<AnonymousResourceCollection>? containerCollectionConverter;
 
         protected abstract void ReadData(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
 
@@ -149,13 +149,13 @@ namespace Jsonyte.Converters.Objects
 
             if (category == JsonTypeCategory.Object)
             {
-                var container = new ResourceContainer(value);
+                var container = new AnonymousResource(value);
 
                 GetContainerConverter(options).WriteWrapped(writer, ref tracked, container, options);
             }
             else
             {
-                var container = new ResourceCollectionContainer(value);
+                var container = new AnonymousResourceCollection(value);
 
                 GetContainerCollectionConverter(options).WriteWrapped(writer, ref tracked, container, options);
             }
@@ -164,14 +164,14 @@ namespace Jsonyte.Converters.Objects
         [AssertionMethod]
         protected abstract void ValidateDocument(T document);
 
-        private WrappedJsonConverter<ResourceContainer> GetContainerConverter(JsonSerializerOptions options)
+        private WrappedJsonConverter<AnonymousResource> GetContainerConverter(JsonSerializerOptions options)
         {
-            return containerConverter ??= options.GetWrappedConverter<ResourceContainer>();
+            return containerConverter ??= options.GetWrappedConverter<AnonymousResource>();
         }
 
-        private WrappedJsonConverter<ResourceCollectionContainer> GetContainerCollectionConverter(JsonSerializerOptions options)
+        private WrappedJsonConverter<AnonymousResourceCollection> GetContainerCollectionConverter(JsonSerializerOptions options)
         {
-            return containerCollectionConverter ??= options.GetWrappedConverter<ResourceCollectionContainer>();
+            return containerCollectionConverter ??= options.GetWrappedConverter<AnonymousResourceCollection>();
         }
     }
 }
