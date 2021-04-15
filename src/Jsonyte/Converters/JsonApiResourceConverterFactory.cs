@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Converters.Collections;
@@ -9,6 +10,12 @@ namespace Jsonyte.Converters
 {
     internal class JsonApiResourceConverterFactory : JsonApiConverterFactory
     {
+        private static readonly Dictionary<Type, JsonConverter> JsonApiConverters = new()
+        {
+            {typeof(ResourceContainer), new JsonApiAnonymousResourceConverter()},
+            {typeof(ResourceCollectionContainer), new JsonApiAnonymousResourceCollectionConverter()}
+        };
+
         public override bool CanConvert(Type typeToConvert)
         {
             if (IsIgnoredType(typeToConvert))
@@ -16,7 +23,7 @@ namespace Jsonyte.Converters
                 return false;
             }
 
-            if (typeToConvert == typeof(ResourceContainer) || typeToConvert == typeof(ResourceCollectionContainer))
+            if (JsonApiConverters.ContainsKey(typeToConvert))
             {
                 return true;
             }
@@ -36,14 +43,9 @@ namespace Jsonyte.Converters
 
         public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
-            if (typeToConvert == typeof(ResourceContainer))
+            if (JsonApiConverters.TryGetValue(typeToConvert, out var converter))
             {
-                return new JsonApiAnonymousResourceConverter();
-            }
-
-            if (typeToConvert == typeof(ResourceCollectionContainer))
-            {
-                return new JsonApiAnonymousResourceCollectionConverter();
+                return converter;
             }
 
             if (typeToConvert.IsCollection())
@@ -60,10 +62,7 @@ namespace Jsonyte.Converters
 
             var info = options.GetTypeInfo(typeToConvert);
 
-            if (typeToConvert != typeof(object))
-            {
-                ValidateResource(info);
-            }
+            ValidateResource(info);
 
             var converterType = typeof(JsonApiResourceObjectConverter<>);
 

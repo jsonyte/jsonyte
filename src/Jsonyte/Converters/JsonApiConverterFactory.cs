@@ -156,12 +156,5 @@ namespace Jsonyte.Converters
 
             return Activator.CreateInstance(genericType, info) as JsonConverter;
         }
-
-        protected JsonConverter? CreateConverter(Type converterType, IJsonObjectConverter converter, params Type[] typesToConvert)
-        {
-            var genericType = converterType.MakeGenericType(typesToConvert);
-
-            return Activator.CreateInstance(genericType, converter) as JsonConverter;
-        }
     }
 }
