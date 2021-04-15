@@ -19,7 +19,7 @@ namespace Jsonyte.Converters.Objects
         {
             if (value.Errors == null && value.Meta == null && value.Data == null)
             {
-                writer.WriteNull(JsonApiMembers.Data);
+                writer.WriteNull(JsonApiMembers.DataEncoded);
             }
             else if (value.Data != null)
             {
@@ -55,7 +55,7 @@ namespace Jsonyte.Converters.Objects
     {
         protected override void ReadData(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
         {
-            document.Data = reader.ReadWrapped<T>(ref tracked, options);
+            document.Data = ReadWrapped<T>(ref reader, ref tracked, options);
         }
 
         protected override void ReadIncluded(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
@@ -91,7 +91,7 @@ namespace Jsonyte.Converters.Objects
         {
             if (value.Errors == null && value.Meta == null && value.Data == null)
             {
-                writer.WriteNull(JsonApiMembers.Data);
+                writer.WriteNull(JsonApiMembers.DataEncoded);
             }
             else if (value.Data != null)
             {

@@ -23,7 +23,7 @@ namespace Jsonyte.Converters.Collections
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name == JsonApiMembers.Errors)
+                if (name.IsEqual(JsonApiMembers.ErrorsEncoded))
                 {
                     errors = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }

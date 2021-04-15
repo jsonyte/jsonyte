@@ -2,8 +2,6 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Jsonyte.Converters;
-using Jsonyte.Serialization;
 using Jsonyte.Validation;
 
 namespace Jsonyte
@@ -81,7 +79,7 @@ namespace Jsonyte
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string? ReadMember(this ref Utf8JsonReader reader, ref DocumentState state)
+        public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, ref DocumentState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.TopLevel);
 
@@ -91,17 +89,7 @@ namespace Jsonyte
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlySpan<byte> ReadMemberFast(this ref Utf8JsonReader reader, ref DocumentState state)
-        {
-            var name = reader.ReadMemberFast(JsonApiMemberCode.TopLevel);
-
-            state.AddFlag(name);
-
-            return name;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string? ReadMember(this ref Utf8JsonReader reader, ref ResourceState state)
+        public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, ref ResourceState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Resource);
 
@@ -111,17 +99,7 @@ namespace Jsonyte
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlySpan<byte> ReadMemberFast(this ref Utf8JsonReader reader, ref ResourceState state)
-        {
-            var name = reader.ReadMemberFast(JsonApiMemberCode.Resource);
-
-            state.AddFlag(name);
-
-            return name;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string? ReadMember(this ref Utf8JsonReader reader, ref RelationshipState state)
+        public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, ref RelationshipState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Relationship);
 
@@ -131,31 +109,7 @@ namespace Jsonyte
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlySpan<byte> ReadMemberFast(this ref Utf8JsonReader reader, ref RelationshipState state)
-        {
-            var name = reader.ReadMemberFast(JsonApiMemberCode.Relationship);
-
-            state.AddFlag(name);
-
-            return name;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string? ReadMember(this ref Utf8JsonReader reader, JsonApiMemberCode code)
-        {
-            if (reader.TokenType != JsonTokenType.PropertyName)
-            {
-                throw new JsonApiFormatException(code, reader.GetString());
-            }
-
-            var name = reader.GetString();
-            reader.Read();
-
-            return name;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlySpan<byte> ReadMemberFast(this ref Utf8JsonReader reader, JsonApiMemberCode code)
+        public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, JsonApiMemberCode code)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
             {
@@ -179,17 +133,6 @@ namespace Jsonyte
             return converter.Read(ref reader, typeof(T), options);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? ReadWrapped<T>(this ref Utf8JsonReader reader, ref TrackedResources tracked, JsonSerializerOptions options)
-        {
-            if (options.GetConverter(typeof(T)) is not WrappedJsonConverter<T> converter)
-            {
-                throw new JsonApiException($"Could not find converter for type '{typeof(T)}'");
-            }
-
-            return converter.ReadWrapped(ref reader, ref tracked, typeof(T), default, options);
-        }
-
         public static ResourceIdentifier ReadAheadIdentifier(this Utf8JsonReader reader)
         {
             ReadOnlySpan<byte> id = default;
@@ -199,7 +142,7 @@ namespace Jsonyte
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMemberFast(JsonApiMemberCode.ResourceIdentifier);
+                var name = reader.ReadMember(JsonApiMemberCode.ResourceIdentifier);
 
                 if (name.IsEqual(JsonApiMembers.IdEncoded))
                 {
@@ -234,7 +177,7 @@ namespace Jsonyte
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMemberFast(JsonApiMemberCode.ResourceIdentifier);
+                var name = reader.ReadMember(JsonApiMemberCode.ResourceIdentifier);
 
                 if (name.IsEqual(JsonApiMembers.IdEncoded))
                 {

@@ -32,27 +32,27 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name == JsonApiMembers.Data)
+                if (name.IsEqual(JsonApiMembers.DataEncoded))
                 {
                     ReadData(ref reader, ref tracked, document, options);
                 }
-                else if (name == JsonApiMembers.Errors)
+                else if (name.IsEqual(JsonApiMembers.ErrorsEncoded))
                 {
-                    document.Errors = reader.ReadWrapped<JsonApiError[]>(ref tracked, options);
+                    document.Errors = ReadWrapped<JsonApiError[]>(ref reader, ref tracked, options);
                 }
-                else if (name == JsonApiMembers.JsonApi)
+                else if (name.IsEqual(JsonApiMembers.JsonApiEncoded))
                 {
                     document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
                 }
-                else if (name == JsonApiMembers.Meta)
+                else if (name.IsEqual(JsonApiMembers.MetaEncoded))
                 {
                     document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                 }
-                else if (name == JsonApiMembers.Links)
+                else if (name.IsEqual(JsonApiMembers.LinksEncoded))
                 {
                     document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
                 }
-                else if (name == JsonApiMembers.Included)
+                else if (name.IsEqual(JsonApiMembers.IncludedEncoded))
                 {
                     if (state.HasFlag(DocumentFlags.Data))
                     {
@@ -88,6 +88,16 @@ namespace Jsonyte.Converters.Objects
             return state.IsEmpty()
                 ? default
                 : document;
+        }
+
+        protected TConverter? ReadWrapped<TConverter>(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonSerializerOptions options)
+        {
+            if (options.GetConverter(typeof(TConverter)) is not WrappedJsonConverter<TConverter> converter)
+            {
+                throw new JsonApiException($"Could not find converter for type '{typeof(TConverter)}'");
+            }
+
+            return converter.ReadWrapped(ref reader, ref tracked, typeof(TConverter), default, options);
         }
 
         protected abstract void WriteData(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);

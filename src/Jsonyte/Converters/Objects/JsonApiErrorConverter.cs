@@ -18,7 +18,7 @@ namespace Jsonyte.Converters.Objects
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMemberFast(ref state);
+                var name = reader.ReadMember(ref state);
 
                 if (name.IsEqual(JsonApiMembers.ErrorsEncoded))
                 {
@@ -61,7 +61,7 @@ namespace Jsonyte.Converters.Objects
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMemberFast(JsonApiMemberCode.Error);
+                var name = reader.ReadMember(JsonApiMemberCode.Error);
 
                 if (name.IsEqual(JsonApiMembers.IdEncoded))
                 {

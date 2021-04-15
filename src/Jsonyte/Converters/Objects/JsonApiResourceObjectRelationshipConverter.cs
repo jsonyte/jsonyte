@@ -29,7 +29,7 @@ namespace Jsonyte.Converters.Objects
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMemberFast(ref relationshipState);
+                var name = reader.ReadMember(ref relationshipState);
 
                 if (name.IsEqual(JsonApiMembers.DataEncoded))
                 {

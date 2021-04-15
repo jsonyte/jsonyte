@@ -22,7 +22,7 @@ namespace Jsonyte.Converters.Collections
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMemberFast(ref state);
+                var name = reader.ReadMember(ref state);
 
                 if (name.IsEqual(JsonApiMembers.DataEncoded))
                 {
