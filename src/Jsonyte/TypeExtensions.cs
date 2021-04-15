@@ -36,6 +36,11 @@ namespace Jsonyte
             return false;
         }
 
+        public static bool IsNaturalRelationship(this Type type)
+        {
+            return HasMemberIgnoreType(type, JsonApiMembers.Data) || HasMemberIgnoreType(type, JsonApiMembers.Links);
+        }
+
         public static bool IsError(this Type type)
         {
             return type == typeof(JsonApiError);
@@ -137,6 +142,20 @@ namespace Jsonyte
             var field = type.GetField(name, MemberFlags);
 
             return field != null && field.FieldType == typeof(string);
+        }
+
+        private static bool HasMemberIgnoreType(Type type, string name)
+        {
+            var property = type.GetProperty(name, MemberFlags);
+
+            if (property != null)
+            {
+                return true;
+            }
+
+            var field = type.GetField(name, MemberFlags);
+
+            return field != null;
         }
 
         private static IEnumerable<Type> GetInterfaces(Type type)

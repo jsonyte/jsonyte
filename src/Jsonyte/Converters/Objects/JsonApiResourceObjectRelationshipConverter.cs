@@ -107,8 +107,8 @@ namespace Jsonyte.Converters.Objects
                 throw new JsonApiException($"JSON:API relationship for '{typeof(T).Name}' must have both 'id' and 'type' values");
             }
 
-            var idBytes = Encoding.UTF8.GetBytes(id);
-            var typeBytes = Encoding.UTF8.GetBytes(type);
+            var idBytes = Encoding.UTF8.GetBytes(id!);
+            var typeBytes = Encoding.UTF8.GetBytes(type!);
 
             writer.WriteStartObject();
 
