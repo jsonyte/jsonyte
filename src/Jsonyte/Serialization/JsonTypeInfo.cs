@@ -60,15 +60,16 @@ namespace Jsonyte.Serialization
                 .Where(x => x.IsRelationship)
                 .ToArray();
 
-            IdMember = GetMember(JsonApiMembers.Id);
-            TypeMember = GetMember(JsonApiMembers.Type);
-            MetaMember = GetMember(JsonApiMembers.Meta);
-            LinksMember = GetMember(JsonApiMembers.Links);
-
             memberCache = members
                 .Take(CachedMembers)
                 .Select(x => new MemberRef(GetKey(x.NameEncoded.EncodedUtf8Bytes), x, x.NameEncoded.EncodedUtf8Bytes.ToArray()))
                 .ToArray();
+
+            IdMember = GetMember(JsonApiMembers.IdEncoded.EncodedUtf8Bytes);
+            TypeMember = GetMember(JsonApiMembers.TypeEncoded.EncodedUtf8Bytes);
+            DataMember = GetMember(JsonApiMembers.DataEncoded.EncodedUtf8Bytes);
+            MetaMember = GetMember(JsonApiMembers.MetaEncoded.EncodedUtf8Bytes);
+            LinksMember = GetMember(JsonApiMembers.LinksEncoded.EncodedUtf8Bytes);
         }
 
         public Func<object?> Creator { get; }
@@ -86,6 +87,8 @@ namespace Jsonyte.Serialization
         public IJsonMemberInfo IdMember { get; }
 
         public IJsonMemberInfo TypeMember { get; }
+
+        public IJsonMemberInfo DataMember { get; }
 
         public IJsonMemberInfo MetaMember { get; }
 

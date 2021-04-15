@@ -21,7 +21,7 @@ namespace Jsonyte.Serialization
             NameEncoded = JsonEncodedText.Encode(Name);
             MemberName = member.Name;
             MemberType = memberType;
-            IsRelationship = memberType.IsResourceIdentifier() || memberType.IsResourceIdentifierCollection();
+            IsRelationship = memberType.IsResourceIdentifier() || memberType.IsResourceIdentifierCollection() || memberType.IsNaturalRelationship();
         }
 
         public JsonSerializerOptions Options { get; }
@@ -178,6 +178,26 @@ namespace Jsonyte.Serialization
 
                 writer.WritePropertyName(NameEncoded);
                 RelationshipConverter.Write(writer, ref tracked, new RelationshipResource<T>(value), Options);
+            }
+        }
+
+        public void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource)
+        {
+            if (Get == null || Ignored || !IsRelationship)
+            {
+                return;
+            }
+
+            var value = Get(resource);
+
+            if (Options.IgnoreNullValues && value == null)
+            {
+                return;
+            }
+
+            if (value != null)
+            {
+                RelationshipConverter.WriteWrapped(writer, ref tracked, new RelationshipResource<T>(value), Options);
             }
         }
 
