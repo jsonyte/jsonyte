@@ -7,21 +7,6 @@ using Jsonyte.Serialization.Reflection;
 
 namespace Jsonyte
 {
-    /*
-        https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-ignore-properties?pivots=dotnet-5-0
-
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        DONE public bool IgnoreNullValues { get; set; }
-
-        public JsonIgnoreCondition DefaultIgnoreCondition { get; set; }
-
-        public bool IgnoreReadOnlyProperties { get; set; }
-
-        public bool IgnoreReadOnlyFields { get; set; }
-
-        public bool IncludeFields { get; set; }
-
-     */
     public static class JsonSerializationOptionsExtensions
     {
         public static JsonSerializerOptions AddJsonApi(this JsonSerializerOptions options)

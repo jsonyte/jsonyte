@@ -3,13 +3,20 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 using Jsonyte.Serialization;
+using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Objects
 {
     internal abstract class JsonApiDocumentConverter<T> : JsonConverter<T>
         where T : IJsonApiDocument, new()
     {
+        private WrappedJsonConverter<ResourceContainer>? containerConverter;
+
+        private WrappedJsonConverter<ResourceCollectionContainer>? containerCollectionConverter;
+
         protected abstract void ReadData(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
+
+        protected abstract void ReadIncluded(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -17,6 +24,9 @@ namespace Jsonyte.Converters.Objects
 
             var state = reader.ReadDocument();
             var tracked = new TrackedResources();
+
+            Utf8JsonReader savedReader = default;
+            var includedReadFirst = false;
 
             while (reader.IsInObject())
             {
@@ -44,7 +54,17 @@ namespace Jsonyte.Converters.Objects
                 }
                 else if (name == JsonApiMembers.Included)
                 {
-                    document.Included = JsonSerializer.Deserialize<JsonApiResource[]>(ref reader, options);
+                    if (state.HasFlag(DocumentFlags.Data))
+                    {
+                        ReadIncluded(ref reader, ref tracked, document, options);
+                    }
+                    else
+                    {
+                        includedReadFirst = true;
+                        savedReader = reader;
+
+                        reader.Skip();
+                    }
                 }
                 else
                 {
@@ -52,6 +72,15 @@ namespace Jsonyte.Converters.Objects
                 }
 
                 reader.Read();
+            }
+
+            // TODO
+            // Really janky way of doing this as it means parsing over
+            // included twice if included appears first in the document.
+            // This needs to be re-thought.
+            if (includedReadFirst)
+            {
+                ReadIncluded(ref savedReader, ref tracked, document, options);
             }
 
             state.Validate();
@@ -63,6 +92,8 @@ namespace Jsonyte.Converters.Objects
 
         protected abstract void WriteData(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);
 
+        protected abstract void WriteIncluded(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);
+
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
             var tracked = new TrackedResources();
@@ -72,12 +103,6 @@ namespace Jsonyte.Converters.Objects
             writer.WriteStartObject();
 
             WriteData(writer, ref tracked, value, options);
-
-            if (value.Included != null)
-            {
-                writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
-                JsonSerializer.Serialize(writer, value.Included, options);
-            }
 
             if (value.Errors != null)
             {
@@ -103,32 +128,50 @@ namespace Jsonyte.Converters.Objects
                 JsonSerializer.Serialize(writer, value.JsonApi, options);
             }
 
+            WriteIncluded(writer, ref tracked, value, options);
+
             writer.WriteEndObject();
         }
 
         protected void WriteWrapped<TElement>(Utf8JsonWriter writer, ref TrackedResources tracked, TElement value, JsonSerializerOptions options)
         {
-            var type = value == null
-                ? typeof(TElement)
-                : value.GetType();
-
+            var type = value!.GetType();
             var converter = options.GetConverter(type);
 
             if (converter is WrappedJsonConverter<TElement> genericConverter)
             {
                 genericConverter.WriteWrapped(writer, ref tracked, value, options);
+
+                return;
             }
-            else if (converter is IWrappedObjectConverter anonymousConverter)
+
+            var category = type.GetTypeCategory();
+
+            if (category == JsonTypeCategory.Object)
             {
-                anonymousConverter.WriteWrappedObject(writer, ref tracked, value, options);
+                var container = new ResourceContainer(value);
+
+                GetContainerConverter(options).WriteWrapped(writer, ref tracked, container, options);
             }
             else
             {
-                throw new JsonApiException($"Could not find converter for type '{typeof(TElement)}'");
+                var container = new ResourceCollectionContainer(value);
+
+                GetContainerCollectionConverter(options).WriteWrapped(writer, ref tracked, container, options);
             }
         }
 
         [AssertionMethod]
         protected abstract void ValidateDocument(T document);
+
+        private WrappedJsonConverter<ResourceContainer> GetContainerConverter(JsonSerializerOptions options)
+        {
+            return containerConverter ??= options.GetWrappedConverter<ResourceContainer>();
+        }
+
+        private WrappedJsonConverter<ResourceCollectionContainer> GetContainerCollectionConverter(JsonSerializerOptions options)
+        {
+            return containerCollectionConverter ??= options.GetWrappedConverter<ResourceCollectionContainer>();
+        }
     }
 }

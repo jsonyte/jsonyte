@@ -9,7 +9,5 @@
         JsonApiObject? JsonApi { get; set; }
 
         JsonApiDocumentLinks? Links { get; set; }
-
-        JsonApiResource[]? Included { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using Jsonyte.Serialization;
 
 namespace Jsonyte.Converters.Objects
 {
+#if false
     internal class JsonApiResourceObjectConstructorConverter<T> : JsonApiResourceObjectConverter<T>
     {
         public JsonApiResourceObjectConstructorConverter(JsonTypeInfo type)
@@ -103,4 +104,5 @@ namespace Jsonyte.Converters.Objects
             }
         }
     }
+#endif
 }

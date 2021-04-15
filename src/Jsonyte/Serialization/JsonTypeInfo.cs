@@ -52,7 +52,8 @@ namespace Jsonyte.Serialization
                 .Where(x => !x.IsRelationship)
                 .Where(x => !x.Name.Equals(JsonApiMembers.Id, StringComparison.OrdinalIgnoreCase) &&
                             !x.Name.Equals(JsonApiMembers.Type, StringComparison.OrdinalIgnoreCase) &&
-                            !x.Name.Equals(JsonApiMembers.Meta, StringComparison.OrdinalIgnoreCase))
+                            !x.Name.Equals(JsonApiMembers.Meta, StringComparison.OrdinalIgnoreCase) &&
+                            !x.Name.Equals(JsonApiMembers.Links, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
             RelationshipMembers = members
@@ -62,6 +63,7 @@ namespace Jsonyte.Serialization
             IdMember = GetMember(JsonApiMembers.Id);
             TypeMember = GetMember(JsonApiMembers.Type);
             MetaMember = GetMember(JsonApiMembers.Meta);
+            LinksMember = GetMember(JsonApiMembers.Links);
 
             memberCache = members
                 .Take(CachedMembers)
@@ -86,6 +88,8 @@ namespace Jsonyte.Serialization
         public IJsonMemberInfo TypeMember { get; }
 
         public IJsonMemberInfo MetaMember { get; }
+
+        public IJsonMemberInfo LinksMember { get; }
 
         public IJsonMemberInfo GetMember(string? name)
         {

@@ -16,6 +16,11 @@ namespace Jsonyte.Converters
                 return false;
             }
 
+            if (typeToConvert == typeof(ResourceContainer) || typeToConvert == typeof(ResourceCollectionContainer))
+            {
+                return true;
+            }
+
             if (typeToConvert.IsCollection())
             {
                 var elementType = typeToConvert.GetCollectionElementType();
@@ -31,6 +36,16 @@ namespace Jsonyte.Converters
 
         public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
+            if (typeToConvert == typeof(ResourceContainer))
+            {
+                return new JsonApiAnonymousResourceConverter();
+            }
+
+            if (typeToConvert == typeof(ResourceCollectionContainer))
+            {
+                return new JsonApiAnonymousResourceCollectionConverter();
+            }
+
             if (typeToConvert.IsCollection())
             {
                 var elementType = typeToConvert.GetCollectionElementType();

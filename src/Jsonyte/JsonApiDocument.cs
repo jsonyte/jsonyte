@@ -24,10 +24,6 @@ namespace Jsonyte
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiDocumentLinks? Links { get; set; }
 
-        [JsonPropertyName("included")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public JsonApiResource[]? Included { get; set; }
-
         public JsonApiDocument<T> Create(T data)
         {
             return new()

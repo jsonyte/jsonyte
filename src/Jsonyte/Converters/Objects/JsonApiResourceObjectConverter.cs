@@ -19,7 +19,7 @@ namespace Jsonyte.Converters.Objects
         {
             var resource = default(T);
 
-            var documentState = reader.ReadDocument();
+            var state = reader.ReadDocument();
             var tracked = new TrackedResources();
 
             Utf8JsonReader savedReader = default;
@@ -27,7 +27,7 @@ namespace Jsonyte.Converters.Objects
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMemberFast(ref documentState);
+                var name = reader.ReadMemberFast(ref state);
 
                 if (name.SequenceEqual(JsonApiMembers.DataEncoded.EncodedUtf8Bytes))
                 {
@@ -35,7 +35,7 @@ namespace Jsonyte.Converters.Objects
                 }
                 else if (name.SequenceEqual(JsonApiMembers.IncludedEncoded.EncodedUtf8Bytes))
                 {
-                    if (documentState.HasFlag(DocumentFlags.Data))
+                    if (state.HasFlag(DocumentFlags.Data))
                     {
                         ReadIncluded(ref reader, ref tracked, options);
                     }
@@ -64,7 +64,7 @@ namespace Jsonyte.Converters.Objects
                 ReadIncluded(ref savedReader, ref tracked, options);
             }
 
-            documentState.Validate();
+            state.Validate();
 
             return resource;
         }
@@ -234,6 +234,7 @@ namespace Jsonyte.Converters.Objects
                 }
             }
 
+            info.LinksMember.Write(writer, ref tracked, value);
             info.MetaMember.Write(writer, ref tracked, value);
 
             writer.WriteEndObject();
