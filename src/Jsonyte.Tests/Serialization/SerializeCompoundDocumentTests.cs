@@ -474,5 +474,141 @@ namespace Jsonyte.Tests.Serialization
                   ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeModelWithRelationshipAsAnonymousObject()
+        {
+            object GetAuthor()
+            {
+                return new
+                {
+                    id = "2",
+                    type = "people",
+                    name = "Bill"
+                };
+            }
+
+            var model = new
+            {
+                id = "1",
+                type = "articles",
+                title = "Jsonapi",
+                author = GetAuthor()
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'author': {
+                        'data': {
+                          'type': 'people',
+                          'id': '2'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'type': 'people',
+                      'id': '2',
+                      'attributes': {
+                        'name': 'Bill'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeModelWithExplicitResourceArrayAsObject()
+        {
+            object GetAuthors()
+            {
+                return new
+                {
+                    data = new[]
+                    {
+                        new
+                        {
+                            id = "2",
+                            type = "people",
+                            name = "Bill"
+                        },
+                        new
+                        {
+                            id = "3",
+                            type = "people",
+                            name = "Ted"
+                        }
+                    },
+                    links = new
+                    {
+                        self = "http://me"
+                    }
+                };
+            }
+
+            var model = new
+            {
+                id = "1",
+                type = "articles",
+                title = "Jsonapi",
+                authors = GetAuthors()
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'authors': {
+                        'data': [
+                          {
+                            'type': 'people',
+                            'id': '2'
+                          },
+                          {
+                            'type': 'people',
+                            'id': '3'
+                          }
+                        ],
+                        'links': {
+                          'self': 'http://me'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'type': 'people',
+                      'id': '2',
+                      'attributes': {
+                        'name': 'Bill'
+                      }
+                    },
+                    {
+                      'type': 'people',
+                      'id': '3',
+                      'attributes': {
+                        'name': 'Ted'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

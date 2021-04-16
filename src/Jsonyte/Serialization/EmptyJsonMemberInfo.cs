@@ -40,8 +40,9 @@ namespace Jsonyte.Serialization
             return null;
         }
 
-        public void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource)
+        public bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default)
         {
+            return false;
         }
 
         public void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection)

@@ -28,7 +28,7 @@ namespace Jsonyte.Serialization
 
         object? Read(ref Utf8JsonReader reader);
 
-        void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource);
+        bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default);
 
         void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection);
 

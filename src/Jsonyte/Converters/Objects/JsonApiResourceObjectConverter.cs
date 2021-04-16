@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text.Json;
 using Jsonyte.Serialization;
 using Jsonyte.Validation;
@@ -206,38 +205,50 @@ namespace Jsonyte.Converters.Objects
             info.IdMember.Write(writer, ref tracked, value);
             info.TypeMember.Write(writer, ref tracked, value);
 
-            if (info.AttributeMembers.Any())
-            {
-                writer.WritePropertyName(JsonApiMembers.AttributesEncoded);
-                writer.WriteStartObject();
-
-                foreach (var member in info.AttributeMembers)
-                {
-                    member.Write(writer, ref tracked, value);
-                }
-
-                writer.WriteEndObject();
-            }
-
-            if (info.RelationshipMembers.Any())
-            {
-                var relationshipsWritten = false;
-
-                foreach (var member in info.RelationshipMembers)
-                {
-                    member.WriteRelationship(writer, ref tracked, value, ref relationshipsWritten);
-                }
-
-                if (relationshipsWritten)
-                {
-                    writer.WriteEndObject();
-                }
-            }
+            WriteAttributes(writer, ref tracked, value);
+            WriteRelationships(writer, ref tracked, value);
 
             info.LinksMember.Write(writer, ref tracked, value);
             info.MetaMember.Write(writer, ref tracked, value);
 
             writer.WriteEndObject();
+        }
+
+        private void WriteAttributes(Utf8JsonWriter writer, ref TrackedResources tracked, T value)
+        {
+            var attributesWritten = false;
+
+            foreach (var member in info.AttributeMembers)
+            {
+                var memberName = attributesWritten
+                    ? default
+                    : JsonApiMembers.AttributesEncoded;
+
+                attributesWritten |= member.Write(writer, ref tracked, value!, memberName);
+            }
+
+            if (attributesWritten)
+            {
+                writer.WriteEndObject();
+            }
+        }
+
+        private void WriteRelationships(Utf8JsonWriter writer, ref TrackedResources tracked, T value)
+        {
+            var relationshipsWritten = false;
+
+            foreach (var member in info.AttributeMembers)
+            {
+                if (member.IsRelationship)
+                {
+                    member.WriteRelationship(writer, ref tracked, value!, ref relationshipsWritten);
+                }
+            }
+
+            if (relationshipsWritten)
+            {
+                writer.WriteEndObject();
+            }
         }
     }
 }

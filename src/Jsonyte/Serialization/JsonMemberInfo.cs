@@ -1,14 +1,21 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Converters;
+using Jsonyte.Converters.Objects;
 
 namespace Jsonyte.Serialization
 {
+    [DebuggerDisplay(@"\{{Name,nq}\}")]
     internal abstract class JsonMemberInfo<T> : IJsonMemberInfo
     {
         private JsonApiRelationshipDetailsConverter<T>? relationshipConverter;
+
+        private IAnonymousRelationshipConverter? anonymousRelationshipConverter;
+
+        private bool firstRead;
 
         protected JsonMemberInfo(MemberInfo member, Type memberType, JsonIgnoreCondition? ignoreCondition, JsonConverter converter, JsonSerializerOptions options)
         {
@@ -21,7 +28,8 @@ namespace Jsonyte.Serialization
             NameEncoded = JsonEncodedText.Encode(Name);
             MemberName = member.Name;
             MemberType = memberType;
-            IsRelationship = memberType.IsResourceIdentifier() || memberType.IsResourceIdentifierCollection() || memberType.IsNaturalRelationship();
+            IsRelationship = GetIsRelationship(memberType);
+            IsPossiblyAnonymous = MemberType == typeof(object);
         }
 
         public JsonSerializerOptions Options { get; }
@@ -52,11 +60,15 @@ namespace Jsonyte.Serialization
 
         public Type MemberType { get; }
 
+        public Type? ValueType { get; private set; }
+
         public abstract bool Ignored { get; }
 
         public JsonConverter Converter { get; }
 
-        public bool IsRelationship { get; }
+        public bool IsRelationship { get; private set; }
+
+        public bool IsPossiblyAnonymous { get; }
 
         public object? GetValue(object resource)
         {
@@ -126,18 +138,31 @@ namespace Jsonyte.Serialization
             return value;
         }
 
-        public void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource)
+        public bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default)
         {
             if (Get == null || Ignored)
             {
-                return;
+                return false;
             }
 
             var value = Get(resource);
 
             if (Options.IgnoreNullValues && value == null)
             {
-                return;
+                return false;
+            }
+
+            CheckAttributeIsResource(value);
+
+            if (IsRelationship)
+            {
+                return false;
+            }
+
+            if (!section.EncodedUtf8Bytes.IsEmpty)
+            {
+                writer.WritePropertyName(section);
+                writer.WriteStartObject();
             }
 
             writer.WritePropertyName(NameEncoded);
@@ -150,6 +175,8 @@ namespace Jsonyte.Serialization
             {
                 TypedConverter.Write(writer, value, Options);
             }
+
+            return true;
         }
 
         public void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection)
@@ -177,7 +204,15 @@ namespace Jsonyte.Serialization
                 }
 
                 writer.WritePropertyName(NameEncoded);
-                RelationshipConverter.Write(writer, ref tracked, new RelationshipResource<T>(value), Options);
+
+                if (anonymousRelationshipConverter != null)
+                {
+                    anonymousRelationshipConverter.Write(writer, ref tracked, value);
+                }
+                else
+                {
+                    RelationshipConverter.Write(writer, ref tracked, new RelationshipResource<T>(value), Options);
+                }
             }
         }
 
@@ -219,6 +254,39 @@ namespace Jsonyte.Serialization
         protected bool IsPublic(MethodInfo? method)
         {
             return method != null && method.IsPublic;
+        }
+
+        private bool GetIsRelationship(Type type)
+        {
+            return type.IsResourceIdentifier() || type.IsResourceIdentifierCollection() || type.IsNaturalRelationship();
+        }
+
+        private IAnonymousRelationshipConverter GetAnonymousRelationshipConverter(Type type)
+        {
+            var converterType = typeof(JsonApiAnonymousRelationshipConverter<>).MakeGenericType(type);
+
+            return (IAnonymousRelationshipConverter) Activator.CreateInstance(converterType, Options);
+        }
+
+        private void CheckAttributeIsResource(T value)
+        {
+            if (firstRead || value == null)
+            {
+                return;
+            }
+
+            firstRead = true;
+
+            var actualType = value.GetType();
+
+            // Anonymous object types sometimes aren't declared until we inspect the actual object
+            if (IsPossiblyAnonymous && actualType != MemberType && GetIsRelationship(actualType))
+            {
+                ValueType = actualType;
+                IsRelationship = true;
+
+                anonymousRelationshipConverter = GetAnonymousRelationshipConverter(actualType);
+            }
         }
 
         private string GetName(MemberInfo member)
