@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
@@ -286,12 +287,27 @@ namespace Jsonyte.Serialization
             var actualType = value.GetType();
 
             // Anonymous object types sometimes aren't declared until we inspect the actual object
-            if (actualType != MemberType && GetIsRelationship(actualType))
+            if (actualType != MemberType)
             {
-                ValueType = actualType;
-                IsRelationship = true;
+                if (actualType.IsRelationship() || actualType.IsNaturalRelationship())
+                {
+                    ValueType = actualType;
+                }
+                else if (actualType.IsCollection())
+                {
+                    var collectionType = actualType.GetCollectionElementType();
 
-                anonymousRelationshipConverter = GetAnonymousRelationshipConverter(actualType);
+                    if (collectionType != null && collectionType.IsResourceIdentifier())
+                    {
+                        ValueType = typeof(IEnumerable<>).MakeGenericType(collectionType);
+                    }
+                }
+
+                if (ValueType != null)
+                {
+                    IsRelationship = true;
+                    anonymousRelationshipConverter = GetAnonymousRelationshipConverter(actualType);
+                }
             }
         }
 

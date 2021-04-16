@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Jsonyte.Tests.Models;
 using Xunit;
 
@@ -652,6 +653,103 @@ namespace Jsonyte.Tests.Serialization
                 type = "articles",
                 title = "Jsonapi",
                 authors = GetAuthors()
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'authors': {
+                        'data': [
+                          {
+                            'type': 'people',
+                            'id': '2'
+                          },
+                          {
+                            'type': 'people',
+                            'id': '3'
+                          }
+                        ],
+                        'links': {
+                          'self': 'http://me'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'type': 'people',
+                      'id': '2',
+                      'attributes': {
+                        'name': 'Bill'
+                      }
+                    },
+                    {
+                      'type': 'people',
+                      'id': '3',
+                      'attributes': {
+                        'name': 'Ted'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeWithExplicitRelationshipAndInnerPropertiesAsAnonymousObjectsEnumerable()
+        {
+            IEnumerable<Author> GetAuthors()
+            {
+                yield return new Author
+                {
+                    Id = "2",
+                    Type = "people",
+                    Name = "Bill"
+                };
+
+                yield return new Author
+                {
+                    Id = "3",
+                    Type = "people",
+                    Name = "Ted"
+                };
+            }
+
+            IEnumerable<object> GetPeople()
+            {
+                return GetAuthors().Select(x => new
+                {
+                    id = x.Id,
+                    type = x.Type,
+                    name = x.Name
+                });
+            }
+
+            object GetAuthorsRelationship()
+            {
+                return new
+                {
+                    data = GetPeople(),
+                    links = new
+                    {
+                        self = "http://me"
+                    }
+                };
+            }
+
+            var model = new
+            {
+                id = "1",
+                type = "articles",
+                title = "Jsonapi",
+                authors = GetAuthorsRelationship()
             };
 
             var json = model.Serialize();
