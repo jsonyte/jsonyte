@@ -29,7 +29,6 @@ namespace Jsonyte.Serialization
             MemberName = member.Name;
             MemberType = memberType;
             IsRelationship = GetIsRelationship(memberType);
-            IsPossiblyAnonymous = MemberType == typeof(object);
         }
 
         public JsonSerializerOptions Options { get; }
@@ -67,8 +66,6 @@ namespace Jsonyte.Serialization
         public JsonConverter Converter { get; }
 
         public bool IsRelationship { get; private set; }
-
-        public bool IsPossiblyAnonymous { get; }
 
         public object? GetValue(object resource)
         {
@@ -218,7 +215,7 @@ namespace Jsonyte.Serialization
 
         public void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource)
         {
-            if (Get == null || Ignored || !IsRelationship)
+            if (Get == null || Ignored)
             {
                 return;
             }
@@ -232,7 +229,16 @@ namespace Jsonyte.Serialization
 
             if (value != null)
             {
-                RelationshipConverter.WriteWrapped(writer, ref tracked, new RelationshipResource<T>(value), Options);
+                CheckAttributeIsResource(value);
+
+                if (anonymousRelationshipConverter != null)
+                {
+                    anonymousRelationshipConverter.WriteWrapped(writer, ref tracked, value);
+                }
+                else
+                {
+                    RelationshipConverter.WriteWrapped(writer, ref tracked, new RelationshipResource<T>(value), Options);
+                }
             }
         }
 
@@ -280,7 +286,7 @@ namespace Jsonyte.Serialization
             var actualType = value.GetType();
 
             // Anonymous object types sometimes aren't declared until we inspect the actual object
-            if (IsPossiblyAnonymous && actualType != MemberType && GetIsRelationship(actualType))
+            if (actualType != MemberType && GetIsRelationship(actualType))
             {
                 ValueType = actualType;
                 IsRelationship = true;

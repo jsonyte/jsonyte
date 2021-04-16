@@ -1,4 +1,5 @@
-﻿using Jsonyte.Tests.Models;
+﻿using System.Collections.Generic;
+using Jsonyte.Tests.Models;
 using Xunit;
 
 namespace Jsonyte.Tests.Serialization
@@ -476,7 +477,7 @@ namespace Jsonyte.Tests.Serialization
         }
 
         [Fact]
-        public void CanSerializeModelWithRelationshipAsAnonymousObject()
+        public void CanSerializeWithRelationshipAsAnonymousObject()
         {
             object GetAuthor()
             {
@@ -528,7 +529,7 @@ namespace Jsonyte.Tests.Serialization
         }
 
         [Fact]
-        public void CanSerializeModelWithExplicitResourceArrayAsObject()
+        public void CanSerializeWithExplicitRelationshipAsAnonymousObject()
         {
             object GetAuthors()
             {
@@ -549,6 +550,95 @@ namespace Jsonyte.Tests.Serialization
                             name = "Ted"
                         }
                     },
+                    links = new
+                    {
+                        self = "http://me"
+                    }
+                };
+            }
+
+            var model = new
+            {
+                id = "1",
+                type = "articles",
+                title = "Jsonapi",
+                authors = GetAuthors()
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'authors': {
+                        'data': [
+                          {
+                            'type': 'people',
+                            'id': '2'
+                          },
+                          {
+                            'type': 'people',
+                            'id': '3'
+                          }
+                        ],
+                        'links': {
+                          'self': 'http://me'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'type': 'people',
+                      'id': '2',
+                      'attributes': {
+                        'name': 'Bill'
+                      }
+                    },
+                    {
+                      'type': 'people',
+                      'id': '3',
+                      'attributes': {
+                        'name': 'Ted'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeWithExplicitRelationshipAndInnerPropertiesAsAnonymousObjects()
+        {
+            IEnumerable<object> GetPeople()
+            {
+                return new[]
+                {
+                    new
+                    {
+                        id = "2",
+                        type = "people",
+                        name = "Bill"
+                    },
+                    new
+                    {
+                        id = "3",
+                        type = "people",
+                        name = "Ted"
+                    }
+                };
+            }
+
+            object GetAuthors()
+            {
+                return new
+                {
+                    data = GetPeople(),
                     links = new
                     {
                         self = "http://me"
