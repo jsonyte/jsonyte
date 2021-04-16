@@ -49,15 +49,10 @@ namespace Jsonyte.Serialization
             parameterCache = GetParameters(constructor, members, options);
 
             AttributeMembers = members
-                .Where(x => !x.IsRelationship)
                 .Where(x => !x.Name.Equals(JsonApiMembers.Id, StringComparison.OrdinalIgnoreCase) &&
                             !x.Name.Equals(JsonApiMembers.Type, StringComparison.OrdinalIgnoreCase) &&
                             !x.Name.Equals(JsonApiMembers.Meta, StringComparison.OrdinalIgnoreCase) &&
                             !x.Name.Equals(JsonApiMembers.Links, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-
-            RelationshipMembers = members
-                .Where(x => x.IsRelationship)
                 .ToArray();
 
             memberCache = members
@@ -76,13 +71,7 @@ namespace Jsonyte.Serialization
 
         public Func<object[], object?> CreatorWithArguments { get; }
 
-        public int ParameterCount => parameterCache.Count;
-
-        public int MemberCount => nameCache.Count;
-
         public IJsonMemberInfo[] AttributeMembers { get; }
-
-        public IJsonMemberInfo[] RelationshipMembers { get; }
 
         public IJsonMemberInfo IdMember { get; }
 

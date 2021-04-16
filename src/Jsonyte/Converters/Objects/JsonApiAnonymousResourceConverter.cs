@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text.Json;
 using Jsonyte.Serialization;
 
@@ -60,43 +59,79 @@ namespace Jsonyte.Converters.Objects
 
             var info = options.GetTypeInfo(value.GetType());
 
+            ValidateResource(info);
+
             writer.WriteStartObject();
 
             info.IdMember.Write(writer, ref tracked, value);
             info.TypeMember.Write(writer, ref tracked, value);
 
-            if (info.AttributeMembers.Any())
-            {
-                writer.WritePropertyName(JsonApiMembers.AttributesEncoded);
-                writer.WriteStartObject();
-
-                foreach (var member in info.AttributeMembers)
-                {
-                    member.Write(writer, ref tracked, value);
-                }
-
-                writer.WriteEndObject();
-            }
-
-            if (info.RelationshipMembers.Any())
-            {
-                var relationshipsWritten = false;
-
-                foreach (var member in info.RelationshipMembers)
-                {
-                    member.WriteRelationship(writer, ref tracked, value, ref relationshipsWritten);
-                }
-
-                if (relationshipsWritten)
-                {
-                    writer.WriteEndObject();
-                }
-            }
+            WriteAttributes(writer, info, ref tracked, value);
+            WriteRelationships(writer, info, ref tracked, value);
 
             info.LinksMember.Write(writer, ref tracked, value);
             info.MetaMember.Write(writer, ref tracked, value);
 
             writer.WriteEndObject();
+        }
+
+        private void WriteAttributes(Utf8JsonWriter writer, JsonTypeInfo info, ref TrackedResources tracked, object value)
+        {
+            var attributesWritten = false;
+
+            foreach (var member in info.AttributeMembers)
+            {
+                var memberName = attributesWritten
+                    ? default
+                    : JsonApiMembers.AttributesEncoded;
+
+                attributesWritten |= member.Write(writer, ref tracked, value, memberName);
+            }
+
+            if (attributesWritten)
+            {
+                writer.WriteEndObject();
+            }
+        }
+
+        private void WriteRelationships(Utf8JsonWriter writer, JsonTypeInfo info, ref TrackedResources tracked, object value)
+        {
+            var relationshipsWritten = false;
+
+            foreach (var member in info.AttributeMembers)
+            {
+                if (member.IsRelationship)
+                {
+                    member.WriteRelationship(writer, ref tracked, value, ref relationshipsWritten);
+                }
+            }
+
+            if (relationshipsWritten)
+            {
+                writer.WriteEndObject();
+            }
+        }
+
+        private void ValidateResource(JsonTypeInfo info)
+        {
+            var idProperty = info.IdMember;
+
+            if (!string.IsNullOrEmpty(idProperty.Name) && idProperty.MemberType != typeof(string))
+            {
+                throw new JsonApiFormatException("JSON:API resource id must be a string");
+            }
+
+            var typeProperty = info.TypeMember;
+
+            if (string.IsNullOrEmpty(typeProperty.Name))
+            {
+                throw new JsonApiFormatException("JSON:API resource must have a 'type' member");
+            }
+
+            if (typeProperty.MemberType != typeof(string))
+            {
+                throw new JsonApiFormatException("JSON:API resource type must be a string");
+            }
         }
     }
 }

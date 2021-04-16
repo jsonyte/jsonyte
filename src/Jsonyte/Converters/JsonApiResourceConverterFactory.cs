@@ -71,14 +71,14 @@ namespace Jsonyte.Converters
 
         private void ValidateResource(JsonTypeInfo info)
         {
-            var idProperty = info.GetMember(JsonApiMembers.Id);
+            var idProperty = info.IdMember;
 
             if (!string.IsNullOrEmpty(idProperty.Name) && idProperty.MemberType != typeof(string))
             {
                 throw new JsonApiFormatException("JSON:API resource id must be a string");
             }
 
-            var typeProperty = info.GetMember(JsonApiMembers.Type);
+            var typeProperty = info.TypeMember;
 
             if (string.IsNullOrEmpty(typeProperty.Name))
             {
