@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Jsonyte.Tests.Models;
+﻿using Jsonyte.Tests.Models;
 using Xunit;
 
 namespace Jsonyte.Tests.Serialization

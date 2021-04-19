@@ -21,7 +21,7 @@ namespace Jsonyte.Serialization
 
         public object? Read(ref Utf8JsonReader reader)
         {
-            return TypedConverter.Read(ref reader, typeof(object), Options);
+            return TypedConverter.Read(ref reader, JsonApiTypes.Object, Options);
         }
     }
 }

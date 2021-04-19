@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.Json;
 using Jsonyte.Converters;
+using Jsonyte.Converters.Objects;
 using Jsonyte.Serialization;
 using Jsonyte.Serialization.Reflection;
 
@@ -80,6 +81,16 @@ namespace Jsonyte
                 var converter = options.GetConverter(type);
 
                 return (IJsonObjectConverter) Activator.CreateInstance(converterType, converter);
+            });
+        }
+
+        internal static IAnonymousRelationshipConverter GetAnonymousRelationshipConverter(this JsonSerializerOptions options, Type type)
+        {
+            return GetState(options).AnonymousConverters.GetOrAdd(type, x =>
+            {
+                var converterType = typeof(JsonApiAnonymousRelationshipConverter<>).MakeGenericType(x);
+
+                return (IAnonymousRelationshipConverter) Activator.CreateInstance(converterType, options);
             });
         }
 

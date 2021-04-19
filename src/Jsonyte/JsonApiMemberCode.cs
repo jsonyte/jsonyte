@@ -1,6 +1,6 @@
 ﻿namespace Jsonyte
 {
-    internal enum JsonApiMemberCode
+    internal enum JsonApiMemberCode : byte
     {
         Document,
         TopLevel,

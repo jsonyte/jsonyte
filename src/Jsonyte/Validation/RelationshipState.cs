@@ -7,24 +7,6 @@ namespace Jsonyte.Validation
     {
         private RelationshipFlags flags;
 
-        public void AddFlag(string? member)
-        {
-            var memberFlag = member switch
-            {
-                JsonApiMembers.Links => RelationshipFlags.Links,
-                JsonApiMembers.Data => RelationshipFlags.Data,
-                JsonApiMembers.Meta => RelationshipFlags.Meta,
-                _ => RelationshipFlags.None
-            };
-
-            if (memberFlag != RelationshipFlags.None && flags.IsSet(memberFlag))
-            {
-                throw new JsonApiFormatException($"Invalid JSON:API relationship, duplicate '{member}' member");
-            }
-
-            flags |= memberFlag;
-        }
-
         public void AddFlag(ReadOnlySpan<byte> member)
         {
             var memberFlag = GetFlag(member);

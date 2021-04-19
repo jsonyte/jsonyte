@@ -110,8 +110,8 @@ namespace Jsonyte.Converters
 
                 var info = options.GetTypeInfo(relationshipType);
 
-                var converterType = relationshipType.IsNaturalRelationship()
-                    ? typeof(JsonApiResourceObjectNaturalRelationshipConverter<>)
+                var converterType = relationshipType.IsExplicitRelationship()
+                    ? typeof(JsonApiResourceObjectExplicitRelationshipConverter<>)
                     : typeof(JsonApiResourceObjectRelationshipConverter<>);
 
                 return CreateConverter(converterType, info, relationshipType);

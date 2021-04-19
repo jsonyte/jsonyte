@@ -34,6 +34,5 @@ namespace Jsonyte.Tests.Models
         public long LongValue { get; set; }
 
         public ulong UlongValue { get; set; }
-
     }
 }

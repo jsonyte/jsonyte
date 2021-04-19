@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Text.Json;
 using Jsonyte.Serialization;
 
@@ -7,6 +8,8 @@ namespace Jsonyte.Converters.Collections
 {
     internal class JsonApiPotentialRelationshipCollectionConverter : WrappedJsonConverter<PotentialRelationshipCollection>
     {
+        private readonly ConcurrentDictionary<Type, TypeDescriptor> typeDescriptors = new();
+
         public override PotentialRelationshipCollection Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
@@ -86,25 +89,30 @@ namespace Jsonyte.Converters.Collections
 
             var valueType = value.GetType();
 
-            if (valueType.IsResourceIdentifier())
+            var descriptor = typeDescriptors.GetOrAdd(valueType, x =>
             {
+                if (!x.IsResourceIdentifier())
+                {
+                    return new TypeDescriptor(valueType);
+                }
+
                 var info = options.GetTypeInfo(valueType);
                 var converter = options.GetObjectConverter(valueType);
 
                 return new TypeDescriptor(valueType, info, converter);
-            }
+            });
 
-            if (container.WriteImmediately)
+            if (!descriptor.HasResourceIdentifier() && container.WriteImmediately)
             {
                 throw new JsonApiException("JSON:API relationship resources must have string 'id' and 'type' members");
             }
 
-            return new TypeDescriptor(valueType);
+            return descriptor;
         }
 
         private void WriteDefault(Utf8JsonWriter writer, object? value, Type? valueType, JsonSerializerOptions options)
         {
-            JsonSerializer.Serialize(writer, value, valueType ?? typeof(object), options);
+            JsonSerializer.Serialize(writer, value, valueType ?? JsonApiTypes.Object, options);
         }
 
         private void WriteResource(
@@ -123,10 +131,10 @@ namespace Jsonyte.Converters.Collections
                 throw new JsonApiFormatException("JSON:API resources must have string 'id' and 'type' members");
             }
 
-            var idEncoded = JsonEncodedText.Encode(id!);
-            var typeEncoded = JsonEncodedText.Encode(type!);
+            var idEncoded = id!.ToByteArray();
+            var typeEncoded = type!.ToByteArray();
 
-            var identifier = new ResourceIdentifier(idEncoded.EncodedUtf8Bytes, typeEncoded.EncodedUtf8Bytes);
+            var identifier = new ResourceIdentifier(idEncoded, typeEncoded);
 
             if (container.WriteImmediately)
             {
@@ -165,6 +173,11 @@ namespace Jsonyte.Converters.Collections
                 ValueType = valueType;
                 Info = info;
                 Converter = converter;
+            }
+
+            public bool HasResourceIdentifier()
+            {
+                return Info != null && Converter != null;
             }
         }
     }

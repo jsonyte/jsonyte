@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Text.Json;
 using Jsonyte.Serialization;
 
@@ -107,8 +106,8 @@ namespace Jsonyte.Converters.Objects
                 throw new JsonApiException($"JSON:API relationship for '{typeof(T).Name}' must have both 'id' and 'type' values");
             }
 
-            var idEncoded = JsonEncodedText.Encode(id!);
-            var typeEncoded = JsonEncodedText.Encode(type!);
+            var idEncoded = id!.ToByteArray();
+            var typeEncoded = type!.ToByteArray();
 
             writer.WriteStartObject();
 
@@ -117,7 +116,7 @@ namespace Jsonyte.Converters.Objects
 
             writer.WriteEndObject();
 
-            tracked.SetIncluded(new ResourceIdentifier(idEncoded.EncodedUtf8Bytes, typeEncoded.EncodedUtf8Bytes), GetConverter(options), value.Resource);
+            tracked.SetIncluded(new ResourceIdentifier(idEncoded, typeEncoded), GetConverter(options), value.Resource);
         }
 
         private IJsonObjectConverter GetConverter(JsonSerializerOptions options)

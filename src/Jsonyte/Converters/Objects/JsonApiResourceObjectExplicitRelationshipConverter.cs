@@ -4,11 +4,11 @@ using Jsonyte.Serialization;
 
 namespace Jsonyte.Converters.Objects
 {
-    internal class JsonApiResourceObjectNaturalRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<T>
+    internal class JsonApiResourceObjectExplicitRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<T>
     {
         private readonly JsonTypeInfo info;
 
-        public JsonApiResourceObjectNaturalRelationshipConverter(JsonTypeInfo info)
+        public JsonApiResourceObjectExplicitRelationshipConverter(JsonTypeInfo info)
         {
             this.info = info;
         }

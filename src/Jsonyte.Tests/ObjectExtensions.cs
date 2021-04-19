@@ -55,8 +55,15 @@ namespace Jsonyte.Tests
         private static JsonSerializerOptions CreateOptions(JsonSerializerOptions options)
         {
             options ??= new JsonSerializerOptions();
-            options.WriteIndented = true;
-            options.AddJsonApi();
+
+            try
+            {
+                options.WriteIndented = true;
+                options.AddJsonApi();
+            }
+            catch (InvalidOperationException)
+            {
+            }
 
             return options;
         }

@@ -10,14 +10,11 @@ namespace Jsonyte
 
         public readonly bool WriteImmediately;
 
-        public bool Written;
-
         public PotentialRelationshipCollection(JsonEncodedText relationship, object? value, bool writeImmediately)
         {
             Relationship = relationship;
             Value = value;
             WriteImmediately = writeImmediately;
-            Written = false;
         }
     }
 }

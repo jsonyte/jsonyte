@@ -13,6 +13,8 @@ namespace Jsonyte.Converters
 
         public ConcurrentDictionary<Type, IJsonObjectConverter> ObjectConverters { get; } = new();
 
+        public ConcurrentDictionary<Type, IAnonymousRelationshipConverter> AnonymousConverters { get; } = new();
+
 #if NETCOREAPP || NETFRAMEWORK
         public IMemberAccessor MemberAccessor { get; } = new EmitMemberAccessor();
 #else

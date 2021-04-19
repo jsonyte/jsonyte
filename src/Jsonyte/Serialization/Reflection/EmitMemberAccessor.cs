@@ -7,8 +7,6 @@ namespace Jsonyte.Serialization.Reflection
 #if NETCOREAPP || NETFRAMEWORK
     internal class EmitMemberAccessor : IMemberAccessor
     {
-        private static readonly Type ObjectType = typeof(object);
-
         public Func<object?> CreateCreator(Type type)
         {
             var constructor = type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
@@ -75,7 +73,7 @@ namespace Jsonyte.Serialization.Reflection
             var method = new DynamicMethod(
                 property.Name + "Getter",
                 property.PropertyType,
-                new[] {ObjectType},
+                new[] {JsonApiTypes.Object},
                 typeof(EmitMemberAccessor).Module,
                 true);
 
@@ -106,7 +104,7 @@ namespace Jsonyte.Serialization.Reflection
             var method = new DynamicMethod(
                 property.Name + "Setter",
                 typeof(void),
-                new[] {ObjectType, property.PropertyType},
+                new[] {JsonApiTypes.Object, property.PropertyType},
                 typeof(EmitMemberAccessor).Module,
                 true);
 
@@ -146,7 +144,7 @@ namespace Jsonyte.Serialization.Reflection
             var method = new DynamicMethod(
                 field.Name + "Getter",
                 field.FieldType,
-                new[] {ObjectType},
+                new[] {JsonApiTypes.Object},
                 typeof(EmitMemberAccessor).Module,
                 true);
 
@@ -182,7 +180,7 @@ namespace Jsonyte.Serialization.Reflection
             var method = new DynamicMethod(
                 field.Name + "Setter",
                 typeof(void),
-                new[] {ObjectType, field.FieldType},
+                new[] {JsonApiTypes.Object, field.FieldType},
                 typeof(EmitMemberAccessor).Module,
                 true);
 

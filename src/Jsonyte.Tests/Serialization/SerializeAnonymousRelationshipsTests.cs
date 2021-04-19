@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text.Json;
 using Xunit;
 
 namespace Jsonyte.Tests.Serialization
@@ -1117,6 +1118,89 @@ namespace Jsonyte.Tests.Serialization
                       'id': '3',
                       'attributes': {
                         'name': 'Ted'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeCastedExplicitRelationshipsWhenTheContentsChanges()
+        {
+            object GetAuthor()
+            {
+                return new
+                {
+                    id = "2",
+                    type = "people",
+                    name = "Bill"
+                };
+            }
+
+            object GetEmptyAuthor()
+            {
+                return null;
+            }
+
+            object GetAuthorRelationshipEmpty()
+            {
+                return new
+                {
+                    data = GetEmptyAuthor()
+                };
+            }
+
+            object GetArticleWithNoAuthor()
+            {
+                return new
+                {
+                    id = "1",
+                    type = "articles",
+                    title = "Jsonapi",
+                    author = GetAuthorRelationshipEmpty()
+                };
+            }
+
+            object GetArticleWithAuthor()
+            {
+                return new
+                {
+                    id = "1",
+                    type = "articles",
+                    title = "Jsonapi",
+                    author = GetAuthor()
+                };
+            }
+
+            var options = new JsonSerializerOptions();
+
+            GetArticleWithNoAuthor().Serialize(options);
+
+            var json = GetArticleWithAuthor().Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'author': {
+                        'data': {
+                          'type': 'people',
+                          'id': '2'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'type': 'people',
+                      'id': '2',
+                      'attributes': {
+                        'name': 'Bill'
                       }
                     }
                   ]

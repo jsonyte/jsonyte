@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Jsonyte
 {
-    public static class ReadOnlySpanExtensions
+    internal static class ReadOnlySpanExtensions
     {
         public static string GetString(this ref ReadOnlySpan<byte> value)
         {
