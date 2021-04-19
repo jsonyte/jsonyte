@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Converters.Collections;
+using Jsonyte.Serialization.Contracts;
 
 namespace Jsonyte.Converters
 {

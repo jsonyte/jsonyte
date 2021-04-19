@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Converters;
+using Jsonyte.Serialization.Contracts;
 
 namespace Jsonyte.Serialization
 {
@@ -118,23 +119,6 @@ namespace Jsonyte.Serialization
             }
 
             Set(resource, value.Resource!);
-        }
-
-        public object? Read(ref Utf8JsonReader reader)
-        {
-            if (Set == null)
-            {
-                return null;
-            }
-
-            var value = TypedConverter.Read(ref reader, MemberType, Options);
-
-            if (Options.IgnoreNullValues && value == null)
-            {
-                return null;
-            }
-
-            return value;
         }
 
         public bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default)

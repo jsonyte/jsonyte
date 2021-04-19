@@ -1,4 +1,4 @@
-﻿namespace Jsonyte
+﻿namespace Jsonyte.Serialization.Contracts
 {
     internal readonly struct AnonymousResourceCollection
     {

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Jsonyte
+namespace Jsonyte.Serialization.Contracts
 {
     internal struct PotentialRelationshipCollection
     {

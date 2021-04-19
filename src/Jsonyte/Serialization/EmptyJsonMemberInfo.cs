@@ -35,11 +35,6 @@ namespace Jsonyte.Serialization
             reader.Skip();
         }
 
-        public object? Read(ref Utf8JsonReader reader)
-        {
-            return null;
-        }
-
         public bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default)
         {
             return false;

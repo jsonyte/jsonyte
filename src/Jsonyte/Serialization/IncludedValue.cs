@@ -1,4 +1,6 @@
-﻿namespace Jsonyte.Serialization
+﻿using Jsonyte.Converters;
+
+namespace Jsonyte.Serialization
 {
     internal ref struct IncludedValue
     {
