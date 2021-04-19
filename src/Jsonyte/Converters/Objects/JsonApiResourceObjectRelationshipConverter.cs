@@ -107,17 +107,17 @@ namespace Jsonyte.Converters.Objects
                 throw new JsonApiException($"JSON:API relationship for '{typeof(T).Name}' must have both 'id' and 'type' values");
             }
 
-            var idBytes = Encoding.UTF8.GetBytes(id!);
-            var typeBytes = Encoding.UTF8.GetBytes(type!);
+            var idEncoded = JsonEncodedText.Encode(id!);
+            var typeEncoded = JsonEncodedText.Encode(type!);
 
             writer.WriteStartObject();
 
-            writer.WriteString(JsonApiMembers.IdEncoded, idBytes);
-            writer.WriteString(JsonApiMembers.TypeEncoded, typeBytes);
+            writer.WriteString(JsonApiMembers.IdEncoded, idEncoded);
+            writer.WriteString(JsonApiMembers.TypeEncoded, typeEncoded);
 
             writer.WriteEndObject();
 
-            tracked.SetIncluded(new ResourceIdentifier(idBytes, typeBytes), GetConverter(options), value.Resource);
+            tracked.SetIncluded(new ResourceIdentifier(idEncoded.EncodedUtf8Bytes, typeEncoded.EncodedUtf8Bytes), GetConverter(options), value.Resource);
         }
 
         private IJsonObjectConverter GetConverter(JsonSerializerOptions options)

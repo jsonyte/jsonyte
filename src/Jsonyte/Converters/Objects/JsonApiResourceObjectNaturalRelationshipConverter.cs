@@ -64,8 +64,10 @@ namespace Jsonyte.Converters.Objects
 
             if (data != null)
             {
+                var relationshipsWritten = false;
+
                 writer.WritePropertyName(JsonApiMembers.DataEncoded);
-                info.DataMember.WriteRelationshipWrapped(writer, ref tracked, value.Resource);
+                info.DataMember.WriteRelationshipWrapped(writer, ref tracked, value.Resource, ref relationshipsWritten);
             }
 
             info.LinksMember.Write(writer, ref tracked, value.Resource);

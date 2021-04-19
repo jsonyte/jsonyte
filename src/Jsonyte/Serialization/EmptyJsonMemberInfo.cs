@@ -49,7 +49,7 @@ namespace Jsonyte.Serialization
         {
         }
 
-        public void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource)
+        public void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection)
         {
         }
 

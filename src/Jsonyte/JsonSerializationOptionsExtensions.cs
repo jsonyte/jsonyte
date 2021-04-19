@@ -26,6 +26,11 @@ namespace Jsonyte
                 options.Converters.Add(new JsonApiResourceConverterFactory());
             }
 
+            if (!options.Converters.OfType<JsonApiRelationshipConverterFactory>().Any())
+            {
+                options.Converters.Add(new JsonApiRelationshipConverterFactory());
+            }
+
             options.PropertyNamingPolicy ??= JsonNamingPolicy.CamelCase;
 
             return options;
@@ -65,6 +70,17 @@ namespace Jsonyte
         internal static IJsonObjectConverter GetObjectConverter<T>(this JsonSerializerOptions options)
         {
             return GetState(options).ObjectConverters.GetOrAdd(typeof(T), _ => new JsonObjectConverter<T>(options.GetWrappedConverter<T>()));
+        }
+
+        internal static IJsonObjectConverter GetObjectConverter(this JsonSerializerOptions options, Type type)
+        {
+            return GetState(options).ObjectConverters.GetOrAdd(type, x =>
+            {
+                var converterType = typeof(JsonObjectConverter<>).MakeGenericType(x);
+                var converter = options.GetConverter(type);
+
+                return (IJsonObjectConverter) Activator.CreateInstance(converterType, converter);
+            });
         }
 
         internal static JsonTypeInfo GetTypeInfo(this JsonSerializerOptions options, Type type)

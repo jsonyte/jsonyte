@@ -83,18 +83,6 @@ namespace Jsonyte.Serialization
 
         public IJsonMemberInfo LinksMember { get; }
 
-        public IJsonMemberInfo GetMember(string? name)
-        {
-            if (name == null)
-            {
-                return EmptyMember;
-            }
-
-            return nameCache.TryGetValue(name, out var member)
-                ? member
-                : EmptyMember;
-        }
-
         public IJsonMemberInfo GetMember(ReadOnlySpan<byte> name)
         {
             if (name.IsEmpty)
