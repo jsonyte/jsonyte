@@ -1,6 +1,6 @@
 # Jsonyte
 
-[![Docs](https://img.shields.io/badge/docs-wiki-blue.svg?style=for-the-badge)](https://github.com/jsonyte/jsonyte/wiki) [![NuGet](https://img.shields.io/nuget/v/Jsonyte?style=for-the-badge)](https://www.nuget.org/packages/Jsonyte) [![Build](https://img.shields.io/github/workflow/status/jsonyte/jsonyte/build?style=for-the-badge)](https://github.com/jsonyte/jsonyte/actions?query=workflow:build) [![Discussions](https://img.shields.io/badge/DISCUSS-ON%20GITHUB-orange?style=for-the-badge)](https://github.com/jsonyte/jsonyte/discussions) [![License](https://img.shields.io/github/license/jsonyte/jsonyte?style=for-the-badge)](https://github.com/jsonyte/jsonyte/blob/master/LICENSE)
+[![Docs](https://img.shields.io/badge/docs-wiki-blue.svg?style=for-the-badge)](https://github.com/jsonyte/jsonyte/wiki) [![NuGet](https://img.shields.io/nuget/v/Jsonyte?style=for-the-badge)](https://www.nuget.org/packages/Jsonyte) [![Discussions](https://img.shields.io/badge/DISCUSS-ON%20GITHUB-orange?style=for-the-badge)](https://github.com/jsonyte/jsonyte/discussions) [![License](https://img.shields.io/github/license/jsonyte/jsonyte?style=for-the-badge)](https://github.com/jsonyte/jsonyte/blob/master/LICENSE)
 
 A library for serializing and deserializing [JSON:API](https://jsonapi.org) documents using `System.Text.Json`.
 
@@ -38,7 +38,6 @@ public class Article
 {
     public string Id { get; set; } = "1";
 
-    // Required property
     public string Type { get; set; } = "articles";
 
     public string Title { get; set; } = "JSON:API";
