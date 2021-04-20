@@ -2,7 +2,14 @@
 
 [![Docs](https://img.shields.io/badge/docs-wiki-blue.svg?style=for-the-badge)](https://github.com/jsonyte/jsonyte/wiki) [![NuGet](https://img.shields.io/nuget/v/Jsonyte?style=for-the-badge)](https://www.nuget.org/packages/Jsonyte) [![Discussions](https://img.shields.io/badge/DISCUSS-ON%20GITHUB-yellow?style=for-the-badge)](https://github.com/jsonyte/jsonyte/discussions) [![License](https://img.shields.io/github/license/jsonyte/jsonyte?style=for-the-badge)](https://github.com/jsonyte/jsonyte/blob/master/LICENSE)
 
-A library for serializing and deserializing [JSON:API](https://jsonapi.org) documents using `System.Text.Json`.
+A high-performance library for serializing and deserializing [JSON:API](https://jsonapi.org) documents using `System.Text.Json`.
+
+Jsonyte aims to be:
+
+- 🏃 Lightning-fast, as much as **3-5x faster** than other JSON:API serializers for .NET
+- 🤝 Simple to setup and easy to use with existing code models
+- 🏗️ Easily integrated with ASP.NET Core
+- ☑️ Fully compliant with the JSON:API `v1.0` specification (`v1.1` support coming soon)
 
 ## Usage
 Install the package from NuGet with `dotnet add package Jsonyte`.
