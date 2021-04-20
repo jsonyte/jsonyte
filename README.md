@@ -1,6 +1,6 @@
 # Jsonyte
 
-[![Docs](https://img.shields.io/badge/docs-wiki-blue.svg?style=for-the-badge)](https://github.com/jsonyte/jsonyte/wiki) [![NuGet](https://img.shields.io/nuget/v/Jsonyte?style=for-the-badge)](https://www.nuget.org/packages/Jsonyte) [![Discussions](https://img.shields.io/badge/DISCUSS-ON%20GITHUB-orange?style=for-the-badge)](https://github.com/jsonyte/jsonyte/discussions) [![License](https://img.shields.io/github/license/jsonyte/jsonyte?style=for-the-badge)](https://github.com/jsonyte/jsonyte/blob/master/LICENSE)
+[![Docs](https://img.shields.io/badge/docs-wiki-blue.svg?style=for-the-badge)](https://github.com/jsonyte/jsonyte/wiki) [![NuGet](https://img.shields.io/nuget/v/Jsonyte?style=for-the-badge)](https://www.nuget.org/packages/Jsonyte) [![Discussions](https://img.shields.io/badge/DISCUSS-ON%20GITHUB-yellow?style=for-the-badge)](https://github.com/jsonyte/jsonyte/discussions) [![License](https://img.shields.io/github/license/jsonyte/jsonyte?style=for-the-badge)](https://github.com/jsonyte/jsonyte/blob/master/LICENSE)
 
 A library for serializing and deserializing [JSON:API](https://jsonapi.org) documents using `System.Text.Json`.
 
@@ -62,7 +62,7 @@ See the [wiki](https://github.com/jsonyte/jsonyte/wiki) for examples and help us
 ## Get in touch
 Discuss with us on [Discussions](https://github.com/jsonyte/jsonyte/discussions), or raise an [issue](https://github.com/jsonyte/jsonyte/issues).
 
-[![Discussions](https://img.shields.io/badge/DISCUSS-ON%20GITHUB-orange?style=for-the-badge)](https://github.com/jsonyte/jsonyte/discussions)
+[![Discussions](https://img.shields.io/badge/DISCUSS-ON%20GITHUB-yellow?style=for-the-badge)](https://github.com/jsonyte/jsonyte/discussions)
 
 ## Contributing
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
