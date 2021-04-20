@@ -26,13 +26,11 @@ namespace Jsonyte.Serialization
 
         void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource);
 
-        object? Read(ref Utf8JsonReader reader);
-
         bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default);
 
         void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection);
 
-        void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource);
+        void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection);
 
         void SetValue(object resource, object? value);
     }

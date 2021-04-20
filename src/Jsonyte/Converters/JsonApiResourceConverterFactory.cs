@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Jsonyte.Converters.Collections;
 using Jsonyte.Converters.Objects;
 using Jsonyte.Serialization;
+using Jsonyte.Serialization.Contracts;
 
 namespace Jsonyte.Converters
 {
@@ -12,8 +13,7 @@ namespace Jsonyte.Converters
     {
         private static readonly Dictionary<Type, JsonConverter> JsonApiConverters = new()
         {
-            {typeof(AnonymousResource), new JsonApiAnonymousResourceConverter()},
-            {typeof(AnonymousResourceCollection), new JsonApiAnonymousResourceCollectionConverter()}
+            {typeof(AnonymousResource), new JsonApiAnonymousResourceConverter()}
         };
 
         public override bool CanConvert(Type typeToConvert)

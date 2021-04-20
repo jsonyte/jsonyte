@@ -1,6 +1,6 @@
 ﻿namespace Jsonyte
 {
-    internal enum JsonApiArrayCode
+    internal enum JsonApiArrayCode : byte
     {
         Errors,
         Relationships,

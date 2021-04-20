@@ -1,4 +1,4 @@
-﻿namespace Jsonyte
+﻿namespace Jsonyte.Serialization.Contracts
 {
     internal struct RelationshipResource<T>
     {

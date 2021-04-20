@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Text.Json;
 using Jsonyte.Serialization;
+using Jsonyte.Serialization.Contracts;
 
 namespace Jsonyte.Converters.Collections
 {

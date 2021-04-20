@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
+using Jsonyte.Serialization;
 
-namespace Jsonyte.Serialization
+namespace Jsonyte.Converters
 {
     internal interface IJsonObjectConverter
     {

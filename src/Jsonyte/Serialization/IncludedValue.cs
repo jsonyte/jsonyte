@@ -1,4 +1,6 @@
-﻿namespace Jsonyte.Serialization
+﻿using Jsonyte.Converters;
+
+namespace Jsonyte.Serialization
 {
     internal ref struct IncludedValue
     {
@@ -8,16 +10,24 @@
 
         public object Value;
 
-        public IncludedValue(ResourceIdentifier identifier, IJsonObjectConverter converter, object value)
+        public int? RelationshipId;
+
+        public IncludedValue(ResourceIdentifier identifier, IJsonObjectConverter converter, object value, int? relationshipId = null)
         {
             Identifier = identifier;
             Converter = converter;
             Value = value;
+            RelationshipId = relationshipId;
         }
 
         public bool HasIdentifier(ResourceIdentifier identifier)
         {
             return Identifier.Equals(identifier);
+        }
+
+        public bool IsUnwritten()
+        {
+            return RelationshipId != null;
         }
     }
 }

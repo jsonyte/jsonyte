@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Jsonyte.Serialization;
+using Jsonyte.Serialization.Contracts;
 
 namespace Jsonyte
 {
@@ -36,7 +36,7 @@ namespace Jsonyte
             return false;
         }
 
-        public static bool IsNaturalRelationship(this Type type)
+        public static bool IsExplicitRelationship(this Type type)
         {
             return HasMemberIgnoreType(type, JsonApiMembers.Data) || HasMemberIgnoreType(type, JsonApiMembers.Links);
         }
@@ -93,7 +93,7 @@ namespace Jsonyte
 
         public static bool IsCollection(this Type type)
         {
-            return type.IsArray || typeof(IEnumerable).IsAssignableFrom(type);
+            return type.IsArray || JsonApiTypes.Enumerable.IsAssignableFrom(type);
         }
 
         public static JsonTypeCategory GetTypeCategory(this Type type)
@@ -118,13 +118,13 @@ namespace Jsonyte
                 return type.GetElementType();
             }
 
-            if (typeof(IEnumerable).IsAssignableFrom(type))
+            if (JsonApiTypes.Enumerable.IsAssignableFrom(type))
             {
                 var genericType = GetInterfaces(type)
                     .Where(x => x.IsGenericType)
-                    .FirstOrDefault(x => x.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+                    .FirstOrDefault(x => x.GetGenericTypeDefinition() == JsonApiTypes.EnumerableGeneric);
 
-                return genericType?.GetGenericArguments().FirstOrDefault() ?? typeof(object);
+                return genericType?.GetGenericArguments().FirstOrDefault() ?? JsonApiTypes.Object;
             }
 
             return null;

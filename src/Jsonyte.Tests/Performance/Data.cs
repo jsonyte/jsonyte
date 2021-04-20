@@ -34,5 +34,7 @@ namespace Jsonyte.Tests.Performance
         public byte[] JsonBytes { get; }
 
         public byte[] JsonApiBytes { get; }
+
+        public bool SkipDeserialize { get; set; }
     }
 }

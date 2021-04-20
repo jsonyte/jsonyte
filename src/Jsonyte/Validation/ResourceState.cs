@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Jsonyte.Validation
 {
@@ -8,33 +7,13 @@ namespace Jsonyte.Validation
     {
         private ResourceFlags flags;
 
-        public void AddFlag(string? member)
-        {
-            var memberFlag = member switch
-            {
-                JsonApiMembers.Id => ResourceFlags.Id,
-                JsonApiMembers.Type => ResourceFlags.Type,
-                JsonApiMembers.Relationships => ResourceFlags.Relationships,
-                _ => ResourceFlags.None
-            };
-
-            if (memberFlag != ResourceFlags.None && flags.IsSet(memberFlag))
-            {
-                throw new JsonApiFormatException($"Invalid JSON:API resource, duplicate '{member}' member");
-            }
-
-            flags |= memberFlag;
-        }
-
         public void AddFlag(ReadOnlySpan<byte> member)
         {
             var memberFlag = GetFlag(member);
 
             if (memberFlag != ResourceFlags.None && flags.IsSet(memberFlag))
             {
-                var value = Encoding.UTF8.GetString(member.ToArray());
-
-                throw new JsonApiFormatException($"Invalid JSON:API resource, duplicate '{value}' member");
+                throw new JsonApiFormatException($"Invalid JSON:API resource, duplicate '{member.GetString()}' member");
             }
 
             flags |= memberFlag;

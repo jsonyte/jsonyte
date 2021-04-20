@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using AutoBogus;
 using BenchmarkDotNet.Attributes;
@@ -28,7 +29,7 @@ namespace Jsonyte.Tests.Performance
 
         private Data data;
 
-        [Params("Simple", "Compound", "LargeCompound", "SingleError", "ErrorCollection", "Document")]
+        [Params("Simple", "Compound", "LargeCompound", "SingleError", "ErrorCollection", "Document", "Anonymous")]
         public string Case { get; set; }
 
         [GlobalSetup]
@@ -76,28 +77,36 @@ namespace Jsonyte.Tests.Performance
         [BenchmarkCategory(Deserialize)]
         public object DeserializeNoJsonApi()
         {
-            return JsonSerializer.Deserialize(data.JsonBytes, data.Type, options);
+            return data.SkipDeserialize
+                ? null
+                : JsonSerializer.Deserialize(data.JsonBytes, data.Type, options);
         }
 
         [Benchmark]
         [BenchmarkCategory(Deserialize)]
         public object DeserializeJsonApi()
         {
-            return JsonSerializer.Deserialize(data.JsonApiBytes, data.Type, jsonApiOptions);
+            return data.SkipDeserialize
+                ? null
+                : JsonSerializer.Deserialize(data.JsonApiBytes, data.Type, jsonApiOptions);
         }
 
         [Benchmark]
         [BenchmarkCategory(Deserialize)]
         public object DeserializeNewtonsoftNoJsonApi()
         {
-            return JsonConvert.DeserializeObject(data.Json, data.Type, settings);
+            return data.SkipDeserialize
+                ? null
+                : JsonConvert.DeserializeObject(data.Json, data.Type, settings);
         }
 
         [Benchmark]
         [BenchmarkCategory(Deserialize)]
         public object DeserializeNewtonsoftJsonApi()
         {
-            return JsonConvert.DeserializeObject(data.Json, data.Type, jsonApiSettings);
+            return data.SkipDeserialize
+                ? null :
+                JsonConvert.DeserializeObject(data.Json, data.Type, jsonApiSettings);
         }
 
         public static class TestData
@@ -109,7 +118,8 @@ namespace Jsonyte.Tests.Performance
                 {"LargeCompound", GetLargeCompound()},
                 {"SingleError", GetError()},
                 {"ErrorCollection", GetErrorCollection()},
-                {"Document", GetDocument()}
+                {"Document", GetDocument()},
+                {"Anonymous", GetAnonymous()}
             };
 
             private static Data GetSimple()
@@ -317,6 +327,43 @@ namespace Jsonyte.Tests.Performance
                 };
 
                 return new Data(document);
+            }
+
+            public static Data GetAnonymous()
+            {
+                object GetAuthor(string id, string name)
+                {
+                    return new
+                    {
+                        id,
+                        type = "people",
+                        name
+                    };
+                }
+
+                object GetAuthors()
+                {
+                    return new[] {("2", "Bill"), ("3", "Ted")}.Select(x => GetAuthor(x.Item1, x.Item2));
+                }
+
+                object GetTags()
+                {
+                    return new[] {"tag1", "tag2"}.Select(x => x);
+                }
+
+                object GetArticle()
+                {
+                    return new
+                    {
+                        id = "1",
+                        type = "articles",
+                        title = "Jsonapi",
+                        authors = GetAuthors(),
+                        tags = GetTags()
+                    };
+                }
+
+                return new Data(GetArticle()) {SkipDeserialize = true};
             }
         }
     }

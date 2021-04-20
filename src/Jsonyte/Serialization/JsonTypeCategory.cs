@@ -1,6 +1,6 @@
 ﻿namespace Jsonyte.Serialization
 {
-    internal enum JsonTypeCategory
+    internal enum JsonTypeCategory : byte
     {
         Object,
         List,

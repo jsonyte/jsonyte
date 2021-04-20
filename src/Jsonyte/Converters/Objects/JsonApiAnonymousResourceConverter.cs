@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 using Jsonyte.Serialization;
+using Jsonyte.Serialization.Contracts;
 
 namespace Jsonyte.Converters.Objects
 {
@@ -106,10 +107,49 @@ namespace Jsonyte.Converters.Objects
                 }
             }
 
+            for (var i = 0; i < tracked.Relationships.Count; i++)
+            {
+                var relationship = tracked.Relationships.Get(i);
+
+                if (!relationshipsWritten)
+                {
+                    writer.WritePropertyName(JsonApiMembers.RelationshipsEncoded);
+                    writer.WriteStartObject();
+
+                    relationshipsWritten = true;
+                }
+
+                writer.WritePropertyName(relationship.Name);
+                writer.WriteStartObject();
+
+                writer.WritePropertyName(JsonApiMembers.DataEncoded);
+                writer.WriteStartArray();
+
+                for (var j = 0; j < tracked.Count; j++)
+                {
+                    var included = tracked.Get(j);
+
+                    if (included.IsUnwritten() && included.RelationshipId == relationship.Id)
+                    {
+                        writer.WriteStartObject();
+
+                        writer.WriteString(JsonApiMembers.IdEncoded, included.Identifier.Id);
+                        writer.WriteString(JsonApiMembers.TypeEncoded, included.Identifier.Type);
+
+                        writer.WriteEndObject();
+                    }
+                }
+
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }
+
             if (relationshipsWritten)
             {
                 writer.WriteEndObject();
             }
+
+            tracked.Relationships.Clear();
         }
 
         private void ValidateResource(JsonTypeInfo info)

@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Jsonyte.Serialization;
+using Jsonyte.Serialization.Contracts;
 
 namespace Jsonyte.Converters.Objects
 {
@@ -19,6 +20,11 @@ namespace Jsonyte.Converters.Objects
         public void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value)
         {
             Converter.Write(writer, ref tracked, new RelationshipResource<T>((T) value), options);
+        }
+
+        public void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object value)
+        {
+            Converter.WriteWrapped(writer, ref tracked, new RelationshipResource<T>((T) value), options);
         }
     }
 }

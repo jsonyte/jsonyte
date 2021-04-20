@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
+using Jsonyte.Converters;
 
 namespace Jsonyte.Serialization
 {
@@ -42,6 +44,8 @@ namespace Jsonyte.Serialization
 
         public int Count;
 
+        public TrackedRelationships Relationships;
+
         public IncludedValue Get(int index)
         {
             return index switch
@@ -66,14 +70,18 @@ namespace Jsonyte.Serialization
             };
         }
 
-        public void SetIncluded(ResourceIdentifier identifier, IJsonObjectConverter converter, object value)
+        public void SetIncluded(ResourceIdentifier identifier, IJsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
         {
-            var included = new IncludedValue(identifier, converter, value);
-
             if (HasIdentifier(identifier))
             {
                 return;
             }
+
+            var relationshipId = unwrittenRelationship != null
+                ? Relationships.SetRelationship(unwrittenRelationship.Value)
+                : null;
+
+            var included = new IncludedValue(identifier, converter, value, relationshipId);
 
             if (Count == 0)
             {
@@ -168,7 +176,7 @@ namespace Jsonyte.Serialization
             value = default;
 
             return false;
-        }
+        } 
 
         private IncludedValue GetOverflow(int index)
         {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Jsonyte.Validation
 {
@@ -8,36 +7,13 @@ namespace Jsonyte.Validation
     {
         private DocumentFlags flags;
 
-        public void AddFlag(string? member)
-        {
-            var memberFlag = member switch
-            {
-                JsonApiMembers.Data => DocumentFlags.Data,
-                JsonApiMembers.Errors => DocumentFlags.Errors,
-                JsonApiMembers.Meta => DocumentFlags.Meta,
-                JsonApiMembers.JsonApi => DocumentFlags.Jsonapi,
-                JsonApiMembers.Links => DocumentFlags.Links,
-                JsonApiMembers.Included => DocumentFlags.Included,
-                _ => DocumentFlags.None
-            };
-
-            if (memberFlag != DocumentFlags.None && flags.IsSet(memberFlag))
-            {
-                throw new JsonApiFormatException($"Invalid JSON:API document, duplicate '{member}' member");
-            }
-
-            flags |= memberFlag;
-        }
-
         public void AddFlag(ReadOnlySpan<byte> member)
         {
             var memberFlag = GetFlag(member);
 
             if (memberFlag != DocumentFlags.None && flags.IsSet(memberFlag))
             {
-                var value = Encoding.UTF8.GetString(member.ToArray());
-
-                throw new JsonApiFormatException($"Invalid JSON:API document, duplicate '{value}' member");
+                throw new JsonApiFormatException($"Invalid JSON:API document, duplicate '{member.GetString()}' member");
             }
 
             flags |= memberFlag;

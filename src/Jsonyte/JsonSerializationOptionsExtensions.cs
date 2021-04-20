@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Text.Json;
 using Jsonyte.Converters;
+using Jsonyte.Converters.Objects;
 using Jsonyte.Serialization;
+using Jsonyte.Serialization.Contracts;
 using Jsonyte.Serialization.Reflection;
 
 namespace Jsonyte
@@ -24,6 +26,11 @@ namespace Jsonyte
             if (!options.Converters.OfType<JsonApiResourceConverterFactory>().Any())
             {
                 options.Converters.Add(new JsonApiResourceConverterFactory());
+            }
+
+            if (!options.Converters.OfType<JsonApiRelationshipConverterFactory>().Any())
+            {
+                options.Converters.Add(new JsonApiRelationshipConverterFactory());
             }
 
             options.PropertyNamingPolicy ??= JsonNamingPolicy.CamelCase;
@@ -65,6 +72,27 @@ namespace Jsonyte
         internal static IJsonObjectConverter GetObjectConverter<T>(this JsonSerializerOptions options)
         {
             return GetState(options).ObjectConverters.GetOrAdd(typeof(T), _ => new JsonObjectConverter<T>(options.GetWrappedConverter<T>()));
+        }
+
+        internal static IJsonObjectConverter GetObjectConverter(this JsonSerializerOptions options, Type type)
+        {
+            return GetState(options).ObjectConverters.GetOrAdd(type, x =>
+            {
+                var converterType = typeof(JsonObjectConverter<>).MakeGenericType(x);
+                var converter = options.GetConverter(type);
+
+                return (IJsonObjectConverter) Activator.CreateInstance(converterType, converter);
+            });
+        }
+
+        internal static IAnonymousRelationshipConverter GetAnonymousRelationshipConverter(this JsonSerializerOptions options, Type type)
+        {
+            return GetState(options).AnonymousConverters.GetOrAdd(type, x =>
+            {
+                var converterType = typeof(JsonApiAnonymousRelationshipConverter<>).MakeGenericType(x);
+
+                return (IAnonymousRelationshipConverter) Activator.CreateInstance(converterType, options);
+            });
         }
 
         internal static JsonTypeInfo GetTypeInfo(this JsonSerializerOptions options, Type type)

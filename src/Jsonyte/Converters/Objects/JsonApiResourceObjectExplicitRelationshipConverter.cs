@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Text.Json;
 using Jsonyte.Serialization;
+using Jsonyte.Serialization.Contracts;
 
 namespace Jsonyte.Converters.Objects
 {
-    internal class JsonApiResourceObjectNaturalRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<T>
+    internal class JsonApiResourceObjectExplicitRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<T>
     {
         private readonly JsonTypeInfo info;
 
-        public JsonApiResourceObjectNaturalRelationshipConverter(JsonTypeInfo info)
+        public JsonApiResourceObjectExplicitRelationshipConverter(JsonTypeInfo info)
         {
             this.info = info;
         }
@@ -64,8 +65,10 @@ namespace Jsonyte.Converters.Objects
 
             if (data != null)
             {
+                var relationshipsWritten = false;
+
                 writer.WritePropertyName(JsonApiMembers.DataEncoded);
-                info.DataMember.WriteRelationshipWrapped(writer, ref tracked, value.Resource);
+                info.DataMember.WriteRelationshipWrapped(writer, ref tracked, value.Resource, ref relationshipsWritten);
             }
 
             info.LinksMember.Write(writer, ref tracked, value.Resource);
