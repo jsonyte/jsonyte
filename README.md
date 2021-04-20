@@ -1,6 +1,6 @@
 # Jsonyte
 
-[![NuGet](https://img.shields.io/nuget/v/Jsonapi?style=for-the-badge)](https://www.nuget.org/packages/Jsonyte) [![Build](https://img.shields.io/github/workflow/status/jsonyte/jsonyte/build?style=for-the-badge)](https://github.com/jsonyte/jsonyte/actions?query=workflow:build) [![License](https://img.shields.io/github/license/jsonyte/jsonyte?style=for-the-badge)](https://github.com/jsonyte/jsonyte/blob/master/LICENSE)
+[![NuGet](https://img.shields.io/nuget/v/Jsonyte?style=for-the-badge)](https://www.nuget.org/packages/Jsonyte) [![Build](https://img.shields.io/github/workflow/status/jsonyte/jsonyte/build?style=for-the-badge)](https://github.com/jsonyte/jsonyte/actions?query=workflow:build) [![License](https://img.shields.io/github/license/jsonyte/jsonyte?style=for-the-badge)](https://github.com/jsonyte/jsonyte/blob/master/LICENSE)
 
 A library for serializing and deserializing [JSON:API](https://jsonapi.org) documents using `System.Text.Json`.
 
