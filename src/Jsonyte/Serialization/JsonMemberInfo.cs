@@ -25,7 +25,6 @@ namespace Jsonyte.Serialization
             IgnoreCondition = ignoreCondition;
             Name = GetName(member);
             NameEncoded = JsonEncodedText.Encode(Name);
-            NameAsBytes = Name.ToByteArray();
             MemberName = member.Name;
             MemberType = memberType;
             IsPrimitiveType = GetIsPrimitiveType(memberType);
@@ -55,8 +54,6 @@ namespace Jsonyte.Serialization
         public string Name { get; }
 
         public JsonEncodedText NameEncoded { get; }
-
-        public byte[] NameAsBytes { get; }
 
         public string MemberName { get; }
 
@@ -162,7 +159,7 @@ namespace Jsonyte.Serialization
                 writer.WriteStartObject();
             }
 
-            writer.WritePropertyName(NameAsBytes);
+            writer.WritePropertyName(NameEncoded);
 
             if (WrappedConverter != null)
             {
@@ -200,7 +197,7 @@ namespace Jsonyte.Serialization
                     wroteSection = true;
                 }
 
-                writer.WritePropertyName(NameAsBytes);
+                writer.WritePropertyName(NameEncoded);
 
                 var relationshipType = GetRelationshipType(value);
 
