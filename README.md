@@ -19,4 +19,4 @@ var article = JsonSerializer.Deserialize(json, options);
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
 
 ## License
-Jjsonyte is released under the [MIT License](LICENSE)
+Jsonyte is released under the [MIT License](LICENSE)
