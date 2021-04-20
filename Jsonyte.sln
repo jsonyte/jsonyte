@@ -6,8 +6,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jsonyte", "src\Jsonyte\Json
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jsonyte.Benchmarks", "src\Jsonyte.Benchmarks\Jsonyte.Benchmarks.csproj", "{4CDF51F7-56EC-47EC-BEEA-CD44CD7E8881}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jsonyte.Profiling", "src\Jsonyte.Profiling\Jsonyte.Profiling.csproj", "{7E218076-158E-4A85-8E33-B3675CCABD75}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jsonyte.Tests", "src\Jsonyte.Tests\Jsonyte.Tests.csproj", "{B4F7D1D6-19A3-4BEF-BDE4-4C139B64D38B}"
 EndProject
 Global
@@ -24,10 +22,6 @@ Global
 		{4CDF51F7-56EC-47EC-BEEA-CD44CD7E8881}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CDF51F7-56EC-47EC-BEEA-CD44CD7E8881}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CDF51F7-56EC-47EC-BEEA-CD44CD7E8881}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7E218076-158E-4A85-8E33-B3675CCABD75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7E218076-158E-4A85-8E33-B3675CCABD75}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7E218076-158E-4A85-8E33-B3675CCABD75}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7E218076-158E-4A85-8E33-B3675CCABD75}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B4F7D1D6-19A3-4BEF-BDE4-4C139B64D38B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B4F7D1D6-19A3-4BEF-BDE4-4C139B64D38B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4F7D1D6-19A3-4BEF-BDE4-4C139B64D38B}.Release|Any CPU.ActiveCfg = Release|Any CPU

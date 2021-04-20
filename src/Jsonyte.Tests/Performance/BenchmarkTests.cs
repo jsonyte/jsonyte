@@ -18,7 +18,7 @@ namespace Jsonyte.Tests.Performance
             this.testOutput = testOutput;
         }
 
-        [Fact(Skip = "Benchmark tests")]
+        [Fact(Skip = "Used to run benchmarks only")]
         public void RunBenchmarks()
         {
             var logger = new XunitBenchmarkLogger(testOutput);
