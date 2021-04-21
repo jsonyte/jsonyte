@@ -135,8 +135,6 @@ namespace Jsonyte.Converters.Collections
             var idEncoded = id!.ToByteArray();
             var typeEncoded = type!.ToByteArray();
 
-            var identifier = new ResourceIdentifier(idEncoded, typeEncoded);
-
             if (container.WriteImmediately)
             {
                 writer.WriteStartObject();
@@ -146,11 +144,11 @@ namespace Jsonyte.Converters.Collections
 
                 writer.WriteEndObject();
 
-                tracked.SetIncluded(identifier, converter, value);
+                tracked.SetIncluded(idEncoded, typeEncoded, id!, type!, converter, value);
             }
             else
             {
-                tracked.SetIncluded(identifier, converter, value, container.Relationship);
+                tracked.SetIncluded(idEncoded, typeEncoded, id!, type!, converter, value, container.Relationship);
             }
         }
 

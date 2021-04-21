@@ -18,15 +18,15 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.IsEqual(JsonApiMembers.LinksEncoded))
+                if (name.SequenceEqual(JsonApiMembers.LinksEncoded.EncodedUtf8Bytes))
                 {
                     relationship.Links = reader.Read<JsonApiRelationshipLinks>(options);
                 }
-                else if (name.IsEqual(JsonApiMembers.DataEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.DataEncoded.EncodedUtf8Bytes))
                 {
                     relationship.Data = ReadData(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.MetaEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.MetaEncoded.EncodedUtf8Bytes))
                 {
                     relationship.Meta = reader.Read<JsonApiMeta>(options);
                 }

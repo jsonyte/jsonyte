@@ -29,7 +29,7 @@ namespace Jsonyte.Converters.Collections
             {
                 var name = reader.ReadMember(ref relationshipState);
 
-                if (name.IsEqual(JsonApiMembers.DataEncoded))
+                if (name.SequenceEqual(JsonApiMembers.DataEncoded.EncodedUtf8Bytes))
                 {
                     relationships = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }

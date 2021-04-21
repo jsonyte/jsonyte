@@ -88,11 +88,11 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.IsEqual(JsonApiMembers.IdEncoded) || name.IsEqual(JsonApiMembers.TypeEncoded))
+                if (name.SequenceEqual(JsonApiMembers.IdEncoded.EncodedUtf8Bytes) || name.SequenceEqual(JsonApiMembers.TypeEncoded.EncodedUtf8Bytes))
                 {
                     info.GetMember(name).Read(ref reader, resource);
                 }
-                else if (name.IsEqual(JsonApiMembers.AttributesEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.AttributesEncoded.EncodedUtf8Bytes))
                 {
                     reader.ReadObject(JsonApiMemberCode.ResourceAttributes);
 
@@ -105,11 +105,11 @@ namespace Jsonyte.Converters.Objects
                         reader.Read();
                     }
                 }
-                else if (name.IsEqual(JsonApiMembers.MetaEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.MetaEncoded.EncodedUtf8Bytes))
                 {
                     info.GetMember(name).Read(ref reader, resource);
                 }
-                else if (name.IsEqual(JsonApiMembers.RelationshipsEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.RelationshipsEncoded.EncodedUtf8Bytes))
                 {
                     ReadRelationships(ref reader, ref tracked, resource);
                 }

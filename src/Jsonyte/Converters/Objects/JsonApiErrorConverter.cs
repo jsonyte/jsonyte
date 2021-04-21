@@ -20,7 +20,7 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.IsEqual(JsonApiMembers.ErrorsEncoded))
+                if (name.SequenceEqual(JsonApiMembers.ErrorsEncoded.EncodedUtf8Bytes))
                 {
                     reader.ReadArray(JsonApiArrayCode.Errors);
 
@@ -63,35 +63,35 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(JsonApiMemberCode.Error);
 
-                if (name.IsEqual(JsonApiMembers.IdEncoded))
+                if (name.SequenceEqual(JsonApiMembers.IdEncoded.EncodedUtf8Bytes))
                 {
                     error.Id = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.LinksEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.LinksEncoded.EncodedUtf8Bytes))
                 {
                     error.Links = JsonSerializer.Deserialize<JsonApiErrorLinks>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.StatusEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.StatusEncoded.EncodedUtf8Bytes))
                 {
                     error.Status = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.CodeEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.CodeEncoded.EncodedUtf8Bytes))
                 {
                     error.Code = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.TitleEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.TitleEncoded.EncodedUtf8Bytes))
                 {
                     error.Title = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.DetailEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.DetailEncoded.EncodedUtf8Bytes))
                 {
                     error.Detail = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.SourceEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.SourceEncoded.EncodedUtf8Bytes))
                 {
                     error.Source = JsonSerializer.Deserialize<JsonApiErrorSource>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.MetaEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.MetaEncoded.EncodedUtf8Bytes))
                 {
                     error.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                 }

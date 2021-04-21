@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Jsonyte.Converters;
 
@@ -6,205 +8,184 @@ namespace Jsonyte.Serialization
 {
     internal ref struct TrackedResources
     {
-        private const int OverflowCount = 16;
+        private const int CachedReferences = 64;
 
-        private IncludedValue value0;
+        private IncludedRef[]? references;
 
-        private IncludedValue value1;
+        private Dictionary<(string type, string id), IncludedRef>? referencesOverflow;
 
-        private IncludedValue value2;
-
-        private IncludedValue value3;
-
-        private IncludedValue value4;
-
-        private IncludedValue value5;
-
-        private IncludedValue value6;
-
-        private IncludedValue value7;
-
-        private IncludedValue value8;
-
-        private IncludedValue value9;
-
-        private IncludedValue value10;
-
-        private IncludedValue value11;
-
-        private IncludedValue value12;
-
-        private IncludedValue value13;
-
-        private IncludedValue value14;
-
-        private IncludedValue value15;
-
-        private List<(byte[] id, byte[] type, IJsonObjectConverter converter, object value)>? overflow;
+        private List<IncludedRef>? referencesOverflowByIndex;
 
         public int Count;
 
         public TrackedRelationships Relationships;
 
-        public IncludedValue Get(int index)
+        public IncludedRef Get(int index)
         {
-            return index switch
+            if (references == null)
             {
-                0 => value0,
-                1 => value1,
-                2 => value2,
-                3 => value3,
-                4 => value4,
-                5 => value5,
-                6 => value6,
-                7 => value7,
-                8 => value8,
-                9 => value9,
-                10 => value10,
-                11 => value11,
-                12 => value12,
-                13 => value13,
-                14 => value14,
-                15 => value15,
-                _ => GetOverflow(index)
-            };
+                return default;
+            }
+
+            if (index < CachedReferences)
+            {
+                return references[index];
+            }
+
+            if (referencesOverflowByIndex == null)
+            {
+                return default;
+            }
+
+            return referencesOverflowByIndex[index - CachedReferences];
         }
 
-        public void SetIncluded(ResourceIdentifier identifier, IJsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
+        public void SetIncluded(ResourceIdentifier identifier, string idString, string typeString, IJsonObjectConverter converter, object value)
         {
-            if (HasIdentifier(identifier))
+            references ??= new IncludedRef[CachedReferences];
+
+            if (HasIdentifier(identifier, out var idKey, out var typeKey, idString, typeString))
             {
                 return;
             }
 
+            SetIncluded(idKey, typeKey, identifier.Id.ToArray(), identifier.Type.ToArray(), idString, typeString, converter, value);
+        }
+
+        public void SetIncluded(byte[] id, byte[] type, string idString, string typeString, IJsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
+        {
+            references ??= new IncludedRef[CachedReferences];
+
+            var identifier = new ResourceIdentifier(id, type);
+
+            if (HasIdentifier(identifier, out var idKey, out var typeKey, idString, typeString))
+            {
+                return;
+            }
+
+            SetIncluded(idKey, typeKey, id, type, idString, typeString, converter, value, unwrittenRelationship);
+        }
+
+        private void SetIncluded(ulong idKey, ulong typeKey, byte[] id, byte[] type, string idString, string typeString, IJsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
+        {
             var relationshipId = unwrittenRelationship != null
                 ? Relationships.SetRelationship(unwrittenRelationship.Value)
                 : null;
 
-            var included = new IncludedValue(identifier, converter, value, relationshipId);
+            var included = new IncludedRef(idKey, typeKey, id, type, converter, value, relationshipId);
 
-            if (Count == 0)
+            if (Count < CachedReferences)
             {
-                value0 = included;
-            }
-            else if (Count == 1)
-            {
-                value1 = included;
-            }
-            else if (Count == 2)
-            {
-                value2 = included;
-            }
-            else if (Count == 3)
-            {
-                value3 = included;
-            }
-            else if (Count == 4)
-            {
-                value4 = included;
-            }
-            else if (Count == 5)
-            {
-                value5 = included;
-            }
-            else if (Count == 6)
-            {
-                value6 = included;
-            }
-            else if (Count == 7)
-            {
-                value7 = included;
-            }
-            else if (Count == 8)
-            {
-                value8 = included;
-            }
-            else if (Count == 9)
-            {
-                value9 = included;
-            }
-            else if (Count == 10)
-            {
-                value10 = included;
-            }
-            else if (Count == 11)
-            {
-                value11 = included;
-            }
-            else if (Count == 12)
-            {
-                value12 = included;
-            }
-            else if (Count == 13)
-            {
-                value13 = included;
-            }
-            else if (Count == 14)
-            {
-                value14 = included;
-            }
-            else if (Count == 15)
-            {
-                value15 = included;
+                references![Count] = included;
             }
             else
             {
-                overflow ??= new List<(byte[], byte[], IJsonObjectConverter, object)>(OverflowCount);
+                referencesOverflow ??= new Dictionary<(string, string), IncludedRef>(CachedReferences * 2);
+                referencesOverflowByIndex ??= new List<IncludedRef>(CachedReferences * 2);
 
-                var id = identifier.Id;
-                var type = identifier.Type;
-
-                overflow.Add((id.ToArray(), type.ToArray(), converter, value));
+                referencesOverflow[(typeString, idString)] = included;
+                referencesOverflowByIndex.Add(included);
             }
 
             Count++;
         }
 
-        public bool TryGetIncluded(ResourceIdentifier identifier, out IncludedValue value)
+        public bool TryGetIncluded(ResourceIdentifier identifier, out IncludedRef value)
         {
-            for (var i = 0; i < Count; i++)
+            if (references == null)
             {
-                var included = Get(i);
+                value = default;
 
-                if (included.HasIdentifier(identifier))
+                return false;
+            }
+
+            var idKey = identifier.Id.GetKey();
+            var typeKey = identifier.Type.GetKey();
+
+            var cachedCount = Count < CachedReferences
+                ? Count
+                : CachedReferences;
+
+            for (var i = 0; i < cachedCount; i++)
+            {
+                var include = references[i];
+
+                if (include.IdKey == idKey && include.TypeKey == typeKey)
                 {
-                    value = included;
-                    return true;
+                    if (identifier.Id.Length < 8 && identifier.Type.Length < 8)
+                    {
+                        value = include;
+
+                        return true;
+                    }
+
+                    if (identifier.Id.SequenceEqual(include.Id) && identifier.Type.SequenceEqual(include.Type))
+                    {
+                        value = include;
+
+                        return true;
+                    }
                 }
+            }
+
+            if (referencesOverflow == null)
+            {
+                value = default;
+
+                return false;
+            }
+
+            var id = identifier.Id;
+            var type = identifier.Type;
+
+            var idString = id.GetString();
+            var typeString = type.GetString();
+
+            if (referencesOverflow.TryGetValue((typeString, idString), out var output))
+            {
+                value = output;
+
+                return true;
             }
 
             value = default;
 
             return false;
-        } 
-
-        private IncludedValue GetOverflow(int index)
-        {
-            if (overflow == null)
-            {
-                return default;
-            }
-
-            var item = overflow[index - OverflowCount];
-
-            var identifier = new ResourceIdentifier(item.id, item.type);
-
-            return new IncludedValue(identifier, item.converter, item.value);
         }
 
-        private bool HasIdentifier(ResourceIdentifier identifier)
+        private bool HasIdentifier(ResourceIdentifier identifier, out ulong idKey, out ulong typeKey, string idString, string typeString)
         {
-            for (var i = 0; i < Count; i++)
-            {
-                var included = Get(i);
+            idKey = identifier.Id.GetKey();
+            typeKey = identifier.Type.GetKey();
 
-                if (included.HasIdentifier(identifier))
+            var cachedCount = Count < CachedReferences
+                ? Count
+                : CachedReferences;
+
+            for (var i = 0; i < cachedCount; i++)
+            {
+                var include = references![i];
+
+                if (include.IdKey == idKey && include.TypeKey == typeKey)
                 {
-                    return true;
+                    if (identifier.Id.Length < 8 && identifier.Type.Length < 8)
+                    {
+                        return true;
+                    }
+
+                    if (identifier.Id.SequenceEqual(include.Id) && identifier.Type.SequenceEqual(include.Type))
+                    {
+                        return true;
+                    }
                 }
             }
 
-            return false;
+            if (referencesOverflow == null)
+            {
+                return false;
+            }
+
+            return referencesOverflow!.ContainsKey((typeString, idString));
         }
     }
 }

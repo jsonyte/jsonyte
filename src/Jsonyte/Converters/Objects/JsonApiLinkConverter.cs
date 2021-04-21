@@ -24,11 +24,11 @@ namespace Jsonyte.Converters.Objects
 
                     reader.Read();
 
-                    if (name.IsEqual(JsonApiMembers.HrefEncoded))
+                    if (name.SequenceEqual(JsonApiMembers.HrefEncoded.EncodedUtf8Bytes))
                     {
                         link.Href = reader.GetString();
                     }
-                    else if (name.IsEqual(JsonApiMembers.MetaEncoded))
+                    else if (name.SequenceEqual(JsonApiMembers.MetaEncoded.EncodedUtf8Bytes))
                     {
                         link.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                     }

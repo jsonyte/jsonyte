@@ -24,11 +24,11 @@ namespace Jsonyte.Converters.Collections
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.IsEqual(JsonApiMembers.DataEncoded))
+                if (name.SequenceEqual(JsonApiMembers.DataEncoded.EncodedUtf8Bytes))
                 {
                     resources = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.IncludedEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.IncludedEncoded.EncodedUtf8Bytes))
                 {
                     ReadIncluded(ref reader, ref tracked, options);
                 }

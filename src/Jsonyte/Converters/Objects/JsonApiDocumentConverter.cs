@@ -33,27 +33,27 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.IsEqual(JsonApiMembers.DataEncoded))
+                if (name.SequenceEqual(JsonApiMembers.DataEncoded.EncodedUtf8Bytes))
                 {
                     ReadData(ref reader, ref tracked, document, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.ErrorsEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.ErrorsEncoded.EncodedUtf8Bytes))
                 {
                     document.Errors = ReadWrapped<JsonApiError[]>(ref reader, ref tracked, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.JsonApiEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.JsonApiEncoded.EncodedUtf8Bytes))
                 {
                     document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.MetaEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.MetaEncoded.EncodedUtf8Bytes))
                 {
                     document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.LinksEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.LinksEncoded.EncodedUtf8Bytes))
                 {
                     document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.IncludedEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.IncludedEncoded.EncodedUtf8Bytes))
                 {
                     if (state.HasFlag(DocumentFlags.Data))
                     {
