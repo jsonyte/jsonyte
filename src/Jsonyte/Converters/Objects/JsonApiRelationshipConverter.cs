@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
+using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Objects
 {
@@ -18,15 +19,15 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.SequenceEqual(JsonApiMembers.LinksEncoded.EncodedUtf8Bytes))
+                if (name == RelationshipFlags.Links)
                 {
                     relationship.Links = reader.Read<JsonApiRelationshipLinks>(options);
                 }
-                else if (name.SequenceEqual(JsonApiMembers.DataEncoded.EncodedUtf8Bytes))
+                else if (name == RelationshipFlags.Data)
                 {
                     relationship.Data = ReadData(ref reader, options);
                 }
-                else if (name.SequenceEqual(JsonApiMembers.MetaEncoded.EncodedUtf8Bytes))
+                else if (name == RelationshipFlags.Meta)
                 {
                     relationship.Meta = reader.Read<JsonApiMeta>(options);
                 }

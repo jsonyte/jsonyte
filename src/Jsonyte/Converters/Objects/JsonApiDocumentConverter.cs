@@ -33,27 +33,27 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.SequenceEqual(JsonApiMembers.DataEncoded.EncodedUtf8Bytes))
+                if (name == DocumentFlags.Data)
                 {
                     ReadData(ref reader, ref tracked, document, options);
                 }
-                else if (name.SequenceEqual(JsonApiMembers.ErrorsEncoded.EncodedUtf8Bytes))
+                else if (name == DocumentFlags.Errors)
                 {
                     document.Errors = ReadWrapped<JsonApiError[]>(ref reader, ref tracked, options);
                 }
-                else if (name.SequenceEqual(JsonApiMembers.JsonApiEncoded.EncodedUtf8Bytes))
+                else if (name == DocumentFlags.Jsonapi)
                 {
                     document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
                 }
-                else if (name.SequenceEqual(JsonApiMembers.MetaEncoded.EncodedUtf8Bytes))
+                else if (name == DocumentFlags.Meta)
                 {
                     document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                 }
-                else if (name.SequenceEqual(JsonApiMembers.LinksEncoded.EncodedUtf8Bytes))
+                else if (name == DocumentFlags.Links)
                 {
                     document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
                 }
-                else if (name.SequenceEqual(JsonApiMembers.IncludedEncoded.EncodedUtf8Bytes))
+                else if (name == DocumentFlags.Included)
                 {
                     if (state.HasFlag(DocumentFlags.Data))
                     {

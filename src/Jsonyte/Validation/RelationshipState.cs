@@ -7,7 +7,7 @@ namespace Jsonyte.Validation
     {
         private RelationshipFlags flags;
 
-        public void AddFlag(ReadOnlySpan<byte> member)
+        public RelationshipFlags AddFlag(ReadOnlySpan<byte> member)
         {
             var memberFlag = GetFlag(member);
 
@@ -17,6 +17,8 @@ namespace Jsonyte.Validation
             }
 
             flags |= memberFlag;
+
+            return memberFlag;
         }
 
         private RelationshipFlags GetFlag(ReadOnlySpan<byte> member)

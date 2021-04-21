@@ -8,6 +8,8 @@ namespace Jsonyte.Validation
         None = 0,
         Id = 1,
         Type = 2,
-        Relationships = 4
+        Relationships = 4,
+        Meta = 8,
+        Attributes = 16
     }
 }

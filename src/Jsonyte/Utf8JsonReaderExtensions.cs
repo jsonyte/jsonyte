@@ -70,31 +70,25 @@ namespace Jsonyte
             reader.Read();
         }
 
-        public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, ref DocumentState state)
+        public static DocumentFlags ReadMember(this ref Utf8JsonReader reader, ref DocumentState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.TopLevel);
 
-            state.AddFlag(name);
-
-            return name;
+            return state.AddFlag(name);
         }
 
-        public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, ref ResourceState state)
+        public static ResourceFlags ReadMember(this ref Utf8JsonReader reader, ref ResourceState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Resource);
 
-            state.AddFlag(name);
-
-            return name;
+            return state.AddFlag(name);
         }
 
-        public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, ref RelationshipState state)
+        public static RelationshipFlags ReadMember(this ref Utf8JsonReader reader, ref RelationshipState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Relationship);
 
-            state.AddFlag(name);
-
-            return name;
+            return state.AddFlag(name);
         }
 
         public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, JsonApiMemberCode code)

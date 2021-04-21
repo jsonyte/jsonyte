@@ -7,7 +7,7 @@ namespace Jsonyte.Validation
     {
         private ResourceFlags flags;
 
-        public void AddFlag(ReadOnlySpan<byte> member)
+        public ResourceFlags AddFlag(ReadOnlySpan<byte> member)
         {
             var memberFlag = GetFlag(member);
 
@@ -17,6 +17,8 @@ namespace Jsonyte.Validation
             }
 
             flags |= memberFlag;
+
+            return memberFlag;
         }
 
         private ResourceFlags GetFlag(ReadOnlySpan<byte> member)
@@ -41,6 +43,16 @@ namespace Jsonyte.Validation
             if (initial == 0x72 && JsonApiMembers.RelationshipsEncoded.EncodedUtf8Bytes.SequenceEqual(member))
             {
                 return ResourceFlags.Relationships;
+            }
+
+            if (initial == 0x6d && JsonApiMembers.MetaEncoded.EncodedUtf8Bytes.SequenceEqual(member))
+            {
+                return ResourceFlags.Meta;
+            }
+
+            if (initial == 0x61 && JsonApiMembers.AttributesEncoded.EncodedUtf8Bytes.SequenceEqual(member))
+            {
+                return ResourceFlags.Attributes;
             }
 
             return ResourceFlags.None;

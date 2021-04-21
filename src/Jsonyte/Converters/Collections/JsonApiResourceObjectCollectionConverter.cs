@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Jsonyte.Serialization;
+using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Collections
 {
@@ -24,11 +25,11 @@ namespace Jsonyte.Converters.Collections
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.SequenceEqual(JsonApiMembers.DataEncoded.EncodedUtf8Bytes))
+                if (name == DocumentFlags.Data)
                 {
                     resources = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
-                else if (name.SequenceEqual(JsonApiMembers.IncludedEncoded.EncodedUtf8Bytes))
+                else if (name == DocumentFlags.Included)
                 {
                     ReadIncluded(ref reader, ref tracked, options);
                 }

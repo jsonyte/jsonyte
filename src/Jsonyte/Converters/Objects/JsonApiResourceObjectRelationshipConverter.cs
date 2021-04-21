@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Jsonyte.Serialization;
 using Jsonyte.Serialization.Contracts;
+using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Objects
 {
@@ -31,7 +32,7 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref relationshipState);
 
-                if (name.SequenceEqual(JsonApiMembers.DataEncoded.EncodedUtf8Bytes))
+                if (name == RelationshipFlags.Data)
                 {
                     relationship = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
