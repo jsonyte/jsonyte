@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Validation;
@@ -8,31 +7,26 @@ namespace Jsonyte
 {
     internal static class Utf8JsonReaderExtensions
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsObject(this ref Utf8JsonReader reader)
         {
             return reader.TokenType == JsonTokenType.StartObject;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsInObject(this ref Utf8JsonReader reader)
         {
             return reader.TokenType != JsonTokenType.EndObject;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsArray(this ref Utf8JsonReader reader)
         {
             return reader.TokenType == JsonTokenType.StartArray;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsInArray(this ref Utf8JsonReader reader)
         {
             return reader.TokenType != JsonTokenType.EndArray;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReadArray(this ref Utf8JsonReader reader, JsonApiArrayCode code)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
@@ -43,7 +37,6 @@ namespace Jsonyte
             reader.Read();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DocumentState ReadDocument(this ref Utf8JsonReader reader)
         {
             reader.ReadObject(JsonApiMemberCode.Document);
@@ -51,7 +44,6 @@ namespace Jsonyte
             return new DocumentState();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ResourceState ReadResource(this ref Utf8JsonReader reader)
         {
             reader.ReadObject(JsonApiMemberCode.Resource);
@@ -59,7 +51,6 @@ namespace Jsonyte
             return new ResourceState();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RelationshipState ReadRelationship(this ref Utf8JsonReader reader)
         {
             reader.ReadObject(JsonApiMemberCode.Relationship);
@@ -67,7 +58,13 @@ namespace Jsonyte
             return new RelationshipState();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ErrorState ReadError(this ref Utf8JsonReader reader)
+        {
+            reader.ReadObject(JsonApiMemberCode.Error);
+
+            return new ErrorState();
+        }
+
         public static void ReadObject(this ref Utf8JsonReader reader, JsonApiMemberCode code)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
@@ -78,37 +75,34 @@ namespace Jsonyte
             reader.Read();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, ref DocumentState state)
+        public static DocumentFlags ReadMember(this ref Utf8JsonReader reader, ref DocumentState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.TopLevel);
 
-            state.AddFlag(name);
-
-            return name;
+            return state.AddFlag(name);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, ref ResourceState state)
+        public static ResourceFlags ReadMember(this ref Utf8JsonReader reader, ref ResourceState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Resource);
 
-            state.AddFlag(name);
-
-            return name;
+            return state.AddFlag(name);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, ref RelationshipState state)
+        public static RelationshipFlags ReadMember(this ref Utf8JsonReader reader, ref RelationshipState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Relationship);
 
-            state.AddFlag(name);
-
-            return name;
+            return state.AddFlag(name);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ErrorFlags ReadMember(this ref Utf8JsonReader reader, ref ErrorState state)
+        {
+            var name = reader.ReadMember(JsonApiMemberCode.Error);
+
+            return state.AddFlag(name);
+        }
+
         public static ReadOnlySpan<byte> ReadMember(this ref Utf8JsonReader reader, JsonApiMemberCode code)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
@@ -122,7 +116,6 @@ namespace Jsonyte
             return name;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? Read<T>(this ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
             if (options.GetConverter(typeof(T)) is not JsonConverter<T> converter)
@@ -144,11 +137,11 @@ namespace Jsonyte
             {
                 var name = reader.ReadMember(JsonApiMemberCode.ResourceIdentifier);
 
-                if (name.IsEqual(JsonApiMembers.IdEncoded))
+                if (name.SequenceEqual(JsonApiMembers.IdEncoded.EncodedUtf8Bytes))
                 {
                     id = reader.ValueSpan;
                 }
-                else if (name.IsEqual(JsonApiMembers.TypeEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.TypeEncoded.EncodedUtf8Bytes))
                 {
                     type = reader.ValueSpan;
                 }
@@ -179,11 +172,11 @@ namespace Jsonyte
             {
                 var name = reader.ReadMember(JsonApiMemberCode.ResourceIdentifier);
 
-                if (name.IsEqual(JsonApiMembers.IdEncoded))
+                if (name.SequenceEqual(JsonApiMembers.IdEncoded.EncodedUtf8Bytes))
                 {
                     id = reader.ValueSpan;
                 }
-                else if (name.IsEqual(JsonApiMembers.TypeEncoded))
+                else if (name.SequenceEqual(JsonApiMembers.TypeEncoded.EncodedUtf8Bytes))
                 {
                     type = reader.ValueSpan;
                 }

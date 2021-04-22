@@ -1,4 +1,4 @@
-﻿namespace Jsonyte.Serialization
+﻿namespace Jsonyte.Serialization.Metadata
 {
     internal enum JsonTypeCategory : byte
     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 using Jsonyte.Serialization;
+using Jsonyte.Serialization.Metadata;
 using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Objects
@@ -28,11 +29,11 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.SequenceEqual(JsonApiMembers.DataEncoded.EncodedUtf8Bytes))
+                if (name == DocumentFlags.Data)
                 {
                     resource = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
-                else if (name.SequenceEqual(JsonApiMembers.IncludedEncoded.EncodedUtf8Bytes))
+                else if (name == DocumentFlags.Included)
                 {
                     if (state.HasFlag(DocumentFlags.Data))
                     {
@@ -88,11 +89,15 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.IsEqual(JsonApiMembers.IdEncoded) || name.IsEqual(JsonApiMembers.TypeEncoded))
+                if (name == ResourceFlags.Id)
                 {
-                    info.GetMember(name).Read(ref reader, resource);
+                    info.IdMember.Read(ref reader, resource);
                 }
-                else if (name.IsEqual(JsonApiMembers.AttributesEncoded))
+                else if (name == ResourceFlags.Type)
+                {
+                    info.TypeMember.Read(ref reader, resource);
+                }
+                else if (name == ResourceFlags.Attributes)
                 {
                     reader.ReadObject(JsonApiMemberCode.ResourceAttributes);
 
@@ -105,11 +110,11 @@ namespace Jsonyte.Converters.Objects
                         reader.Read();
                     }
                 }
-                else if (name.IsEqual(JsonApiMembers.MetaEncoded))
+                else if (name == ResourceFlags.Meta)
                 {
-                    info.GetMember(name).Read(ref reader, resource);
+                    info.MetaMember.Read(ref reader, resource);
                 }
-                else if (name.IsEqual(JsonApiMembers.RelationshipsEncoded))
+                else if (name == ResourceFlags.Relationships)
                 {
                     ReadRelationships(ref reader, ref tracked, resource);
                 }

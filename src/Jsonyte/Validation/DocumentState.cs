@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 
 namespace Jsonyte.Validation
 {
@@ -7,7 +6,7 @@ namespace Jsonyte.Validation
     {
         private DocumentFlags flags;
 
-        public void AddFlag(ReadOnlySpan<byte> member)
+        public DocumentFlags AddFlag(ReadOnlySpan<byte> member)
         {
             var memberFlag = GetFlag(member);
 
@@ -17,43 +16,40 @@ namespace Jsonyte.Validation
             }
 
             flags |= memberFlag;
+
+            return memberFlag;
         }
 
         private DocumentFlags GetFlag(ReadOnlySpan<byte> member)
         {
-            if (member.Length == 0)
-            {
-                return DocumentFlags.None;
-            }
+            var key = member.GetKey();
 
-            ref var initial = ref MemoryMarshal.GetReference(member);
-
-            if (initial == 0x64 && JsonApiMembers.DataEncoded.EncodedUtf8Bytes.SequenceEqual(member))
+            if (key == JsonApiMembers.DataKey)
             {
                 return DocumentFlags.Data;
             }
 
-            if (initial == 0x65 && JsonApiMembers.ErrorsEncoded.EncodedUtf8Bytes.SequenceEqual(member))
+            if (key == JsonApiMembers.ErrorsKey)
             {
                 return DocumentFlags.Errors;
             }
 
-            if (initial == 0x6d && JsonApiMembers.MetaEncoded.EncodedUtf8Bytes.SequenceEqual(member))
+            if (key == JsonApiMembers.MetaKey)
             {
                 return DocumentFlags.Meta;
             }
 
-            if (initial == 0x6a && JsonApiMembers.JsonApiEncoded.EncodedUtf8Bytes.SequenceEqual(member))
+            if (key == JsonApiMembers.JsonApiKey)
             {
                 return DocumentFlags.Jsonapi;
             }
 
-            if (initial == 0x6c && JsonApiMembers.LinksEncoded.EncodedUtf8Bytes.SequenceEqual(member))
+            if (key == JsonApiMembers.LinksKey)
             {
                 return DocumentFlags.Links;
             }
 
-            if (initial == 0x69 && JsonApiMembers.IncludedEncoded.EncodedUtf8Bytes.SequenceEqual(member))
+            if (key == JsonApiMembers.IncludedKey && member.SequenceEqual(JsonApiMembers.IncludedEncoded.EncodedUtf8Bytes))
             {
                 return DocumentFlags.Included;
             }

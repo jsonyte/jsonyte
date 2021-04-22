@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Jsonyte.Serialization
+namespace Jsonyte.Serialization.Metadata
 {
     internal class EmptyJsonParameterInfo : IJsonParameterInfo
     {

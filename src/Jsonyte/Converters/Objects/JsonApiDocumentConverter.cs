@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 using Jsonyte.Serialization;
 using Jsonyte.Serialization.Contracts;
+using Jsonyte.Serialization.Metadata;
 using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Objects
@@ -33,27 +34,27 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.IsEqual(JsonApiMembers.DataEncoded))
+                if (name == DocumentFlags.Data)
                 {
                     ReadData(ref reader, ref tracked, document, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.ErrorsEncoded))
+                else if (name == DocumentFlags.Errors)
                 {
                     document.Errors = ReadWrapped<JsonApiError[]>(ref reader, ref tracked, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.JsonApiEncoded))
+                else if (name == DocumentFlags.Jsonapi)
                 {
                     document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.MetaEncoded))
+                else if (name == DocumentFlags.Meta)
                 {
                     document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.LinksEncoded))
+                else if (name == DocumentFlags.Links)
                 {
                     document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.IncludedEncoded))
+                else if (name == DocumentFlags.Included)
                 {
                     if (state.HasFlag(DocumentFlags.Data))
                     {

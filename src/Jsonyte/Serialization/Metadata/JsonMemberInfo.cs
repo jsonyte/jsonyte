@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using Jsonyte.Converters;
 using Jsonyte.Serialization.Contracts;
 
-namespace Jsonyte.Serialization
+namespace Jsonyte.Serialization.Metadata
 {
     [DebuggerDisplay(@"\{{Name,nq}\}")]
     internal abstract class JsonMemberInfo<T> : IJsonMemberInfo

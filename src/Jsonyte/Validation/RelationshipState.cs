@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 
 namespace Jsonyte.Validation
 {
@@ -7,7 +6,7 @@ namespace Jsonyte.Validation
     {
         private RelationshipFlags flags;
 
-        public void AddFlag(ReadOnlySpan<byte> member)
+        public RelationshipFlags AddFlag(ReadOnlySpan<byte> member)
         {
             var memberFlag = GetFlag(member);
 
@@ -17,28 +16,25 @@ namespace Jsonyte.Validation
             }
 
             flags |= memberFlag;
+
+            return memberFlag;
         }
 
         private RelationshipFlags GetFlag(ReadOnlySpan<byte> member)
         {
-            if (member.Length == 0)
-            {
-                return RelationshipFlags.None;
-            }
+            var key = member.GetKey();
 
-            ref var initial = ref MemoryMarshal.GetReference(member);
-
-            if (initial == 0x6c && JsonApiMembers.LinksEncoded.EncodedUtf8Bytes.SequenceEqual(member))
+            if (key == JsonApiMembers.LinksKey)
             {
                 return RelationshipFlags.Links;
             }
 
-            if (initial == 0x64 && JsonApiMembers.DataEncoded.EncodedUtf8Bytes.SequenceEqual(member))
+            if (key == JsonApiMembers.DataKey)
             {
                 return RelationshipFlags.Data;
             }
 
-            if (initial == 0x6d && JsonApiMembers.MetaEncoded.EncodedUtf8Bytes.SequenceEqual(member))
+            if (key == JsonApiMembers.MetaKey)
             {
                 return RelationshipFlags.Meta;
             }

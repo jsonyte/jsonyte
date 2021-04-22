@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Jsonyte.Serialization
+namespace Jsonyte.Serialization.Metadata
 {
     internal sealed class JsonPropertyInfo<T> : JsonMemberInfo<T>
     {

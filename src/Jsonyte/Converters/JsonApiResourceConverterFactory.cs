@@ -4,8 +4,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Converters.Collections;
 using Jsonyte.Converters.Objects;
-using Jsonyte.Serialization;
 using Jsonyte.Serialization.Contracts;
+using Jsonyte.Serialization.Metadata;
 
 namespace Jsonyte.Converters
 {

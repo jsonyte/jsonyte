@@ -20,7 +20,7 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref state);
 
-                if (name.IsEqual(JsonApiMembers.ErrorsEncoded))
+                if (name == DocumentFlags.Errors)
                 {
                     reader.ReadArray(JsonApiArrayCode.Errors);
 
@@ -57,41 +57,41 @@ namespace Jsonyte.Converters.Objects
         {
             var error = new JsonApiError();
 
-            reader.ReadObject(JsonApiMemberCode.Error);
+            var state = reader.ReadError();
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(JsonApiMemberCode.Error);
+                var name = reader.ReadMember(ref state);
 
-                if (name.IsEqual(JsonApiMembers.IdEncoded))
+                if (name == ErrorFlags.Id)
                 {
                     error.Id = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.LinksEncoded))
+                else if (name == ErrorFlags.Links)
                 {
                     error.Links = JsonSerializer.Deserialize<JsonApiErrorLinks>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.StatusEncoded))
+                else if (name == ErrorFlags.Status)
                 {
                     error.Status = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.CodeEncoded))
+                else if (name == ErrorFlags.Code)
                 {
                     error.Code = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.TitleEncoded))
+                else if (name == ErrorFlags.Title)
                 {
                     error.Title = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.DetailEncoded))
+                else if (name == ErrorFlags.Detail)
                 {
                     error.Detail = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.SourceEncoded))
+                else if (name == ErrorFlags.Source)
                 {
                     error.Source = JsonSerializer.Deserialize<JsonApiErrorSource>(ref reader, options);
                 }
-                else if (name.IsEqual(JsonApiMembers.MetaEncoded))
+                else if (name == ErrorFlags.Meta)
                 {
                     error.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                 }

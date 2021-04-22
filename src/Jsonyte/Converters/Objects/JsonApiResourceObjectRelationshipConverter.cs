@@ -2,6 +2,8 @@
 using System.Text.Json;
 using Jsonyte.Serialization;
 using Jsonyte.Serialization.Contracts;
+using Jsonyte.Serialization.Metadata;
+using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Objects
 {
@@ -31,7 +33,7 @@ namespace Jsonyte.Converters.Objects
             {
                 var name = reader.ReadMember(ref relationshipState);
 
-                if (name.IsEqual(JsonApiMembers.DataEncoded))
+                if (name == RelationshipFlags.Data)
                 {
                     relationship = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
                 }
@@ -67,10 +69,13 @@ namespace Jsonyte.Converters.Objects
             var id = identifier.Id;
             var type = identifier.Type;
 
-            info.IdMember.SetValue(relationship, id.GetString());
-            info.TypeMember.SetValue(relationship, type.GetString());
+            var idString = id.GetString();
+            var typeString = type.GetString();
 
-            tracked.SetIncluded(identifier, GetConverter(options), relationship);
+            info.IdMember.SetValue(relationship, idString);
+            info.TypeMember.SetValue(relationship, typeString);
+
+            tracked.SetIncluded(identifier, idString, typeString, GetConverter(options), relationship);
 
             return new RelationshipResource<T>((T) relationship);
         }
@@ -117,7 +122,7 @@ namespace Jsonyte.Converters.Objects
 
             writer.WriteEndObject();
 
-            tracked.SetIncluded(new ResourceIdentifier(idEncoded, typeEncoded), GetConverter(options), value.Resource);
+            tracked.SetIncluded(idEncoded, typeEncoded, id!, type!, GetConverter(options), value.Resource);
         }
 
         private IJsonObjectConverter GetConverter(JsonSerializerOptions options)

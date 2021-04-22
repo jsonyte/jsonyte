@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text.Json;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Jobs;
 using Bogus;
 using JsonApiSerializer;
 using Newtonsoft.Json;
@@ -8,6 +10,10 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Jsonyte.Tests.Performance
 {
+    [SimpleJob(RuntimeMoniker.Net472)]
+    [SimpleJob(RuntimeMoniker.NetCoreApp21)]
+    [SimpleJob(RuntimeMoniker.NetCoreApp50)]
+    [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class SerializeDeserializeBenchmarks
     {
         private const string Serialize = nameof(Serialize);
@@ -17,8 +23,6 @@ namespace Jsonyte.Tests.Performance
         private JsonSerializerOptions options;
 
         private JsonSerializerOptions jsonApiOptions;
-
-        private JsonSerializerSettings settings;
 
         private JsonApiSerializerSettings jsonApiSettings;
 
@@ -34,13 +38,12 @@ namespace Jsonyte.Tests.Performance
 
             options = new JsonSerializerOptions();
             jsonApiOptions = new JsonSerializerOptions().AddJsonApi();
-            settings = new JsonSerializerSettings();
             jsonApiSettings = new JsonApiSerializerSettings();
 
             data = TestCases.Get(Case);
         }
 
-        [Benchmark]
+        [Benchmark(Baseline = true)]
         [BenchmarkCategory(Serialize)]
         public string SerializeNoJsonApi()
         {
@@ -52,13 +55,6 @@ namespace Jsonyte.Tests.Performance
         public string SerializeJsonApi()
         {
             return JsonSerializer.Serialize(data.Value, jsonApiOptions);
-        }
-
-        [Benchmark]
-        [BenchmarkCategory(Serialize)]
-        public string SerializeNewtonsoftNoJsonApi()
-        {
-            return JsonConvert.SerializeObject(data.Value, settings);
         }
 
         [Benchmark]
@@ -84,15 +80,6 @@ namespace Jsonyte.Tests.Performance
             return data.SkipDeserialize
                 ? null
                 : JsonSerializer.Deserialize(data.JsonApiBytes, data.Type, jsonApiOptions);
-        }
-
-        [Benchmark]
-        [BenchmarkCategory(Deserialize)]
-        public object DeserializeNewtonsoftNoJsonApi()
-        {
-            return data.SkipDeserialize
-                ? null
-                : JsonConvert.DeserializeObject(data.Json, data.Type, settings);
         }
 
         [Benchmark]
