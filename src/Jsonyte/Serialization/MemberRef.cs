@@ -1,4 +1,6 @@
-﻿namespace Jsonyte.Serialization
+﻿using Jsonyte.Serialization.Metadata;
+
+namespace Jsonyte.Serialization
 {
     internal readonly struct MemberRef
     {

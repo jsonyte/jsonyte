@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 using Jsonyte.Serialization;
 using Jsonyte.Serialization.Contracts;
+using Jsonyte.Serialization.Metadata;
 using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Objects

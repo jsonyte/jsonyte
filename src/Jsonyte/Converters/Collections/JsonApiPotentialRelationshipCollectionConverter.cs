@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using Jsonyte.Serialization;
 using Jsonyte.Serialization.Contracts;
+using Jsonyte.Serialization.Metadata;
 
 namespace Jsonyte.Converters.Collections
 {

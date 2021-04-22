@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Jsonyte.Serialization
+namespace Jsonyte.Serialization.Metadata
 {
     internal class EmptyJsonMemberInfo : IJsonMemberInfo
     {

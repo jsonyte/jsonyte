@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using Jsonyte.Serialization;
 using Jsonyte.Validation;
@@ -58,43 +57,41 @@ namespace Jsonyte.Converters.Objects
         {
             var error = new JsonApiError();
 
-            reader.ReadObject(JsonApiMemberCode.Error);
+            var state = reader.ReadError();
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(JsonApiMemberCode.Error);
+                var name = reader.ReadMember(ref state);
 
-                ref var initial = ref MemoryMarshal.GetReference(name);
-
-                if (initial == 0x69 && name.SequenceEqual(JsonApiMembers.IdEncoded.EncodedUtf8Bytes))
+                if (name == ErrorFlags.Id)
                 {
                     error.Id = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (initial == 0x6c && name.SequenceEqual(JsonApiMembers.LinksEncoded.EncodedUtf8Bytes))
+                else if (name == ErrorFlags.Links)
                 {
                     error.Links = JsonSerializer.Deserialize<JsonApiErrorLinks>(ref reader, options);
                 }
-                else if (initial == 0x73 && name.SequenceEqual(JsonApiMembers.StatusEncoded.EncodedUtf8Bytes))
+                else if (name == ErrorFlags.Status)
                 {
                     error.Status = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (initial == 0x63 && name.SequenceEqual(JsonApiMembers.CodeEncoded.EncodedUtf8Bytes))
+                else if (name == ErrorFlags.Code)
                 {
                     error.Code = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (initial == 0x74 && name.SequenceEqual(JsonApiMembers.TitleEncoded.EncodedUtf8Bytes))
+                else if (name == ErrorFlags.Title)
                 {
                     error.Title = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (initial == 0x64 && name.SequenceEqual(JsonApiMembers.DetailEncoded.EncodedUtf8Bytes))
+                else if (name == ErrorFlags.Detail)
                 {
                     error.Detail = JsonSerializer.Deserialize<string>(ref reader, options);
                 }
-                else if (initial == 0x73 && name.SequenceEqual(JsonApiMembers.SourceEncoded.EncodedUtf8Bytes))
+                else if (name == ErrorFlags.Source)
                 {
                     error.Source = JsonSerializer.Deserialize<JsonApiErrorSource>(ref reader, options);
                 }
-                else if (initial == 0x6d && name.SequenceEqual(JsonApiMembers.MetaEncoded.EncodedUtf8Bytes))
+                else if (name == ErrorFlags.Meta)
                 {
                     error.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                 }

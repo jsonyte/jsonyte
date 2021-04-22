@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 using Jsonyte.Serialization;
+using Jsonyte.Serialization.Metadata;
 using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Objects

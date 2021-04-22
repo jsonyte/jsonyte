@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Validation;
@@ -52,12 +51,18 @@ namespace Jsonyte
             return new ResourceState();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RelationshipState ReadRelationship(this ref Utf8JsonReader reader)
         {
             reader.ReadObject(JsonApiMemberCode.Relationship);
 
             return new RelationshipState();
+        }
+
+        public static ErrorState ReadError(this ref Utf8JsonReader reader)
+        {
+            reader.ReadObject(JsonApiMemberCode.Error);
+
+            return new ErrorState();
         }
 
         public static void ReadObject(this ref Utf8JsonReader reader, JsonApiMemberCode code)
@@ -87,6 +92,13 @@ namespace Jsonyte
         public static RelationshipFlags ReadMember(this ref Utf8JsonReader reader, ref RelationshipState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Relationship);
+
+            return state.AddFlag(name);
+        }
+
+        public static ErrorFlags ReadMember(this ref Utf8JsonReader reader, ref ErrorState state)
+        {
+            var name = reader.ReadMember(JsonApiMemberCode.Error);
 
             return state.AddFlag(name);
         }

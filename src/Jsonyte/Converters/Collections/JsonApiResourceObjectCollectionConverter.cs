@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Jsonyte.Serialization;
+using Jsonyte.Serialization.Metadata;
 using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Collections
