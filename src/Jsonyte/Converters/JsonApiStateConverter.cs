@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Jsonyte.Serialization;
 using Jsonyte.Serialization.Metadata;
 using Jsonyte.Serialization.Reflection;
 

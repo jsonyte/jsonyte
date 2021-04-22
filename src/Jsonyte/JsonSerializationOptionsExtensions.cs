@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text.Json;
 using Jsonyte.Converters;
 using Jsonyte.Converters.Objects;
-using Jsonyte.Serialization;
 using Jsonyte.Serialization.Contracts;
 using Jsonyte.Serialization.Metadata;
 using Jsonyte.Serialization.Reflection;
