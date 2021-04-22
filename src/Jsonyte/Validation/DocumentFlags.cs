@@ -3,7 +3,7 @@
 namespace Jsonyte.Validation
 {
     [Flags]
-    public enum DocumentFlags : byte
+    internal enum DocumentFlags : byte
     {
         None = 0,
         Data = 1,
