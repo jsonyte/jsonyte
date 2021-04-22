@@ -82,7 +82,7 @@ namespace Jsonyte.Converters.Objects
 
             if (value.Data != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Data);
+                writer.WritePropertyName(JsonApiMembers.DataEncoded);
 
                 if (value.Data.Length == 1)
                 {
@@ -103,13 +103,13 @@ namespace Jsonyte.Converters.Objects
 
             if (value.Links != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Links);
+                writer.WritePropertyName(JsonApiMembers.LinksEncoded);
                 JsonSerializer.Serialize(writer, value.Links, options);
             }
 
             if (value.Meta != null)
             {
-                writer.WritePropertyName(JsonApiMembers.Meta);
+                writer.WritePropertyName(JsonApiMembers.MetaEncoded);
                 JsonSerializer.Serialize(writer, value.Meta, options);
             }
 

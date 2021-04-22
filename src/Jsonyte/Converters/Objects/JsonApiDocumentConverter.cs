@@ -10,13 +10,21 @@ using Jsonyte.Validation;
 namespace Jsonyte.Converters.Objects
 {
     internal abstract class JsonApiDocumentConverter<T> : JsonConverter<T>
-        where T : IJsonApiDocument, new()
+        where T : new()
     {
         private WrappedJsonConverter<AnonymousResource>? containerConverter;
 
         private WrappedJsonConverter<AnonymousResourceCollection>? containerCollectionConverter;
 
         protected abstract void ReadData(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
+
+        protected abstract void ReadErrors(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
+
+        protected abstract void ReadJsonApi(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
+
+        protected abstract void ReadMeta(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
+
+        protected abstract void ReadLinks(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
 
         protected abstract void ReadIncluded(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
 
@@ -40,19 +48,19 @@ namespace Jsonyte.Converters.Objects
                 }
                 else if (name == DocumentFlags.Errors)
                 {
-                    document.Errors = ReadWrapped<JsonApiError[]>(ref reader, ref tracked, options);
+                    ReadErrors(ref reader, ref tracked, document, options);
                 }
                 else if (name == DocumentFlags.Jsonapi)
                 {
-                    document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
+                    ReadJsonApi(ref reader, ref tracked, document, options);
                 }
                 else if (name == DocumentFlags.Meta)
                 {
-                    document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
+                    ReadMeta(ref reader, ref tracked, document, options);
                 }
                 else if (name == DocumentFlags.Links)
                 {
-                    document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
+                    ReadLinks(ref reader, ref tracked, document, options);
                 }
                 else if (name == DocumentFlags.Included)
                 {
@@ -76,10 +84,6 @@ namespace Jsonyte.Converters.Objects
                 reader.Read();
             }
 
-            // TODO
-            // Really janky way of doing this as it means parsing over
-            // included twice if included appears first in the document.
-            // This needs to be re-thought.
             if (includedReadFirst)
             {
                 ReadIncluded(ref savedReader, ref tracked, document, options);
@@ -104,6 +108,14 @@ namespace Jsonyte.Converters.Objects
 
         protected abstract void WriteData(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);
 
+        protected abstract void WriteErrors(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);
+
+        protected abstract void WriteLinks(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);
+
+        protected abstract void WriteMeta(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);
+
+        protected abstract void WriteJsonApi(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);
+
         protected abstract void WriteIncluded(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
@@ -115,34 +127,22 @@ namespace Jsonyte.Converters.Objects
             writer.WriteStartObject();
 
             WriteData(writer, ref tracked, value, options);
-
-            if (value.Errors != null)
-            {
-                writer.WritePropertyName(JsonApiMembers.ErrorsEncoded);
-                WriteWrapped(writer, ref tracked, value.Errors, options);
-            }
-
-            if (value.Links != null)
-            {
-                writer.WritePropertyName(JsonApiMembers.LinksEncoded);
-                JsonSerializer.Serialize(writer, value.Links, options);
-            }
-
-            if (value.Meta != null)
-            {
-                writer.WritePropertyName(JsonApiMembers.MetaEncoded);
-                JsonSerializer.Serialize(writer, value.Meta, options);
-            }
-
-            if (value.JsonApi != null)
-            {
-                writer.WritePropertyName(JsonApiMembers.JsonApiEncoded);
-                JsonSerializer.Serialize(writer, value.JsonApi, options);
-            }
-
+            WriteErrors(writer, ref tracked, value, options);
+            WriteLinks(writer, ref tracked, value, options);
+            WriteMeta(writer, ref tracked, value, options);
+            WriteJsonApi(writer, ref tracked, value, options);
             WriteIncluded(writer, ref tracked, value, options);
 
             writer.WriteEndObject();
+        }
+
+        protected void WriteIfNotNull<TValue>(Utf8JsonWriter writer, JsonEncodedText name, TValue value, JsonSerializerOptions options)
+        {
+            if (value != null)
+            {
+                writer.WritePropertyName(name);
+                JsonSerializer.Serialize(writer, value, options);
+            }
         }
 
         protected void WriteWrapped<TElement>(Utf8JsonWriter writer, ref TrackedResources tracked, TElement value, JsonSerializerOptions options)

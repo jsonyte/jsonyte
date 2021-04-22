@@ -17,9 +17,9 @@ namespace Jsonyte.Serialization.Metadata
 
         private static readonly EmptyJsonParameterInfo EmptyParameter = new(-1);
 
-        private readonly Dictionary<string, IJsonMemberInfo> nameCache;
+        private readonly Dictionary<string, JsonMemberInfo> nameCache;
 
-        private readonly Dictionary<string, IJsonParameterInfo> parameterCache;
+        private readonly Dictionary<string, JsonParameterInfo> parameterCache;
 
         private readonly MemberRef[] memberCache;
 
@@ -69,19 +69,19 @@ namespace Jsonyte.Serialization.Metadata
 
         public Func<object[], object?> CreatorWithArguments { get; }
 
-        public IJsonMemberInfo[] AttributeMembers { get; }
+        public JsonMemberInfo[] AttributeMembers { get; }
 
-        public IJsonMemberInfo IdMember { get; }
+        public JsonMemberInfo IdMember { get; }
 
-        public IJsonMemberInfo TypeMember { get; }
+        public JsonMemberInfo TypeMember { get; }
 
-        public IJsonMemberInfo DataMember { get; }
+        public JsonMemberInfo DataMember { get; }
 
-        public IJsonMemberInfo MetaMember { get; }
+        public JsonMemberInfo MetaMember { get; }
 
-        public IJsonMemberInfo LinksMember { get; }
+        public JsonMemberInfo LinksMember { get; }
 
-        public IJsonMemberInfo GetMember(ReadOnlySpan<byte> name)
+        public JsonMemberInfo GetMember(ReadOnlySpan<byte> name)
         {
             if (name.IsEmpty)
             {
@@ -106,7 +106,7 @@ namespace Jsonyte.Serialization.Metadata
                 : EmptyMember;
         }
 
-        public IJsonParameterInfo? GetParameter(string? name)
+        public JsonParameterInfo? GetParameter(string? name)
         {
             if (name == null)
             {
@@ -118,12 +118,12 @@ namespace Jsonyte.Serialization.Metadata
             return parameter;
         }
 
-        private Dictionary<string, IJsonMemberInfo> GetNameCache(IJsonMemberInfo[] members)
+        private Dictionary<string, JsonMemberInfo> GetNameCache(JsonMemberInfo[] members)
         {
             return members.ToDictionary(x => x.MemberName, StringComparer.OrdinalIgnoreCase);
         }
 
-        private IEnumerable<IJsonMemberInfo> GetProperties(Type type, JsonSerializerOptions options)
+        private IEnumerable<JsonMemberInfo> GetProperties(Type type, JsonSerializerOptions options)
         {
             var typeProperties = type
                 .GetProperties(Flags)
@@ -141,7 +141,7 @@ namespace Jsonyte.Serialization.Metadata
             }
         }
 
-        private IEnumerable<IJsonMemberInfo> GetFields(Type type, JsonSerializerOptions options)
+        private IEnumerable<JsonMemberInfo> GetFields(Type type, JsonSerializerOptions options)
         {
             if (!options.IncludeFields)
             {
@@ -168,14 +168,14 @@ namespace Jsonyte.Serialization.Metadata
             return member.GetCustomAttribute<JsonIgnoreAttribute>()?.Condition;
         }
         
-        private IJsonMemberInfo CreateMemberInfo(Type memberInfoType, MemberInfo member, Type memberType, JsonIgnoreCondition? ignoreCondition, JsonSerializerOptions options)
+        private JsonMemberInfo CreateMemberInfo(Type memberInfoType, MemberInfo member, Type memberType, JsonIgnoreCondition? ignoreCondition, JsonSerializerOptions options)
         {
             var fieldType = memberInfoType.MakeGenericType(memberType);
             var converter = GetConverter(member, memberType, options);
 
             var fieldInfo = Activator.CreateInstance(fieldType, member, ignoreCondition, converter, options);
 
-            if (fieldInfo is not IJsonMemberInfo jsonMemberInfo)
+            if (fieldInfo is not JsonMemberInfo jsonMemberInfo)
             {
                 throw new JsonApiException($"Cannot get type member info for '{member.Name}'");
             }
@@ -256,13 +256,13 @@ namespace Jsonyte.Serialization.Metadata
             return publicConstructors.First();
         }
 
-        private Dictionary<string, IJsonParameterInfo> GetParameters(ConstructorInfo constructor, IJsonMemberInfo[] members, JsonSerializerOptions options)
+        private Dictionary<string, JsonParameterInfo> GetParameters(ConstructorInfo constructor, JsonMemberInfo[] members, JsonSerializerOptions options)
         {
             var membersByName = members.ToDictionary(x => x.Name, options.GetPropertyComparer());
 
             var parameters = constructor.GetParameters();
 
-            var jsonParameters = new Dictionary<string, IJsonParameterInfo>(parameters.Length, options.GetPropertyComparer());
+            var jsonParameters = new Dictionary<string, JsonParameterInfo>(parameters.Length, options.GetPropertyComparer());
 
             foreach (var parameter in parameters)
             {
@@ -277,7 +277,7 @@ namespace Jsonyte.Serialization.Metadata
                     var type = typeof(JsonParameterInfo<>).MakeGenericType(parameter.ParameterType);
                     var parameterInfo = Activator.CreateInstance(type, parameter, property, options);
 
-                    if (parameterInfo is not IJsonParameterInfo jsonParameter)
+                    if (parameterInfo is not JsonParameterInfo jsonParameter)
                     {
                         throw new JsonApiException($"Cannot get constructor parameter '{parameter.Name}' for '{constructor.DeclaringType}'");
                     }

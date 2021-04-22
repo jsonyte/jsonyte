@@ -6,11 +6,11 @@ namespace Jsonyte.Serialization
     {
         public readonly ulong Key;
 
-        public readonly IJsonMemberInfo Member;
+        public readonly JsonMemberInfo Member;
 
         public readonly byte[] Name;
 
-        public MemberRef(ulong key, IJsonMemberInfo member, byte[] name)
+        public MemberRef(ulong key, JsonMemberInfo member, byte[] name)
         {
             Key = key;
             Member = member;

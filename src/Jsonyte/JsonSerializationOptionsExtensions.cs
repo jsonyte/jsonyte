@@ -69,29 +69,29 @@ namespace Jsonyte
             return jsonApiConverter;
         }
 
-        internal static IJsonObjectConverter GetObjectConverter<T>(this JsonSerializerOptions options)
+        internal static JsonObjectConverter GetObjectConverter<T>(this JsonSerializerOptions options)
         {
             return GetState(options).ObjectConverters.GetOrAdd(typeof(T), _ => new JsonObjectConverter<T>(options.GetWrappedConverter<T>()));
         }
 
-        internal static IJsonObjectConverter GetObjectConverter(this JsonSerializerOptions options, Type type)
+        internal static JsonObjectConverter GetObjectConverter(this JsonSerializerOptions options, Type type)
         {
             return GetState(options).ObjectConverters.GetOrAdd(type, x =>
             {
                 var converterType = typeof(JsonObjectConverter<>).MakeGenericType(x);
                 var converter = options.GetConverter(type);
 
-                return (IJsonObjectConverter) Activator.CreateInstance(converterType, converter);
+                return (JsonObjectConverter) Activator.CreateInstance(converterType, converter);
             });
         }
 
-        internal static IAnonymousRelationshipConverter GetAnonymousRelationshipConverter(this JsonSerializerOptions options, Type type)
+        internal static AnonymousRelationshipConverter GetAnonymousRelationshipConverter(this JsonSerializerOptions options, Type type)
         {
             return GetState(options).AnonymousConverters.GetOrAdd(type, x =>
             {
                 var converterType = typeof(JsonApiAnonymousRelationshipConverter<>).MakeGenericType(x);
 
-                return (IAnonymousRelationshipConverter) Activator.CreateInstance(converterType, options);
+                return (AnonymousRelationshipConverter) Activator.CreateInstance(converterType, options);
             });
         }
 
@@ -100,7 +100,7 @@ namespace Jsonyte
             return GetState(options).GetTypeInfo(type, options);
         }
 
-        internal static IMemberAccessor GetMemberAccessor(this JsonSerializerOptions options)
+        internal static MemberAccessor GetMemberAccessor(this JsonSerializerOptions options)
         {
             return GetState(options).MemberAccessor;
         }

@@ -9,33 +9,82 @@ using Jsonyte.Serialization.Contracts;
 
 namespace Jsonyte.Serialization.Metadata
 {
+    internal abstract class JsonMemberInfo
+    {
+        public abstract string Name { get; }
+
+        public abstract string MemberName { get; }
+
+        public abstract Type MemberType { get; }
+
+        public abstract JsonEncodedText NameEncoded { get; }
+
+        public abstract JsonConverter Converter { get; }
+
+        public abstract bool Ignored { get; }
+
+        public abstract bool IsRelationship { get; }
+
+        public abstract object? GetValue(object resource);
+
+        public abstract void SetValue(object resource, object? value);
+
+        public abstract void Read(ref Utf8JsonReader reader, object resource);
+
+        public abstract void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource);
+
+        public abstract bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default);
+
+        public abstract void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection);
+
+        public abstract void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource);
+    }
+
     [DebuggerDisplay(@"\{{Name,nq}\}")]
-    internal abstract class JsonMemberInfo<T> : IJsonMemberInfo
+    internal abstract class JsonMemberInfo<T> : JsonMemberInfo
     {
         private readonly ConcurrentDictionary<Type, RelationshipType> relationshipTypes = new();
 
         private JsonApiRelationshipDetailsConverter<T>? relationshipConverter;
 
+        private bool isRelationship;
+
         protected JsonMemberInfo(MemberInfo member, Type memberType, JsonIgnoreCondition? ignoreCondition, JsonConverter converter, JsonSerializerOptions options)
         {
+            var name = GetName(member, options);
+
             Options = options;
+            MemberType = memberType;
             Converter = converter;
+            MemberName = member.Name;
+            Name = name;
+            NameEncoded = JsonEncodedText.Encode(name);
+            IsPrimitiveType = GetIsPrimitiveType(memberType);
             TypedConverter = (JsonConverter<T>) converter;
             WrappedConverter = converter as WrappedJsonConverter<T>;
             IgnoreCondition = ignoreCondition;
-            Name = GetName(member);
-            NameEncoded = JsonEncodedText.Encode(Name);
-            MemberName = member.Name;
-            MemberType = memberType;
-            IsPrimitiveType = GetIsPrimitiveType(memberType);
-            IsRelationship = GetIsRelationship(memberType);
+            isRelationship = GetIsRelationship(memberType);
         }
 
         public JsonSerializerOptions Options { get; }
 
+        public override string Name { get; }
+
+        public override JsonEncodedText NameEncoded { get; }
+
+        public override string MemberName { get; }
+
+        public override Type MemberType { get; }
+
+        public override JsonConverter Converter { get; }
+
+        public bool IsPrimitiveType { get; }
+
         public JsonConverter<T> TypedConverter { get; }
 
         public WrappedJsonConverter<T>? WrappedConverter { get; }
+
+        public override bool IsRelationship => isRelationship;
 
         public JsonApiRelationshipDetailsConverter<T> RelationshipConverter
         {
@@ -50,24 +99,8 @@ namespace Jsonyte.Serialization.Metadata
         public abstract Func<object, T>? Get { get; }
 
         public abstract Action<object, T>? Set { get; }
-        
-        public string Name { get; }
 
-        public JsonEncodedText NameEncoded { get; }
-
-        public string MemberName { get; }
-
-        public Type MemberType { get; }
-
-        public bool IsPrimitiveType { get; }
-
-        public abstract bool Ignored { get; }
-
-        public JsonConverter Converter { get; }
-
-        public bool IsRelationship { get; private set; }
-
-        public object? GetValue(object resource)
+        public override object? GetValue(object resource)
         {
             if (Get == null || Ignored)
             {
@@ -84,7 +117,7 @@ namespace Jsonyte.Serialization.Metadata
             return value;
         }
 
-        public void Read(ref Utf8JsonReader reader, object resource)
+        public override void Read(ref Utf8JsonReader reader, object resource)
         {
             if (Set == null)
             {
@@ -101,7 +134,7 @@ namespace Jsonyte.Serialization.Metadata
             Set(resource, value!);
         }
 
-        public void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)
+        public override void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)
         {
             if (Set == null)
             {
@@ -118,7 +151,7 @@ namespace Jsonyte.Serialization.Metadata
             Set(resource, value.Resource!);
         }
 
-        public bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default)
+        public override bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default)
         {
             if (Get == null || Ignored)
             {
@@ -136,10 +169,10 @@ namespace Jsonyte.Serialization.Metadata
 
             if (relationshipType is RelationshipType.Object or RelationshipType.TypedCollection)
             {
-                IsRelationship = true;
+                isRelationship = true;
             }
 
-            if (IsRelationship)
+            if (isRelationship)
             {
                 return false;
             }
@@ -173,9 +206,9 @@ namespace Jsonyte.Serialization.Metadata
             return true;
         }
 
-        public void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection)
+        public override void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection)
         {
-            if (Get == null || Ignored || !IsRelationship)
+            if (Get == null || Ignored || !isRelationship)
             {
                 return;
             }
@@ -212,7 +245,7 @@ namespace Jsonyte.Serialization.Metadata
             }
         }
 
-        public void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection)
+        public override void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource)
         {
             if (Get == null || Ignored)
             {
@@ -247,7 +280,7 @@ namespace Jsonyte.Serialization.Metadata
             }
         }
 
-        public void SetValue(object resource, object? value)
+        public override void SetValue(object resource, object? value)
         {
             if (Set == null)
             {
@@ -262,12 +295,7 @@ namespace Jsonyte.Serialization.Metadata
             Set(resource, (T) value!);
         }
 
-        protected bool IsPublic(MethodInfo? method)
-        {
-            return method != null && method.IsPublic;
-        }
-
-        private string GetName(MemberInfo member)
+        private string GetName(MemberInfo member, JsonSerializerOptions options)
         {
             var nameAttribute = member.GetCustomAttribute<JsonPropertyNameAttribute>(false);
 
@@ -276,17 +304,12 @@ namespace Jsonyte.Serialization.Metadata
                 return nameAttribute.Name;
             }
 
-            if (Options.PropertyNamingPolicy != null)
+            if (options.PropertyNamingPolicy != null)
             {
-                return Options.PropertyNamingPolicy.ConvertName(member.Name);
+                return options.PropertyNamingPolicy.ConvertName(member.Name);
             }
 
             return member.Name;
-        }
-
-        private bool GetIsRelationship(Type type)
-        {
-            return type.IsResourceIdentifier() || type.IsResourceIdentifierCollection() || type.IsExplicitRelationship();
         }
 
         private bool GetIsPrimitiveType(Type type)
@@ -298,6 +321,16 @@ namespace Jsonyte.Serialization.Metadata
                    underlyingType == typeof(DateTime) ||
                    underlyingType == typeof(Guid) ||
                    underlyingType == typeof(TimeSpan);
+        }
+
+        protected bool IsPublic(MethodInfo? method)
+        {
+            return method != null && method.IsPublic;
+        }
+
+        private bool GetIsRelationship(Type type)
+        {
+            return type.IsResourceIdentifier() || type.IsResourceIdentifierCollection() || type.IsExplicitRelationship();
         }
 
         private RelationshipType GetRelationshipType(T value)

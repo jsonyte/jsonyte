@@ -12,13 +12,13 @@ namespace Jsonyte.Serialization
 
         public readonly byte[] Type;
 
-        public readonly IJsonObjectConverter Converter;
+        public readonly JsonObjectConverter Converter;
 
         public readonly object Value;
 
         public readonly int? RelationshipId;
 
-        public IncludedRef(ulong idKey, ulong typeKey, byte[] id, byte[] type, IJsonObjectConverter converter, object value, int? relationshipId = null)
+        public IncludedRef(ulong idKey, ulong typeKey, byte[] id, byte[] type, JsonObjectConverter converter, object value, int? relationshipId = null)
         {
             IdKey = idKey;
             TypeKey = typeKey;

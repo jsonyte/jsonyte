@@ -10,6 +10,26 @@ namespace Jsonyte.Converters.Objects
             document.Data = reader.Read<JsonApiResource[]>(options);
         }
 
+        protected override void ReadErrors(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument document, JsonSerializerOptions options)
+        {
+            document.Errors = ReadWrapped<JsonApiError[]>(ref reader, ref tracked, options);
+        }
+
+        protected override void ReadJsonApi(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument document, JsonSerializerOptions options)
+        {
+            document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
+        }
+
+        protected override void ReadMeta(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument document, JsonSerializerOptions options)
+        {
+            document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
+        }
+
+        protected override void ReadLinks(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument document, JsonSerializerOptions options)
+        {
+            document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
+        }
+
         protected override void ReadIncluded(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument document, JsonSerializerOptions options)
         {
             document.Included = JsonSerializer.Deserialize<JsonApiResource[]>(ref reader, options);
@@ -28,13 +48,33 @@ namespace Jsonyte.Converters.Objects
             }
         }
 
+        protected override void WriteErrors(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument value, JsonSerializerOptions options)
+        {
+            if (value.Errors != null)
+            {
+                writer.WritePropertyName(JsonApiMembers.ErrorsEncoded);
+                WriteWrapped(writer, ref tracked, value.Errors, options);
+            }
+        }
+
+        protected override void WriteLinks(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument value, JsonSerializerOptions options)
+        {
+            WriteIfNotNull(writer, JsonApiMembers.LinksEncoded, value.Links, options);
+        }
+
+        protected override void WriteMeta(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument value, JsonSerializerOptions options)
+        {
+            WriteIfNotNull(writer, JsonApiMembers.MetaEncoded, value.Meta, options);
+        }
+
+        protected override void WriteJsonApi(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument value, JsonSerializerOptions options)
+        {
+            WriteIfNotNull(writer, JsonApiMembers.JsonApiEncoded, value.JsonApi, options);
+        }
+
         protected override void WriteIncluded(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument value, JsonSerializerOptions options)
         {
-            if (value.Included != null)
-            {
-                writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
-                JsonSerializer.Serialize(writer, value.Included, options);
-            }
+            WriteIfNotNull(writer, JsonApiMembers.IncludedEncoded, value.Included, options);
         }
 
         protected override void ValidateDocument(JsonApiDocument document)
@@ -56,6 +96,26 @@ namespace Jsonyte.Converters.Objects
         protected override void ReadData(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
         {
             document.Data = ReadWrapped<T>(ref reader, ref tracked, options);
+        }
+
+        protected override void ReadErrors(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
+        {
+            document.Errors = ReadWrapped<JsonApiError[]>(ref reader, ref tracked, options);
+        }
+
+        protected override void ReadJsonApi(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
+        {
+            document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
+        }
+
+        protected override void ReadMeta(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
+        {
+            document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
+        }
+
+        protected override void ReadLinks(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
+        {
+            document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
         }
 
         protected override void ReadIncluded(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
@@ -98,6 +158,30 @@ namespace Jsonyte.Converters.Objects
                 writer.WritePropertyName(JsonApiMembers.DataEncoded);
                 WriteWrapped(writer, ref tracked, value.Data, options);
             }
+        }
+
+        protected override void WriteErrors(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument<T> value, JsonSerializerOptions options)
+        {
+            if (value.Errors != null)
+            {
+                writer.WritePropertyName(JsonApiMembers.ErrorsEncoded);
+                WriteWrapped(writer, ref tracked, value.Errors, options);
+            }
+        }
+
+        protected override void WriteLinks(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument<T> value, JsonSerializerOptions options)
+        {
+            WriteIfNotNull(writer, JsonApiMembers.LinksEncoded, value.Links, options);
+        }
+
+        protected override void WriteMeta(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument<T> value, JsonSerializerOptions options)
+        {
+            WriteIfNotNull(writer, JsonApiMembers.MetaEncoded, value.Meta, options);
+        }
+
+        protected override void WriteJsonApi(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument<T> value, JsonSerializerOptions options)
+        {
+            WriteIfNotNull(writer, JsonApiMembers.JsonApiEncoded, value.JsonApi, options);
         }
 
         protected override void WriteIncluded(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument<T> value, JsonSerializerOptions options)

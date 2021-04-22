@@ -136,12 +136,13 @@ namespace Jsonyte
             while (reader.IsInObject())
             {
                 var name = reader.ReadMember(JsonApiMemberCode.ResourceIdentifier);
+                var key = name.GetKey();
 
-                if (name.SequenceEqual(JsonApiMembers.IdEncoded.EncodedUtf8Bytes))
+                if (key == JsonApiMembers.IdKey)
                 {
                     id = reader.ValueSpan;
                 }
-                else if (name.SequenceEqual(JsonApiMembers.TypeEncoded.EncodedUtf8Bytes))
+                else if (key == JsonApiMembers.TypeKey)
                 {
                     type = reader.ValueSpan;
                 }
@@ -171,12 +172,13 @@ namespace Jsonyte
             while (reader.IsInObject())
             {
                 var name = reader.ReadMember(JsonApiMemberCode.ResourceIdentifier);
+                var key = name.GetKey();
 
-                if (name.SequenceEqual(JsonApiMembers.IdEncoded.EncodedUtf8Bytes))
+                if (key == JsonApiMembers.IdKey)
                 {
                     id = reader.ValueSpan;
                 }
-                else if (name.SequenceEqual(JsonApiMembers.TypeEncoded.EncodedUtf8Bytes))
+                else if (key == JsonApiMembers.TypeKey)
                 {
                     type = reader.ValueSpan;
                 }

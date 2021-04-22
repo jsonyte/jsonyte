@@ -3,7 +3,14 @@ using Jsonyte.Serialization;
 
 namespace Jsonyte.Converters
 {
-    internal class JsonObjectConverter<T> : IJsonObjectConverter
+    internal abstract class JsonObjectConverter
+    {
+        public abstract void Read(ref Utf8JsonReader reader, ref TrackedResources tracked, object existingValue, JsonSerializerOptions options);
+
+        public abstract void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value, JsonSerializerOptions options);
+    }
+
+    internal class JsonObjectConverter<T> : JsonObjectConverter
     {
         private readonly WrappedJsonConverter<T> converter;
 
@@ -12,12 +19,12 @@ namespace Jsonyte.Converters
             this.converter = converter;
         }
 
-        public void Read(ref Utf8JsonReader reader, ref TrackedResources tracked, object existingValue, JsonSerializerOptions options)
+        public override void Read(ref Utf8JsonReader reader, ref TrackedResources tracked, object existingValue, JsonSerializerOptions options)
         {
             converter.ReadWrapped(ref reader, ref tracked, typeof(T), (T) existingValue, options);
         }
 
-        public void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value, JsonSerializerOptions options)
         {
             converter.WriteWrapped(writer, ref tracked, (T) value, options);
         }

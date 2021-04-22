@@ -4,22 +4,29 @@ using System.Text.Json.Serialization;
 
 namespace Jsonyte.Serialization.Metadata
 {
-    internal class JsonParameterInfo<T> : IJsonParameterInfo
+    internal abstract class JsonParameterInfo
     {
-        public JsonParameterInfo(ParameterInfo parameter, IJsonMemberInfo member, JsonSerializerOptions options)
+        public abstract int Position { get; }
+
+        public abstract object? Read(ref Utf8JsonReader reader);
+    }
+
+    internal class JsonParameterInfo<T> : JsonParameterInfo
+    {
+        public JsonParameterInfo(ParameterInfo parameter, JsonMemberInfo member, JsonSerializerOptions options)
         {
             Position = parameter.Position;
             TypedConverter = (JsonConverter<T>) member.Converter;
             Options = options;
         }
 
-        public int Position { get; }
+        public override int Position { get; }
 
         public JsonConverter<T> TypedConverter { get; }
 
         public JsonSerializerOptions Options { get; }
 
-        public object? Read(ref Utf8JsonReader reader)
+        public override object? Read(ref Utf8JsonReader reader)
         {
             return TypedConverter.Read(ref reader, JsonApiTypes.Object, Options);
         }

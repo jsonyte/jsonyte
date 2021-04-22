@@ -11,7 +11,7 @@ namespace Jsonyte.Converters.Objects
     {
         private readonly JsonTypeInfo info;
 
-        private IJsonObjectConverter? objectConverter;
+        private JsonObjectConverter? objectConverter;
 
         public JsonApiResourceObjectRelationshipConverter(JsonTypeInfo info)
         {
@@ -125,7 +125,7 @@ namespace Jsonyte.Converters.Objects
             tracked.SetIncluded(idEncoded, typeEncoded, id!, type!, GetConverter(options), value.Resource);
         }
 
-        private IJsonObjectConverter GetConverter(JsonSerializerOptions options)
+        private JsonObjectConverter GetConverter(JsonSerializerOptions options)
         {
             return objectConverter ??= options.GetObjectConverter<T>();
         }
