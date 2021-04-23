@@ -13,8 +13,8 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 namespace Jsonyte.Tests.Performance
 {
 #if RUN_FULL_BENCHMARK
-    //[SimpleJob(RuntimeMoniker.Net472)]
-    //[SimpleJob(RuntimeMoniker.NetCoreApp31)]
+    [SimpleJob(RuntimeMoniker.Net472)]
+    [SimpleJob(RuntimeMoniker.NetCoreApp31)]
     [SimpleJob(RuntimeMoniker.NetCoreApp50)]
 #else
     [ShortRunJob(RuntimeMoniker.Net472)]
@@ -36,8 +36,7 @@ namespace Jsonyte.Tests.Performance
 
         private Data data;
 
-        //[Params("Simple", "Compound", "LargeCompound", "ErrorCollection", "Anonymous")]
-        [Params("Compound")]
+        [Params("Simple", "Compound", "LargeCompound", "ErrorCollection", "Anonymous")]
         public string Case { get; set; }
 
         [GlobalSetup]
@@ -66,12 +65,12 @@ namespace Jsonyte.Tests.Performance
             return JsonSerializer.Serialize(data.Value, jsonApiOptions);
         }
 
-        //[Benchmark]
-        //[BenchmarkCategory(Serialize)]
-        //public string SerializeJsonApiSerializer()
-        //{
-        //    return JsonConvert.SerializeObject(data.Value, jsonApiSettings);
-        //}
+        [Benchmark]
+        [BenchmarkCategory(Serialize)]
+        public string SerializeJsonApiSerializer()
+        {
+            return JsonConvert.SerializeObject(data.Value, jsonApiSettings);
+        }
 
         [Benchmark(Baseline = true)]
         [BenchmarkCategory(Deserialize)]
@@ -91,13 +90,13 @@ namespace Jsonyte.Tests.Performance
                 : JsonSerializer.Deserialize(data.JsonApiBytes, data.Type, jsonApiOptions);
         }
 
-        //[Benchmark]
-        //[BenchmarkCategory(Deserialize)]
-        //public object DeserializeJsonApiSerializer()
-        //{
-        //    return data.SkipDeserialize
-        //        ? null :
-        //        JsonConvert.DeserializeObject(data.Json, data.Type, jsonApiSettings);
-        //}
+        [Benchmark]
+        [BenchmarkCategory(Deserialize)]
+        public object DeserializeJsonApiSerializer()
+        {
+            return data.SkipDeserialize
+                ? null :
+                JsonConvert.DeserializeObject(data.Json, data.Type, jsonApiSettings);
+        }
     }
 }
