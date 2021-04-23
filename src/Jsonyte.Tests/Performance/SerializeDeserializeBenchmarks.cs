@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define RUN_FULL_BENCHMARK
+
+using System;
 using System.Text.Json;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
@@ -10,9 +12,15 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Jsonyte.Tests.Performance
 {
-    [SimpleJob(RuntimeMoniker.Net472)]
-    [SimpleJob(RuntimeMoniker.NetCoreApp21)]
+#if RUN_FULL_BENCHMARK
+    //[SimpleJob(RuntimeMoniker.Net472)]
+    //[SimpleJob(RuntimeMoniker.NetCoreApp31)]
     [SimpleJob(RuntimeMoniker.NetCoreApp50)]
+#else
+    [ShortRunJob(RuntimeMoniker.Net472)]
+    [ShortRunJob(RuntimeMoniker.NetCoreApp31)]
+    [ShortRunJob(RuntimeMoniker.NetCoreApp50)]
+#endif
     [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class SerializeDeserializeBenchmarks
     {
@@ -28,7 +36,8 @@ namespace Jsonyte.Tests.Performance
 
         private Data data;
 
-        [Params("Simple", "Compound", "LargeCompound", "SingleError", "ErrorCollection", "Document", "Anonymous")]
+        //[Params("Simple", "Compound", "LargeCompound", "ErrorCollection", "Anonymous")]
+        [Params("Compound")]
         public string Case { get; set; }
 
         [GlobalSetup]
@@ -45,28 +54,28 @@ namespace Jsonyte.Tests.Performance
 
         [Benchmark(Baseline = true)]
         [BenchmarkCategory(Serialize)]
-        public string SerializeNoJsonApi()
+        public string SerializeSystemTextJson()
         {
             return JsonSerializer.Serialize(data.Value, options);
         }
 
         [Benchmark]
         [BenchmarkCategory(Serialize)]
-        public string SerializeJsonApi()
+        public string SerializeJsonyte()
         {
             return JsonSerializer.Serialize(data.Value, jsonApiOptions);
         }
 
-        [Benchmark]
-        [BenchmarkCategory(Serialize)]
-        public string SerializeNewtonsoftJsonApi()
-        {
-            return JsonConvert.SerializeObject(data.Value, jsonApiSettings);
-        }
+        //[Benchmark]
+        //[BenchmarkCategory(Serialize)]
+        //public string SerializeJsonApiSerializer()
+        //{
+        //    return JsonConvert.SerializeObject(data.Value, jsonApiSettings);
+        //}
 
         [Benchmark(Baseline = true)]
         [BenchmarkCategory(Deserialize)]
-        public object DeserializeNoJsonApi()
+        public object DeserializeSystemTextJson()
         {
             return data.SkipDeserialize
                 ? null
@@ -75,20 +84,20 @@ namespace Jsonyte.Tests.Performance
 
         [Benchmark]
         [BenchmarkCategory(Deserialize)]
-        public object DeserializeJsonApi()
+        public object DeserializeJsonyte()
         {
             return data.SkipDeserialize
                 ? null
                 : JsonSerializer.Deserialize(data.JsonApiBytes, data.Type, jsonApiOptions);
         }
 
-        [Benchmark]
-        [BenchmarkCategory(Deserialize)]
-        public object DeserializeNewtonsoftJsonApi()
-        {
-            return data.SkipDeserialize
-                ? null :
-                JsonConvert.DeserializeObject(data.Json, data.Type, jsonApiSettings);
-        }
+        //[Benchmark]
+        //[BenchmarkCategory(Deserialize)]
+        //public object DeserializeJsonApiSerializer()
+        //{
+        //    return data.SkipDeserialize
+        //        ? null :
+        //        JsonConvert.DeserializeObject(data.Json, data.Type, jsonApiSettings);
+        //}
     }
 }

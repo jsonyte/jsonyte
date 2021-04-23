@@ -60,6 +60,7 @@ namespace Jsonyte.Serialization.Metadata
             Name = name;
             NameEncoded = JsonEncodedText.Encode(name);
             IsPrimitiveType = GetIsPrimitiveType(memberType);
+            IsNumericType = GetIsNumericType(memberType);
             TypedConverter = (JsonConverter<T>) converter;
             WrappedConverter = converter as WrappedJsonConverter<T>;
             IgnoreCondition = ignoreCondition;
@@ -79,6 +80,8 @@ namespace Jsonyte.Serialization.Metadata
         public override JsonConverter Converter { get; }
 
         public bool IsPrimitiveType { get; }
+
+        public bool IsNumericType { get; }
 
         public JsonConverter<T> TypedConverter { get; }
 
@@ -124,7 +127,9 @@ namespace Jsonyte.Serialization.Metadata
                 return;
             }
 
-            var value = TypedConverter.Read(ref reader, MemberType, Options);
+            var value = Options.NumberHandling != JsonNumberHandling.Strict && IsNumericType
+                ? JsonSerializer.Deserialize<T>(ref reader, Options)
+                : TypedConverter.Read(ref reader, MemberType, Options);
 
             if (Options.IgnoreNullValues && value == null)
             {
@@ -318,9 +323,26 @@ namespace Jsonyte.Serialization.Metadata
 
             return underlyingType.IsPrimitive ||
                    underlyingType == typeof(string) ||
+                   underlyingType == typeof(decimal) ||
                    underlyingType == typeof(DateTime) ||
                    underlyingType == typeof(Guid) ||
                    underlyingType == typeof(TimeSpan);
+        }
+
+        private bool GetIsNumericType(Type type)
+        {
+            var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+
+            return underlyingType == typeof(decimal) ||
+                   underlyingType == typeof(float) ||
+                   underlyingType == typeof(double) ||
+                   underlyingType == typeof(byte) ||
+                   underlyingType == typeof(short) ||
+                   underlyingType == typeof(ushort) ||
+                   underlyingType == typeof(int) ||
+                   underlyingType == typeof(uint) ||
+                   underlyingType == typeof(long) ||
+                   underlyingType == typeof(ulong);
         }
 
         protected bool IsPublic(MethodInfo? method)
