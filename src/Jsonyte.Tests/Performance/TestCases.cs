@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using AutoBogus;
-using Bogus.Extensions;
 using Jsonyte.Tests.Models;
 
 namespace Jsonyte.Tests.Performance
@@ -14,9 +12,7 @@ namespace Jsonyte.Tests.Performance
             {"Simple", GetSimple()},
             {"Compound", GetCompound()},
             {"LargeCompound", GetLargeCompound()},
-            {"SingleError", GetError()},
             {"ErrorCollection", GetErrorCollection()},
-            {"Document", GetDocument()},
             {"Anonymous", GetAnonymous()}
         };
 
@@ -50,39 +46,11 @@ namespace Jsonyte.Tests.Performance
         {
             var comment = new AutoFaker<Comment>();
             var articlesArray = new AutoFaker<ArticleWithAuthor>()
-                .RuleFor(x => x.Comments, _ => comment.GenerateBetween(2, 5).ToArray())
+                .RuleFor(x => x.Comments, _ => comment.Generate(5).ToArray())
                 .Generate(20)
                 .ToArray();
 
             return new Data(articlesArray);
-        }
-
-        private static Data GetError()
-        {
-            var error = new JsonApiError
-            {
-                Id = "1",
-                Links = new JsonApiErrorLinks
-                {
-                    {"next", new JsonApiLink {Href = "http://next"}},
-                    {"about", new JsonApiLink {Href = "http://about"}},
-                },
-                Status = "422",
-                Code = "Invalid",
-                Title = "Invalid Attribute",
-                Detail = "First name must contain at least three characters.",
-                Source = new JsonApiErrorSource
-                {
-                    Pointer = "/data/attributes/firstName"
-                },
-                Meta = new JsonApiMeta
-                {
-                    {"count", 10.ToElement()},
-                    {"name", "first".ToElement()}
-                }
-            };
-
-            return new Data(error);
         }
 
         private static Data GetErrorCollection()
@@ -135,101 +103,6 @@ namespace Jsonyte.Tests.Performance
             };
 
             return new Data(errors);
-        }
-
-        private static Data GetDocument()
-        {
-            var document = new JsonApiDocument
-            {
-                Data = new[]
-                {
-                    new JsonApiResource
-                    {
-                        Id = "1",
-                        Type = "articles",
-                        Attributes = new Dictionary<string, JsonElement>
-                        {
-                            {"title", "book".ToElement()}
-                        },
-                        Relationships = new Dictionary<string, JsonApiRelationship>
-                        {
-                            {
-                                "author", new JsonApiRelationship
-                                {
-                                    Data = new[]
-                                    {
-                                        new JsonApiResourceIdentifier("9", "people")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                Included = new[]
-                {
-                    new JsonApiResource
-                    {
-                        Id = "9",
-                        Type = "people",
-                        Attributes = new Dictionary<string, JsonElement>
-                        {
-                            {"name", "Joe".ToElement()}
-                        },
-                        Relationships = new Dictionary<string, JsonApiRelationship>
-                        {
-                            {
-                                "author", new JsonApiRelationship
-                                {
-                                    Data = new[]
-                                    {
-                                        new JsonApiResourceIdentifier("2", "people")
-                                    }
-                                }
-                            },
-                            {
-                                "comments", new JsonApiRelationship
-                                {
-                                    Data = new[]
-                                    {
-                                        new JsonApiResourceIdentifier("5", "comments")
-                                    }
-                                }
-                            }
-                        },
-                        Links = new JsonApiResourceLinks
-                        {
-                            Self = "http://example.com/comments/5"
-                        }
-                    },
-                    new JsonApiResource
-                    {
-                        Id = "5",
-                        Type = "comments",
-                        Attributes = new Dictionary<string, JsonElement>
-                        {
-                            {"body", "first".ToElement()}
-                        },
-                        Relationships = new Dictionary<string, JsonApiRelationship>
-                        {
-                            {
-                                "tags", new JsonApiRelationship
-                                {
-                                    Links = new JsonApiRelationshipLinks
-                                    {
-                                        Self = "/tags"
-                                    },
-                                    Meta = new JsonApiMeta
-                                    {
-                                        {"count", 5.ToElement()}
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-
-            return new Data(document);
         }
 
         public static Data GetAnonymous()

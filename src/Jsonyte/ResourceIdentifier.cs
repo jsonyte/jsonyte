@@ -2,21 +2,16 @@
 
 namespace Jsonyte
 {
-    internal ref struct ResourceIdentifier
+    internal readonly ref struct ResourceIdentifier
     {
+        public readonly ReadOnlySpan<byte> Id;
+
+        public readonly ReadOnlySpan<byte> Type;
+
         public ResourceIdentifier(ReadOnlySpan<byte> id, ReadOnlySpan<byte> type)
         {
             Id = id;
             Type = type;
-        }
-
-        public ReadOnlySpan<byte> Id { get; }
-
-        public ReadOnlySpan<byte> Type { get; }
-
-        public bool Equals(ResourceIdentifier other)
-        {
-            return Id.SequenceEqual(other.Id) && Type.SequenceEqual(other.Type);
         }
     }
 }

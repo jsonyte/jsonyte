@@ -1,4 +1,6 @@
-﻿using Jsonyte.Tests.Models;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using Jsonyte.Tests.Models;
 using Xunit;
 
 namespace Jsonyte.Tests.Deserialization
@@ -223,6 +225,30 @@ namespace Jsonyte.Tests.Deserialization
             Assert.Equal("1", model.Id);
             Assert.Equal("article", model.Type);
             Assert.Equal("Jsonapi", model.Title);
+        }
+
+        [Fact]
+        public void CanDeserializeModelWithNullableDecimalAsString()
+        {
+            const string jsonapi = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'value': '999999'
+                    }
+                  }
+                }";
+
+            var options = new JsonSerializerOptions();
+            options.NumberHandling = JsonNumberHandling.AllowReadingFromString;
+
+            var model = jsonapi.Deserialize<ModelWithNullableTypes>(options);
+
+            Assert.Equal("1", model.Id);
+            Assert.Equal("model", model.Type);
+            Assert.Equal(999999m, model.Value);
         }
     }
 }

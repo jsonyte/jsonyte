@@ -4,7 +4,7 @@ using Jsonyte.Serialization.Contracts;
 
 namespace Jsonyte.Converters.Objects
 {
-    internal class JsonApiAnonymousRelationshipConverter<T> : IAnonymousRelationshipConverter
+    internal class JsonApiAnonymousRelationshipConverter<T> : AnonymousRelationshipConverter
     {
         private readonly JsonSerializerOptions options;
 
@@ -17,12 +17,12 @@ namespace Jsonyte.Converters.Objects
 
         public JsonApiRelationshipDetailsConverter<T> Converter { get; }
 
-        public void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value)
+        public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value)
         {
             Converter.Write(writer, ref tracked, new RelationshipResource<T>((T) value), options);
         }
 
-        public void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object value)
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object value)
         {
             Converter.WriteWrapped(writer, ref tracked, new RelationshipResource<T>((T) value), options);
         }

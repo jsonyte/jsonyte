@@ -11,14 +11,14 @@ namespace Jsonyte.Converters
     {
         public ConcurrentDictionary<Type, JsonTypeInfo> Types { get; } = new();
 
-        public ConcurrentDictionary<Type, IJsonObjectConverter> ObjectConverters { get; } = new();
+        public ConcurrentDictionary<Type, JsonObjectConverter> ObjectConverters { get; } = new();
 
-        public ConcurrentDictionary<Type, IAnonymousRelationshipConverter> AnonymousConverters { get; } = new();
+        public ConcurrentDictionary<Type, AnonymousRelationshipConverter> AnonymousConverters { get; } = new();
 
 #if NETCOREAPP || NETFRAMEWORK
-        public IMemberAccessor MemberAccessor { get; } = new EmitMemberAccessor();
+        public MemberAccessor MemberAccessor { get; } = new EmitMemberAccessor();
 #else
-        public IMemberAccessor MemberAccessor { get; } = new ReflectionMemberAccessor();
+        public MemberAccessor MemberAccessor { get; } = new ReflectionMemberAccessor();
 #endif
 
         public override JsonApiStateConverter Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

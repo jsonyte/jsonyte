@@ -123,7 +123,7 @@ namespace Jsonyte.Converters.Collections
             JsonTypeInfo info,
             PotentialRelationshipCollection container,
             object value,
-            IJsonObjectConverter converter)
+            JsonObjectConverter converter)
         {
             var id = info.IdMember.GetValue(value) as string;
             var type = info.TypeMember.GetValue(value) as string;
@@ -159,7 +159,7 @@ namespace Jsonyte.Converters.Collections
 
             public readonly JsonTypeInfo? Info;
 
-            public readonly IJsonObjectConverter? Converter;
+            public readonly JsonObjectConverter? Converter;
 
             public TypeDescriptor(Type valueType)
             {
@@ -168,7 +168,7 @@ namespace Jsonyte.Converters.Collections
                 Converter = null;
             }
 
-            public TypeDescriptor(Type valueType, JsonTypeInfo? info, IJsonObjectConverter? converter)
+            public TypeDescriptor(Type valueType, JsonTypeInfo? info, JsonObjectConverter? converter)
             {
                 ValueType = valueType;
                 Info = info;

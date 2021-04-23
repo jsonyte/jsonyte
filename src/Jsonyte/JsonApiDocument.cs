@@ -2,7 +2,7 @@
 
 namespace Jsonyte
 {
-    public sealed class JsonApiDocument<T> : IJsonApiDocument
+    public sealed class JsonApiDocument<T>
     {
         [JsonPropertyName("data")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -24,7 +24,7 @@ namespace Jsonyte
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonApiDocumentLinks? Links { get; set; }
 
-        public JsonApiDocument<T> Create(T data)
+        public static JsonApiDocument<T> Create(T data)
         {
             return new()
             {
@@ -33,7 +33,7 @@ namespace Jsonyte
         }
     }
 
-    public sealed class JsonApiDocument : IJsonApiDocument
+    public sealed class JsonApiDocument
     {
         [JsonPropertyName("data")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

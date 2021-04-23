@@ -2,16 +2,16 @@
 
 namespace Jsonyte.Serialization.Metadata
 {
-    internal class EmptyJsonParameterInfo : IJsonParameterInfo
+    internal class EmptyJsonParameterInfo : JsonParameterInfo
     {
         public EmptyJsonParameterInfo(int position)
         {
             Position = position;
         }
 
-        public int Position { get; }
+        public override int Position { get; }
 
-        public object? Read(ref Utf8JsonReader reader)
+        public override object? Read(ref Utf8JsonReader reader)
         {
             return null;
         }

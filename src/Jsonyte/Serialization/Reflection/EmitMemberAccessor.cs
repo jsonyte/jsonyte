@@ -5,9 +5,9 @@ using System.Reflection.Emit;
 namespace Jsonyte.Serialization.Reflection
 {
 #if NETCOREAPP || NETFRAMEWORK
-    internal class EmitMemberAccessor : IMemberAccessor
+    internal class EmitMemberAccessor : MemberAccessor
     {
-        public Func<object?> CreateCreator(Type type)
+        public override Func<object?> CreateCreator(Type type)
         {
             var constructor = type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
 
@@ -39,7 +39,7 @@ namespace Jsonyte.Serialization.Reflection
             return (Func<object>) method.CreateDelegate(typeof(Func<object>));
         }
 
-        public Func<object[], object?> CreateParameterizedCreator(ConstructorInfo constructor)
+        public override Func<object[], object?> CreateParameterizedCreator(ConstructorInfo constructor)
         {
             var parameters = constructor.GetParameters();
 
@@ -66,7 +66,7 @@ namespace Jsonyte.Serialization.Reflection
             return (Func<object[], object?>) method.CreateDelegate(typeof(Func<object[], object?>));
         }
 
-        public Func<object, T> CreatePropertyGetter<T>(PropertyInfo property)
+        public override Func<object, T> CreatePropertyGetter<T>(PropertyInfo property)
         {
             var declaringType = property.DeclaringType;
 
@@ -97,7 +97,7 @@ namespace Jsonyte.Serialization.Reflection
             return (Func<object, T>) method.CreateDelegate(typeof(Func<object, T>));
         }
 
-        public Action<object, T> CreatePropertySetter<T>(PropertyInfo property)
+        public override Action<object, T> CreatePropertySetter<T>(PropertyInfo property)
         {
             var declaringType = property.DeclaringType;
 
@@ -137,7 +137,7 @@ namespace Jsonyte.Serialization.Reflection
             return (Action<object, T?>) method.CreateDelegate(typeof(Action<object, T?>));
         }
 
-        public Func<object, T> CreateFieldGetter<T>(FieldInfo field)
+        public override Func<object, T> CreateFieldGetter<T>(FieldInfo field)
         {
             var declaringType = field.DeclaringType;
 
@@ -173,7 +173,7 @@ namespace Jsonyte.Serialization.Reflection
             return (Func<object, T>) method.CreateDelegate(typeof(Func<object, T>));
         }
 
-        public Action<object, T> CreateFieldSetter<T>(FieldInfo field)
+        public override Action<object, T> CreateFieldSetter<T>(FieldInfo field)
         {
             var declaringType = field.DeclaringType;
 

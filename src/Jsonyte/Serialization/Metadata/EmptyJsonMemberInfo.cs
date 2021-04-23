@@ -4,51 +4,62 @@ using System.Text.Json.Serialization;
 
 namespace Jsonyte.Serialization.Metadata
 {
-    internal class EmptyJsonMemberInfo : IJsonMemberInfo
+    internal class EmptyJsonMemberInfo : JsonMemberInfo
     {
-        public string Name { get; } = string.Empty;
+        public EmptyJsonMemberInfo()
+        {
+            Name = string.Empty;
+            NameEncoded = default;
+            MemberName = string.Empty;
+            MemberType = typeof(string);
+            Ignored = true;
+            Converter = null!;
+            IsRelationship = false;
+        }
 
-        public JsonEncodedText NameEncoded { get; } = default;
+        public override string Name { get; }
 
-        public string MemberName { get; } = string.Empty;
+        public override string MemberName { get; }
 
-        public Type MemberType { get; } = typeof(string);
+        public override Type MemberType { get; }
 
-        public bool Ignored { get; } = true;
+        public override JsonEncodedText NameEncoded { get; }
 
-        public JsonConverter Converter { get; }
+        public override JsonConverter Converter { get; }
 
-        public bool IsRelationship { get; } = false;
+        public override bool Ignored { get; }
 
-        public object? GetValue(object resource)
+        public override bool IsRelationship { get; }
+
+        public override object? GetValue(object resource)
         {
             return null;
         }
 
-        public void Read(ref Utf8JsonReader reader, object resource)
+        public override void Read(ref Utf8JsonReader reader, object resource)
         {
             reader.Skip();
         }
 
-        public void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)
+        public override void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)
         {
             reader.Skip();
         }
 
-        public bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default)
+        public override bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default)
         {
             return false;
         }
 
-        public void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection)
+        public override void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection)
         {
         }
 
-        public void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection)
+        public override void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource)
         {
         }
 
-        public void SetValue(object resource, object? value)
+        public override void SetValue(object resource, object? value)
         {
         }
     }

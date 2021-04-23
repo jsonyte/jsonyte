@@ -39,7 +39,7 @@ namespace Jsonyte.Serialization
             return referencesOverflowByIndex[index - CachedReferences];
         }
 
-        public void SetIncluded(ResourceIdentifier identifier, string idString, string typeString, IJsonObjectConverter converter, object value)
+        public void SetIncluded(ResourceIdentifier identifier, string idString, string typeString, JsonObjectConverter converter, object value)
         {
             references ??= new IncludedRef[CachedReferences];
 
@@ -51,7 +51,7 @@ namespace Jsonyte.Serialization
             SetIncluded(idKey, typeKey, identifier.Id.ToArray(), identifier.Type.ToArray(), idString, typeString, converter, value);
         }
 
-        public void SetIncluded(byte[] id, byte[] type, string idString, string typeString, IJsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
+        public void SetIncluded(byte[] id, byte[] type, string idString, string typeString, JsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
         {
             references ??= new IncludedRef[CachedReferences];
 
@@ -65,7 +65,7 @@ namespace Jsonyte.Serialization
             SetIncluded(idKey, typeKey, id, type, idString, typeString, converter, value, unwrittenRelationship);
         }
 
-        private void SetIncluded(ulong idKey, ulong typeKey, byte[] id, byte[] type, string idString, string typeString, IJsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
+        private void SetIncluded(ulong idKey, ulong typeKey, byte[] id, byte[] type, string idString, string typeString, JsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
         {
             var relationshipId = unwrittenRelationship != null
                 ? Relationships.SetRelationship(unwrittenRelationship.Value)

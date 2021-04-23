@@ -20,15 +20,15 @@ namespace Jsonyte.Converters.Objects
 
                 while (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    var name = reader.ValueSpan;
+                    var key = reader.ValueSpan.GetKey();
 
                     reader.Read();
 
-                    if (name.SequenceEqual(JsonApiMembers.HrefEncoded.EncodedUtf8Bytes))
+                    if (key == JsonApiMembers.HrefKey)
                     {
                         link.Href = reader.GetString();
                     }
-                    else if (name.SequenceEqual(JsonApiMembers.MetaEncoded.EncodedUtf8Bytes))
+                    else if (key == JsonApiMembers.MetaKey)
                     {
                         link.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
                     }

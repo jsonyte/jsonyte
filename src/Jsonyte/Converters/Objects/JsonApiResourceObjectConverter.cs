@@ -55,10 +55,6 @@ namespace Jsonyte.Converters.Objects
                 reader.Read();
             }
 
-            // TODO
-            // Really janky way of doing this as it means parsing over
-            // included twice if included appears first in the document.
-            // This needs to be re-thought.
             if (includedReadFirst)
             {
                 ReadIncluded(ref savedReader, ref tracked, options);
