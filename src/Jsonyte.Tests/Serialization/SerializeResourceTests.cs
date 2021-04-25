@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Jsonyte.Tests.Models;
 using Xunit;
 
@@ -273,6 +274,55 @@ namespace Jsonyte.Tests.Serialization
                     },
                     'meta': {
                       'count': 1
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeNumbersAsStrings()
+        {
+            var model = new ModelWithNullableTypes
+            {
+                Id = "1",
+                Type = "model",
+                ByteValue = 1,
+                SbyteValue = 2,
+                DecimalValue = 3,
+                ShortValue = 4,
+                UshortValue = 5,
+                IntValue = 6,
+                UintValue = 7,
+                LongValue = 8,
+                UlongValue = 9,
+                FloatValue = 10,
+                DoubleValue = 11,
+                ObjectValue = 12
+            };
+
+            var options = new JsonSerializerOptions();
+            options.NumberHandling = JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString;
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'byteValue': '1',
+                      'sbyteValue': '2',
+                      'decimalValue': '3',
+                      'shortValue': '4',
+                      'ushortValue': '5',
+                      'intValue': '6',
+                      'uintValue': '7',
+                      'longValue': '8',
+                      'ulongValue': '9',
+                      'floatValue': '10',
+                      'doubleValue': '11',
+                      'objectValue': '12'
                     }
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);

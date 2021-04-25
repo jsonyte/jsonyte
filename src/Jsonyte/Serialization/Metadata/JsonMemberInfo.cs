@@ -127,7 +127,7 @@ namespace Jsonyte.Serialization.Metadata
                 return;
             }
 
-            var value = Options.NumberHandling != JsonNumberHandling.Strict && IsNumericType
+            var value = Options.NumberHandling > 0 && (IsNumericType || MemberType == JsonApiTypes.Object)
                 ? JsonSerializer.Deserialize<T>(ref reader, Options)
                 : TypedConverter.Read(ref reader, MemberType, Options);
 
@@ -202,6 +202,10 @@ namespace Jsonyte.Serialization.Metadata
             if (WrappedConverter != null)
             {
                 WrappedConverter.WriteWrapped(writer, ref tracked, value, Options);
+            }
+            else if (Options.NumberHandling > 0 && (IsNumericType || GetIsNumericType(value?.GetType())))
+            {
+                JsonSerializer.Serialize(writer, value, Options);
             }
             else
             {
@@ -329,14 +333,20 @@ namespace Jsonyte.Serialization.Metadata
                    underlyingType == typeof(TimeSpan);
         }
 
-        private bool GetIsNumericType(Type type)
+        private bool GetIsNumericType(Type? type)
         {
+            if (type == null)
+            {
+                return false;
+            }
+
             var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
 
             return underlyingType == typeof(decimal) ||
                    underlyingType == typeof(float) ||
                    underlyingType == typeof(double) ||
                    underlyingType == typeof(byte) ||
+                   underlyingType == typeof(sbyte) ||
                    underlyingType == typeof(short) ||
                    underlyingType == typeof(ushort) ||
                    underlyingType == typeof(int) ||
