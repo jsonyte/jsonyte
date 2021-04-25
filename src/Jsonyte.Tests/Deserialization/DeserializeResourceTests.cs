@@ -236,19 +236,44 @@ namespace Jsonyte.Tests.Deserialization
                     'id': '1',
                     'type': 'model',
                     'attributes': {
-                      'value': '999999'
+                      'byteValue': '1',
+                      'sbyteValue': '2',
+                      'decimalValue': '3',
+                      'shortValue': '4',
+                      'ushortValue': '5',
+                      'intValue': '6',
+                      'uintValue': '7',
+                      'longValue': '8',
+                      'ulongValue': '9',
+                      'floatValue': '10',
+                      'doubleValue': '11',
+                      'objectValue': '12'
                     }
                   }
                 }";
 
             var options = new JsonSerializerOptions();
-            options.NumberHandling = JsonNumberHandling.AllowReadingFromString;
+            options.NumberHandling = JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString;
 
             var model = jsonapi.Deserialize<ModelWithNullableTypes>(options);
 
             Assert.Equal("1", model.Id);
             Assert.Equal("model", model.Type);
-            Assert.Equal(999999m, model.Value);
+            Assert.Equal(1, model.ByteValue!.Value);
+            Assert.Equal(2, model.SbyteValue!.Value);
+            Assert.Equal(3, model.DecimalValue!.Value);
+            Assert.Equal(4, model.ShortValue!.Value);
+            Assert.Equal(5, model.UshortValue!.Value);
+            Assert.Equal(6, model.IntValue!.Value);
+            Assert.Equal(7u, model.UintValue!.Value);
+            Assert.Equal(8, model.LongValue!.Value);
+            Assert.Equal(9u, model.UlongValue!.Value);
+            Assert.Equal(10, model.FloatValue!.Value);
+            Assert.Equal(11, model.DoubleValue!.Value);
+
+            Assert.IsType<JsonElement>(model.ObjectValue);
+            Assert.Equal(JsonValueKind.String, ((JsonElement)model.ObjectValue).ValueKind);
+            Assert.Equal("12", ((JsonElement)model.ObjectValue).GetString());
         }
     }
 }
