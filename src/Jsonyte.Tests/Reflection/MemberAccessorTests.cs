@@ -232,6 +232,57 @@ namespace Jsonyte.Tests.Reflection
         }
 
         [Fact]
+        public void IgnoresReadOnlyRelationshipsUsingOptions()
+        {
+            var options = new JsonSerializerOptions
+            {
+                IgnoreReadOnlyProperties = true
+            };
+
+            var model = new ModelWithReadOnlyProperties
+            {
+                Id = "1",
+                Type = "model"
+            };
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model'
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void IgnoresReadOnlyFieldRelationshipsUsingOptions()
+        {
+            var options = new JsonSerializerOptions
+            {
+                IgnoreReadOnlyFields = true,
+                IncludeFields = true
+            };
+
+            var model = new ModelWithReadOnlyFields
+            {
+                Id = "1",
+                Type = "model"
+            };
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model'
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
         public void IgnoresNullValuesWhenSerializingUsingOptions()
         {
             var options = new JsonSerializerOptions
@@ -330,6 +381,96 @@ namespace Jsonyte.Tests.Reflection
                       'publicReadOnlyNullableCount': 5
                     }
                   }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeReadOnlyFields()
+        {
+            var options = new JsonSerializerOptions
+            {
+                IncludeFields = true,
+                IgnoreReadOnlyFields = false
+            };
+
+            var model = new ModelWithReadOnlyFields();
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'intValue': 5,
+                      'stringValue': 'str'
+                    },
+                    'relationships': {
+                      'author': {
+                        'data': {
+                          'id': '4',
+                          'type': 'author'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '4',
+                      'type': 'author',
+                      'attributes': {
+                        'name': 'bob',
+                        'twitter': 'bo'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeReadOnlyProperties()
+        {
+            var options = new JsonSerializerOptions
+            {
+                IgnoreReadOnlyProperties = false
+            };
+
+            var model = new ModelWithReadOnlyProperties
+            {
+                Id = "1",
+                Type = "model"
+            };
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'intValue': 5
+                    },
+                    'relationships': {
+                      'author': {
+                        'data': {
+                          'id': '4',
+                          'type': 'author'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '4',
+                      'type': 'author',
+                      'attributes': {
+                        'name': 'Bob',
+                        'twitter': null
+                      }
+                    }
+                  ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
 
