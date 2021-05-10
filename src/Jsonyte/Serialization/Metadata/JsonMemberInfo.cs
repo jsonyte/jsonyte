@@ -207,6 +207,12 @@ namespace Jsonyte.Serialization.Metadata
             {
                 JsonSerializer.Serialize(writer, value, Options);
             }
+            else if (MemberType == JsonApiTypes.Object)
+            {
+                // The value is probably an anonymous object, but isn't a relationship, so it's
+                // safer to let System.Text.Json handle it
+                JsonSerializer.Serialize(writer, value, Options);
+            }
             else
             {
                 TypedConverter.Write(writer, value, Options);

@@ -327,5 +327,43 @@ namespace Jsonyte.Tests.Serialization
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeResourceWithAnonymousAttributes()
+        {
+            object GetNestedAuthor()
+            {
+                return new
+                {
+                    name = "Bob",
+                    age = 25
+                };
+            }
+
+            var model = new
+            {
+                id = "1",
+                type = "articles",
+                title = "Jsonapi",
+                author = GetNestedAuthor()
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi',
+                      'author': {
+                        'name': 'Bob',
+                        'age': 25
+                      }
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }
