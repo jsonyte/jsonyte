@@ -8,12 +8,7 @@ namespace Jsonyte.Converters.Objects
 {
     internal class JsonApiResourceObjectExplicitRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<T>
     {
-        private readonly JsonTypeInfo info;
-
-        public JsonApiResourceObjectExplicitRelationshipConverter(JsonTypeInfo info)
-        {
-            this.info = info;
-        }
+        private JsonTypeInfo? info;
 
         public override RelationshipResource<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -53,7 +48,9 @@ namespace Jsonyte.Converters.Objects
                 return;
             }
 
-            var data = info.DataMember.GetValue(value.Resource);
+            EnsureTypeInfo(options);
+
+            var data = info!.DataMember.GetValue(value.Resource);
             var meta = info.MetaMember.GetValue(value.Resource);
             var links = info.LinksMember.GetValue(value.Resource);
 
@@ -72,6 +69,11 @@ namespace Jsonyte.Converters.Objects
 
             info.LinksMember.Write(writer, ref tracked, value.Resource);
             info.MetaMember.Write(writer, ref tracked, value.Resource);
+        }
+
+        private void EnsureTypeInfo(JsonSerializerOptions options)
+        {
+            info ??= options.GetTypeInfo(typeof(T));
         }
     }
 }

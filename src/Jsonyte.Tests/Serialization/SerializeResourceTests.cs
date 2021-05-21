@@ -365,5 +365,179 @@ namespace Jsonyte.Tests.Serialization
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeModelsWithRecursiveProperties()
+        {
+            var model = new ArticleWithNestedArticles
+            {
+                Id = "1",
+                Type = "articles",
+                Title = "Jsonapi",
+                Referenced = new ArticleWithNestedArticles
+                {
+                    Id = "2",
+                    Type = "articles",
+                    Title = "Another Jsonapi"
+                }
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'referenced': {
+                        'data': {
+                          'id': '2',
+                          'type': 'articles'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'Another Jsonapi'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeCircularReferenceIfItDoesntRecurse()
+        {
+            var model = new ModelWithCircularType
+            {
+                Id = "1",
+                Type = "first",
+                Value = "here",
+                First = new ModelWithAnotherCircularType
+                {
+                    Id = "2",
+                    Type = "second",
+                    Value = "we",
+                    Second = new ModelWithCircularType
+                    {
+                        Id = "3",
+                        Type = "first",
+                        Value = "go"
+                    }
+                }
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'first',
+                    'attributes': {
+                      'value': 'here'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': {
+                          'id': '2',
+                          'type': 'second'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '3',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '3',
+                      'type': 'first',
+                      'attributes': {
+                        'value': 'go'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeWithCircularReferences()
+        {
+            var model = new ModelWithCircularType
+            {
+                Id = "1",
+                Type = "first",
+                Value = "here"
+            };
+
+            var another = new ModelWithAnotherCircularType
+            {
+                Id = "2",
+                Type = "second",
+                Value = "we",
+                Second = model
+            };
+
+            model.First = another;
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'first',
+                    'attributes': {
+                      'value': 'here'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': {
+                          'id': '2',
+                          'type': 'second'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

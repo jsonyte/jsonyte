@@ -60,35 +60,9 @@ namespace Jsonyte.Converters
                 }
             }
 
-            var info = options.GetTypeInfo(typeToConvert);
-
-            ValidateResource(info);
-
             var converterType = typeof(JsonApiResourceObjectConverter<>);
 
-            return CreateConverter(converterType, info, typeToConvert);
-        }
-
-        private void ValidateResource(JsonTypeInfo info)
-        {
-            var idProperty = info.IdMember;
-
-            if (!string.IsNullOrEmpty(idProperty.Name) && idProperty.MemberType != typeof(string))
-            {
-                throw new JsonApiFormatException("JSON:API resource id must be a string");
-            }
-
-            var typeProperty = info.TypeMember;
-
-            if (string.IsNullOrEmpty(typeProperty.Name))
-            {
-                throw new JsonApiFormatException("JSON:API resource must have a 'type' member");
-            }
-
-            if (typeProperty.MemberType != typeof(string))
-            {
-                throw new JsonApiFormatException("JSON:API resource type must be a string");
-            }
+            return CreateConverter(converterType, typeToConvert);
         }
     }
 }

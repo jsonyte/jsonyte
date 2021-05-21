@@ -230,7 +230,7 @@ namespace Jsonyte.Tests.Deserialization
         [Fact]
         public void CanDeserializeModelWithNullableDecimalAsString()
         {
-            const string jsonapi = @"
+            const string json = @"
                 {
                   'data': {
                     'id': '1',
@@ -255,7 +255,7 @@ namespace Jsonyte.Tests.Deserialization
             var options = new JsonSerializerOptions();
             options.NumberHandling = JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString;
 
-            var model = jsonapi.Deserialize<ModelWithNullableTypes>(options);
+            var model = json.Deserialize<ModelWithNullableTypes>(options);
 
             Assert.Equal("1", model.Id);
             Assert.Equal("model", model.Type);
@@ -274,6 +274,49 @@ namespace Jsonyte.Tests.Deserialization
             Assert.IsType<JsonElement>(model.ObjectValue);
             Assert.Equal(JsonValueKind.String, ((JsonElement)model.ObjectValue).ValueKind);
             Assert.Equal("12", ((JsonElement)model.ObjectValue).GetString());
+        }
+
+        [Fact]
+        public void CanDeserializeModelsWithRecursiveProperties()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'referenced': {
+                        'data': {
+                          'id': '2',
+                          'type': 'articles'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'Another Jsonapi'
+                      }
+                    }
+                  ]
+                }";
+
+            var model = json.Deserialize<ArticleWithNestedArticles>();
+
+            Assert.Equal("1", model.Id);
+            Assert.Equal("articles", model.Type);
+            Assert.Equal("Jsonapi", model.Title);
+
+            Assert.NotNull(model.Referenced);
+            Assert.Equal("2", model.Referenced.Id);
+            Assert.Equal("articles", model.Referenced.Type);
+            Assert.Equal("Another Jsonapi", model.Referenced.Title);
         }
     }
 }

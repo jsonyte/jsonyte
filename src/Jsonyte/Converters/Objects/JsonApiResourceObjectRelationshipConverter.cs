@@ -9,14 +9,9 @@ namespace Jsonyte.Converters.Objects
 {
     internal class JsonApiResourceObjectRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<T>
     {
-        private readonly JsonTypeInfo info;
+        private JsonTypeInfo? info;
 
         private JsonObjectConverter? objectConverter;
-
-        public JsonApiResourceObjectRelationshipConverter(JsonTypeInfo info)
-        {
-            this.info = info;
-        }
 
         public override RelationshipResource<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -59,7 +54,9 @@ namespace Jsonyte.Converters.Objects
                 return new RelationshipResource<T>((T) included.Value);
             }
 
-            var relationship = info.Creator();
+            EnsureTypeInfo(options);
+
+            var relationship = info!.Creator();
 
             if (relationship == null)
             {
@@ -104,7 +101,9 @@ namespace Jsonyte.Converters.Objects
                 return;
             }
 
-            var id = info.IdMember.GetValue(value.Resource) as string;
+            EnsureTypeInfo(options);
+
+            var id = info!.IdMember.GetValue(value.Resource) as string;
             var type = info.TypeMember.GetValue(value.Resource) as string;
 
             if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
@@ -128,6 +127,11 @@ namespace Jsonyte.Converters.Objects
         private JsonObjectConverter GetConverter(JsonSerializerOptions options)
         {
             return objectConverter ??= options.GetObjectConverter<T>();
+        }
+
+        private void EnsureTypeInfo(JsonSerializerOptions options)
+        {
+            info ??= options.GetTypeInfo(typeof(T));
         }
     }
 }

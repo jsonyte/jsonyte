@@ -8,12 +8,7 @@ namespace Jsonyte.Converters.Objects
 {
     internal class JsonApiResourceObjectConverter<T> : WrappedJsonConverter<T>
     {
-        private readonly JsonTypeInfo info;
-
-        public JsonApiResourceObjectConverter(JsonTypeInfo info)
-        {
-            this.info = info;
-        }
+        private JsonTypeInfo? info;
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -24,6 +19,8 @@ namespace Jsonyte.Converters.Objects
 
             Utf8JsonReader savedReader = default;
             var includedReadFirst = false;
+
+            EnsureTypeInfo(options);
 
             while (reader.IsInObject())
             {
@@ -72,9 +69,11 @@ namespace Jsonyte.Converters.Objects
                 return default;
             }
 
+            EnsureTypeInfo(options);
+
             var state = reader.ReadResource();
 
-            var resource = existingValue ?? info.Creator();
+            var resource = existingValue ?? info!.Creator();
 
             if (resource == null)
             {
@@ -87,11 +86,11 @@ namespace Jsonyte.Converters.Objects
 
                 if (name == ResourceFlags.Id)
                 {
-                    info.IdMember.Read(ref reader, resource);
+                    info!.IdMember.Read(ref reader, resource);
                 }
                 else if (name == ResourceFlags.Type)
                 {
-                    info.TypeMember.Read(ref reader, resource);
+                    info!.TypeMember.Read(ref reader, resource);
                 }
                 else if (name == ResourceFlags.Attributes)
                 {
@@ -101,14 +100,14 @@ namespace Jsonyte.Converters.Objects
                     {
                         var attributeName = reader.ReadMember(JsonApiMemberCode.Resource);
 
-                        info.GetMember(attributeName).Read(ref reader, resource);
+                        info!.GetMember(attributeName).Read(ref reader, resource);
 
                         reader.Read();
                     }
                 }
                 else if (name == ResourceFlags.Meta)
                 {
-                    info.MetaMember.Read(ref reader, resource);
+                    info!.MetaMember.Read(ref reader, resource);
                 }
                 else if (name == ResourceFlags.Relationships)
                 {
@@ -135,7 +134,7 @@ namespace Jsonyte.Converters.Objects
             {
                 var relationshipName = reader.ReadMember(JsonApiMemberCode.Relationship);
 
-                info.GetMember(relationshipName).ReadRelationship(ref reader, ref tracked, resource);
+                info!.GetMember(relationshipName).ReadRelationship(ref reader, ref tracked, resource);
 
                 reader.Read();
             }
@@ -164,7 +163,23 @@ namespace Jsonyte.Converters.Objects
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
+            EnsureTypeInfo(options);
+
             var tracked = new TrackedResources();
+
+            if (value != null)
+            {
+                var id = info!.IdMember.GetValue(value) as string;
+                var type = info.TypeMember.GetValue(value) as string;
+
+                if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(type))
+                {
+                    var idBytes = id?.ToByteArray() ?? Array.Empty<byte>();
+                    var typeBytes = id?.ToByteArray() ?? Array.Empty<byte>();
+
+                    tracked.SetIncluded(idBytes, typeBytes, id ?? string.Empty, type ?? string.Empty, options.GetObjectConverter(typeof(T)), value, emitIncluded: false);
+                }
+            }
 
             writer.WriteStartObject();
 
@@ -181,7 +196,11 @@ namespace Jsonyte.Converters.Objects
                 while (index < tracked.Count)
                 {
                     var included = tracked.Get(index);
-                    included.Converter.Write(writer, ref tracked, included.Value, options);
+
+                    if (included.EmitIincluded)
+                    {
+                        included.Converter.Write(writer, ref tracked, included.Value, options);
+                    }
 
                     index++;
                 }
@@ -201,9 +220,11 @@ namespace Jsonyte.Converters.Objects
                 return;
             }
 
+            EnsureTypeInfo(options);
+
             writer.WriteStartObject();
 
-            info.IdMember.Write(writer, ref tracked, value);
+            info!.IdMember.Write(writer, ref tracked, value);
             info.TypeMember.Write(writer, ref tracked, value);
 
             WriteAttributes(writer, ref tracked, value);
@@ -219,8 +240,13 @@ namespace Jsonyte.Converters.Objects
         {
             var attributesWritten = false;
 
-            foreach (var member in info.AttributeMembers)
+            foreach (var member in info!.AttributeMembers)
             {
+                if (member.IsRelationship)
+                {
+                    continue;
+                }
+
                 var memberName = attributesWritten
                     ? default
                     : JsonApiMembers.AttributesEncoded;
@@ -238,7 +264,7 @@ namespace Jsonyte.Converters.Objects
         {
             var relationshipsWritten = false;
 
-            foreach (var member in info.AttributeMembers)
+            foreach (var member in info!.AttributeMembers)
             {
                 if (member.IsRelationship)
                 {
@@ -289,6 +315,38 @@ namespace Jsonyte.Converters.Objects
             }
 
             tracked.Relationships.Clear();
+        }
+
+        private void EnsureTypeInfo(JsonSerializerOptions options)
+        {
+            if (info == null)
+            {
+                info = options.GetTypeInfo(typeof(T));
+
+                ValidateResource(info);
+            }
+        }
+
+        private void ValidateResource(JsonTypeInfo info)
+        {
+            var idProperty = info.IdMember;
+
+            if (!string.IsNullOrEmpty(idProperty.Name) && idProperty.MemberType != typeof(string))
+            {
+                throw new JsonApiFormatException("JSON:API resource id must be a string");
+            }
+
+            var typeProperty = info.TypeMember;
+
+            if (string.IsNullOrEmpty(typeProperty.Name))
+            {
+                throw new JsonApiFormatException("JSON:API resource must have a 'type' member");
+            }
+
+            if (typeProperty.MemberType != typeof(string))
+            {
+                throw new JsonApiFormatException("JSON:API resource type must be a string");
+            }
         }
     }
 }
