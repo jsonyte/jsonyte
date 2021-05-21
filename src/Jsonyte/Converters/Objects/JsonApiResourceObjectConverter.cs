@@ -175,7 +175,7 @@ namespace Jsonyte.Converters.Objects
                 if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(type))
                 {
                     var idBytes = id?.ToByteArray() ?? Array.Empty<byte>();
-                    var typeBytes = id?.ToByteArray() ?? Array.Empty<byte>();
+                    var typeBytes = type?.ToByteArray() ?? Array.Empty<byte>();
 
                     tracked.SetIncluded(idBytes, typeBytes, id ?? string.Empty, type ?? string.Empty, options.GetObjectConverter(typeof(T)), value, emitIncluded: false);
                 }
