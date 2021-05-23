@@ -318,5 +318,59 @@ namespace Jsonyte.Tests.Deserialization
             Assert.Equal("articles", model.Referenced.Type);
             Assert.Equal("Another Jsonapi", model.Referenced.Title);
         }
+
+        [Fact]
+        public void CanDeserializeWithCircularReferences()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'first',
+                    'attributes': {
+                      'value': 'here'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': {
+                          'id': '2',
+                          'type': 'second'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }";
+
+            var model = json.Deserialize<ModelWithCircularType>();
+
+            Assert.Equal("1", model.Id);
+            Assert.Equal("first", model.Type);
+            Assert.Equal("here", model.Value);
+
+            Assert.NotNull(model.First);
+            Assert.Equal("2", model.First.Id);
+            Assert.Equal("second", model.First.Type);
+            Assert.Equal("we", model.First.Value);
+
+            Assert.NotNull(model.First.Second);
+            Assert.Same(model, model.First.Second);
+        }
     }
 }

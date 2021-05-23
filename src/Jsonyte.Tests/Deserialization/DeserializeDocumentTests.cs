@@ -1,4 +1,5 @@
-﻿using Jsonyte.Tests.Models;
+﻿using System;
+using Jsonyte.Tests.Models;
 using Xunit;
 
 namespace Jsonyte.Tests.Deserialization
@@ -558,6 +559,67 @@ namespace Jsonyte.Tests.Deserialization
 
             Assert.NotNull(document.JsonApi);
             Assert.Equal("1.0", document.JsonApi.Version);
+        }
+
+        [Fact]
+        public void CanDeserializeCircularRelationshipWithDocument()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void CanDeserializeCircularRelationshipWithTypedDocument()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'first',
+                    'attributes': {
+                      'value': 'here'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': {
+                          'id': '2',
+                          'type': 'second'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }";
+
+            var document = json.Deserialize<JsonApiDocument<ModelWithCircularType>>();
+
+            Assert.NotNull(document.Data);
+            Assert.Equal("1", document.Data.Id);
+            Assert.Equal("first", document.Data.Type);
+            Assert.Equal("here", document.Data.Value);
+
+            Assert.NotNull(document.Data.First);
+            Assert.Equal("2", document.Data.First.Id);
+            Assert.Equal("second", document.Data.First.Type);
+            Assert.Equal("we", document.Data.First.Value);
+
+            Assert.NotNull(document.Data.First.Second);
+            Assert.Same(document.Data, document.Data.First.Second);
         }
     }
 }

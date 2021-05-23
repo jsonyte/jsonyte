@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Jsonyte.Serialization;
+using Jsonyte.Serialization.Metadata;
 
 namespace Jsonyte.Converters.Objects
 {
@@ -15,17 +16,17 @@ namespace Jsonyte.Converters.Objects
             document.Errors = ReadWrapped<JsonApiError[]>(ref reader, ref tracked, options);
         }
 
-        protected override void ReadJsonApi(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument document, JsonSerializerOptions options)
+        protected override void ReadJsonApi(ref Utf8JsonReader reader, JsonApiDocument document, JsonSerializerOptions options)
         {
             document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
         }
 
-        protected override void ReadMeta(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument document, JsonSerializerOptions options)
+        protected override void ReadMeta(ref Utf8JsonReader reader, JsonApiDocument document, JsonSerializerOptions options)
         {
             document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
         }
 
-        protected override void ReadLinks(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument document, JsonSerializerOptions options)
+        protected override void ReadLinks(ref Utf8JsonReader reader, JsonApiDocument document, JsonSerializerOptions options)
         {
             document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
         }
@@ -74,7 +75,24 @@ namespace Jsonyte.Converters.Objects
 
         protected override void WriteIncluded(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument value, JsonSerializerOptions options)
         {
-            WriteIfNotNull(writer, JsonApiMembers.IncludedEncoded, value.Included, options);
+            if (value.Included != null)
+            {
+                writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
+
+                writer.WriteStartArray();
+
+                foreach (var resource in value.Included)
+                {
+                    if (string.IsNullOrEmpty(resource.Id) || string.IsNullOrEmpty(resource.Type))
+                    {
+                        throw new JsonApiFormatException("JSON:API included resource must contain both 'id' and 'type' members");
+                    }
+
+                    JsonSerializer.Serialize(writer, resource, options);
+                }
+
+                writer.WriteEndArray();
+            }
         }
 
         protected override void ValidateDocument(JsonApiDocument document)
@@ -93,6 +111,8 @@ namespace Jsonyte.Converters.Objects
 
     internal class JsonApiDocumentDataConverter<T> : JsonApiDocumentConverter<JsonApiDocument<T>>
     {
+        private JsonTypeInfo? info;
+
         protected override void ReadData(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
         {
             document.Data = ReadWrapped<T>(ref reader, ref tracked, options);
@@ -103,17 +123,17 @@ namespace Jsonyte.Converters.Objects
             document.Errors = ReadWrapped<JsonApiError[]>(ref reader, ref tracked, options);
         }
 
-        protected override void ReadJsonApi(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
+        protected override void ReadJsonApi(ref Utf8JsonReader reader, JsonApiDocument<T> document, JsonSerializerOptions options)
         {
             document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
         }
 
-        protected override void ReadMeta(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
+        protected override void ReadMeta(ref Utf8JsonReader reader, JsonApiDocument<T> document, JsonSerializerOptions options)
         {
             document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
         }
 
-        protected override void ReadLinks(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
+        protected override void ReadLinks(ref Utf8JsonReader reader, JsonApiDocument<T> document, JsonSerializerOptions options)
         {
             document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
         }
@@ -145,6 +165,26 @@ namespace Jsonyte.Converters.Objects
             {
                 throw new JsonApiFormatException("JSON:API document must not contain both 'data' and 'errors' members");
             }
+        }
+
+        protected override void CacheResource(ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
+        {
+            if (document.Data == null)
+            {
+                return;
+            }
+
+            EnsureTypeInfo(options);
+
+            var id = info!.IdMember.GetValue(document.Data) as string;
+            var type = info.TypeMember.GetValue(document.Data) as string;
+
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
+            {
+                return;
+            }
+
+            tracked.SetIncluded(new ResourceIdentifier(id!.ToByteArray(), type!.ToByteArray()), id!, type!, options.GetObjectConverter<T>(), document.Data);
         }
 
         protected override void WriteData(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument<T> value, JsonSerializerOptions options)
@@ -196,13 +236,22 @@ namespace Jsonyte.Converters.Objects
                 while (index < tracked.Count)
                 {
                     var included = tracked.Get(index);
-                    included.Converter.Write(writer, ref tracked, included.Value, options);
+
+                    if (!ReferenceEquals(value.Data, included.Value))
+                    {
+                        included.Converter.Write(writer, ref tracked, included.Value, options);
+                    }
 
                     index++;
                 }
 
                 writer.WriteEndArray();
             }
+        }
+
+        private void EnsureTypeInfo(JsonSerializerOptions options)
+        {
+            info ??= options.GetTypeInfo(typeof(T));
         }
     }
 }

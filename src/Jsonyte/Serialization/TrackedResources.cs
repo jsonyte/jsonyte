@@ -51,7 +51,7 @@ namespace Jsonyte.Serialization
             SetIncluded(idKey, typeKey, identifier.Id.ToArray(), identifier.Type.ToArray(), idString, typeString, converter, value);
         }
 
-        public void SetIncluded(byte[] id, byte[] type, string idString, string typeString, JsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null, bool emitIncluded = true)
+        public void SetIncluded(byte[] id, byte[] type, string idString, string typeString, JsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
         {
             references ??= new IncludedRef[CachedReferences];
 
@@ -62,16 +62,16 @@ namespace Jsonyte.Serialization
                 return;
             }
 
-            SetIncluded(idKey, typeKey, id, type, idString, typeString, converter, value, unwrittenRelationship, emitIncluded);
+            SetIncluded(idKey, typeKey, id, type, idString, typeString, converter, value, unwrittenRelationship);
         }
 
-        private void SetIncluded(ulong idKey, ulong typeKey, byte[] id, byte[] type, string idString, string typeString, JsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null, bool emitIncluded = true)
+        private void SetIncluded(ulong idKey, ulong typeKey, byte[] id, byte[] type, string idString, string typeString, JsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
         {
             var relationshipId = unwrittenRelationship != null
                 ? Relationships.SetRelationship(unwrittenRelationship.Value)
                 : null;
 
-            var included = new IncludedRef(idKey, typeKey, id, type, converter, value, relationshipId, emitIncluded);
+            var included = new IncludedRef(idKey, typeKey, id, type, converter, value, relationshipId);
 
             if (Count < CachedReferences)
             {

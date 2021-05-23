@@ -18,9 +18,7 @@ namespace Jsonyte.Serialization
 
         public readonly int? RelationshipId;
 
-        public readonly bool EmitIincluded;
-
-        public IncludedRef(ulong idKey, ulong typeKey, byte[] id, byte[] type, JsonObjectConverter converter, object value, int? relationshipId = null, bool emitIncluded = true)
+        public IncludedRef(ulong idKey, ulong typeKey, byte[] id, byte[] type, JsonObjectConverter converter, object value, int? relationshipId = null)
         {
             IdKey = idKey;
             TypeKey = typeKey;
@@ -29,7 +27,6 @@ namespace Jsonyte.Serialization
             Converter = converter;
             Value = value;
             RelationshipId = relationshipId;
-            EmitIincluded = emitIncluded;
         }
 
         public ResourceIdentifier Identifier => new(Id, Type);

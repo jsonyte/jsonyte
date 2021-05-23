@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Jsonyte.Serialization;
 using Jsonyte.Serialization.Metadata;
@@ -106,10 +107,16 @@ namespace Jsonyte.Converters.Collections
 
                 var index = 0;
 
+                var elements = GetCollection(value);
+
                 while (index < tracked.Count)
                 {
                     var included = tracked.Get(index);
-                    included.Converter.Write(writer, ref tracked, included.Value, options);
+
+                    if (!elements.Any(x => ReferenceEquals(x, included.Value)))
+                    {
+                        included.Converter.Write(writer, ref tracked, included.Value, options);
+                    }
 
                     index++;
                 }
@@ -150,6 +157,19 @@ namespace Jsonyte.Converters.Collections
             return TypeCategory == JsonTypeCategory.Array
                 ? resources.ToArray()
                 : resources;
+        }
+
+        private IList<TElement> GetCollection(T resources)
+        {
+            var enumerable = resources as IEnumerable<TElement>;
+
+            return enumerable switch
+            {
+                TElement[] array => array,
+                IList<TElement> list => list,
+                null => Array.Empty<TElement>(),
+                _ => enumerable.ToArray()
+            };
         }
 
         private WrappedJsonConverter<TElement> GetWrappedConverter(JsonSerializerOptions options)

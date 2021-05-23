@@ -699,5 +699,271 @@ namespace Jsonyte.Tests.Serialization
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeCircularRelationshipWithDocument()
+        {
+            var document = new JsonApiDocument
+            {
+                Data = new JsonApiResource[]
+                {
+                    new()
+                    {
+                        Id = "1",
+                        Type = "first",
+                        Attributes = new Dictionary<string, JsonElement>
+                        {
+                            {"value", "here".ToElement()}
+                        },
+                        Relationships = new Dictionary<string, JsonApiRelationship>
+                        {
+                            {
+                                "first", new JsonApiRelationship
+                                {
+                                    Data = new JsonApiResourceIdentifier[]
+                                    {
+                                        new("2", "second")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                Included = new JsonApiResource[]
+                {
+                    new()
+                    {
+                        Id = "2",
+                        Type = "second",
+                        Attributes = new Dictionary<string, JsonElement>
+                        {
+                            {"value", "we".ToElement()}
+                        },
+                        Relationships = new Dictionary<string, JsonApiRelationship>
+                        {
+                            {
+                                "second", new JsonApiRelationship
+                                {
+                                    Data = new JsonApiResourceIdentifier[]
+                                    {
+                                        new("1", "first")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            var json = document.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'first',
+                    'attributes': {
+                      'value': 'here'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': {
+                          'id': '2',
+                          'type': 'second'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeCircularRelationshipWithTypedDocument()
+        {
+            var model = new ModelWithCircularType
+            {
+                Id = "1",
+                Type = "first",
+                Value = "here"
+            };
+
+            var another = new ModelWithAnotherCircularType
+            {
+                Id = "2",
+                Type = "second",
+                Value = "we",
+                Second = model
+            };
+
+            model.First = another;
+
+            var document = JsonApiDocument.Create(model);
+
+            var json = document.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'first',
+                    'attributes': {
+                      'value': 'here'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': {
+                          'id': '2',
+                          'type': 'second'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeCollectionWithCircularReferencesWithTypedDocument()
+        {
+            var model1 = new ModelWithCircularType
+            {
+                Id = "1",
+                Type = "first",
+                Value = "here1"
+            };
+
+            var model2 = new ModelWithCircularType
+            {
+                Id = "2",
+                Type = "first",
+                Value = "here2"
+            };
+
+            var another1 = new ModelWithAnotherCircularType
+            {
+                Id = "3",
+                Type = "second",
+                Value = "we1",
+                Second = model1
+            };
+
+            var another2 = new ModelWithAnotherCircularType
+            {
+                Id = "4",
+                Type = "second",
+                Value = "we2",
+                Second = model2
+            };
+
+            model1.First = another1;
+            model2.First = another2;
+
+            var models = new[] {model1, model2};
+
+            var document = JsonApiDocument.Create(models);
+
+            var json = document.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'first',
+                      'attributes': {
+                        'value': 'here1'
+                      },
+                      'relationships': {
+                        'first': {
+                          'data': {
+                            'id': '3',
+                            'type': 'second'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '2',
+                      'type': 'first',
+                      'attributes': {
+                        'value': 'here2'
+                      },
+                      'relationships': {
+                        'first': {
+                          'data': {
+                            'id': '4',
+                            'type': 'second'
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  'included': [
+                    {
+                      'id': '3',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we1'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '4',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we2'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '2',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

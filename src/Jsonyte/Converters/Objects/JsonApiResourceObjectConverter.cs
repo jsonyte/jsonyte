@@ -32,6 +32,8 @@ namespace Jsonyte.Converters.Objects
                 }
                 else if (name == DocumentFlags.Included)
                 {
+                    CacheResource(ref tracked, resource, options);
+
                     if (state.HasFlag(DocumentFlags.Data))
                     {
                         ReadIncluded(ref reader, ref tracked, options);
@@ -161,25 +163,29 @@ namespace Jsonyte.Converters.Objects
             }
         }
 
+        private void CacheResource(ref TrackedResources tracked, T? value, JsonSerializerOptions options)
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            var id = info!.IdMember.GetValue(value) as string;
+            var type = info.TypeMember.GetValue(value) as string;
+
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
+            {
+                return;
+            }
+
+            tracked.SetIncluded(new ResourceIdentifier(id!.ToByteArray(), type!.ToByteArray()), id!, type!, options.GetObjectConverter<T>(), value);
+        }
+
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
             EnsureTypeInfo(options);
 
             var tracked = new TrackedResources();
-
-            if (value != null)
-            {
-                var id = info!.IdMember.GetValue(value) as string;
-                var type = info.TypeMember.GetValue(value) as string;
-
-                if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(type))
-                {
-                    var idBytes = id?.ToByteArray() ?? Array.Empty<byte>();
-                    var typeBytes = type?.ToByteArray() ?? Array.Empty<byte>();
-
-                    tracked.SetIncluded(idBytes, typeBytes, id ?? string.Empty, type ?? string.Empty, options.GetObjectConverter(typeof(T)), value, emitIncluded: false);
-                }
-            }
 
             writer.WriteStartObject();
 
@@ -197,7 +203,7 @@ namespace Jsonyte.Converters.Objects
                 {
                     var included = tracked.Get(index);
 
-                    if (included.EmitIincluded)
+                    if (!ReferenceEquals(value, included.Value))
                     {
                         included.Converter.Write(writer, ref tracked, included.Value, options);
                     }
@@ -327,16 +333,16 @@ namespace Jsonyte.Converters.Objects
             }
         }
 
-        private void ValidateResource(JsonTypeInfo info)
+        private void ValidateResource(JsonTypeInfo typeInfo)
         {
-            var idProperty = info.IdMember;
+            var idProperty = typeInfo.IdMember;
 
             if (!string.IsNullOrEmpty(idProperty.Name) && idProperty.MemberType != typeof(string))
             {
                 throw new JsonApiFormatException("JSON:API resource id must be a string");
             }
 
-            var typeProperty = info.TypeMember;
+            var typeProperty = typeInfo.TypeMember;
 
             if (string.IsNullOrEmpty(typeProperty.Name))
             {
