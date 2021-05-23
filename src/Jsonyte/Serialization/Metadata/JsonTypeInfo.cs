@@ -288,5 +288,12 @@ namespace Jsonyte.Serialization.Metadata
 
             return jsonParameters;
         }
+
+        private bool GetHasCircularReferences()
+        {
+
+
+            return false;
+        }
     }
 }
