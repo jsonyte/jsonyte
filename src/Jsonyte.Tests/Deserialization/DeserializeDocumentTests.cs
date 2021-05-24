@@ -1,4 +1,5 @@
-﻿using Jsonyte.Tests.Models;
+﻿using System;
+using Jsonyte.Tests.Models;
 using Xunit;
 
 namespace Jsonyte.Tests.Deserialization
@@ -558,6 +559,163 @@ namespace Jsonyte.Tests.Deserialization
 
             Assert.NotNull(document.JsonApi);
             Assert.Equal("1.0", document.JsonApi.Version);
+        }
+
+        [Fact]
+        public void CanDeserializeCircularRelationshipWithTypedDocument()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'first',
+                    'attributes': {
+                      'value': 'here'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': {
+                          'id': '2',
+                          'type': 'second'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }";
+
+            var document = json.Deserialize<JsonApiDocument<ModelWithCircularType>>();
+
+            Assert.NotNull(document.Data);
+            Assert.Equal("1", document.Data.Id);
+            Assert.Equal("first", document.Data.Type);
+            Assert.Equal("here", document.Data.Value);
+
+            Assert.NotNull(document.Data.First);
+            Assert.Equal("2", document.Data.First.Id);
+            Assert.Equal("second", document.Data.First.Type);
+            Assert.Equal("we", document.Data.First.Value);
+
+            Assert.NotNull(document.Data.First.Second);
+            Assert.Same(document.Data, document.Data.First.Second);
+        }
+
+        [Fact]
+        public void CanDeserializeCircularRelationshipCollectionWithTypedDocument()
+        {
+            const string json = @"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'first',
+                      'attributes': {
+                        'value': 'here1'
+                      },
+                      'relationships': {
+                        'first': {
+                          'data': {
+                            'id': '3',
+                            'type': 'second'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '2',
+                      'type': 'first',
+                      'attributes': {
+                        'value': 'here2'
+                      },
+                      'relationships': {
+                        'first': {
+                          'data': {
+                            'id': '4',
+                            'type': 'second'
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  'included': [
+                    {
+                      'id': '3',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we1'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '4',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we2'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '2',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }";
+
+            var document = json.Deserialize<JsonApiDocument<ModelWithCircularType[]>>();
+
+            Assert.NotNull(document.Data);
+            Assert.Equal(2, document.Data.Length);
+
+            Assert.Equal("1", document.Data[0].Id);
+            Assert.Equal("first", document.Data[0].Type);
+            Assert.Equal("here1", document.Data[0].Value);
+
+            Assert.Equal("2", document.Data[1].Id);
+            Assert.Equal("first", document.Data[1].Type);
+            Assert.Equal("here2", document.Data[1].Value);
+
+            Assert.NotNull(document.Data[0].First);
+            Assert.NotNull(document.Data[1].First);
+
+            Assert.Equal("3", document.Data[0].First.Id);
+            Assert.Equal("second", document.Data[0].First.Type);
+            Assert.Equal("we1", document.Data[0].First.Value);
+
+            Assert.Equal("4", document.Data[1].First.Id);
+            Assert.Equal("second", document.Data[1].First.Type);
+            Assert.Equal("we2", document.Data[1].First.Value);
+
+            Assert.NotNull(document.Data[0].First.Second);
+            Assert.NotNull(document.Data[1].First.Second);
+
+            Assert.Same(document.Data[0], document.Data[0].First.Second);
+            Assert.Same(document.Data[1], document.Data[1].First.Second);
         }
     }
 }

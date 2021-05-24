@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Collections;
+using System.Linq;
+using System.Text.Json;
 using Jsonyte.Serialization;
 
 namespace Jsonyte.Converters.Objects
@@ -15,17 +17,17 @@ namespace Jsonyte.Converters.Objects
             document.Errors = ReadWrapped<JsonApiError[]>(ref reader, ref tracked, options);
         }
 
-        protected override void ReadJsonApi(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument document, JsonSerializerOptions options)
+        protected override void ReadJsonApi(ref Utf8JsonReader reader, JsonApiDocument document, JsonSerializerOptions options)
         {
             document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
         }
 
-        protected override void ReadMeta(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument document, JsonSerializerOptions options)
+        protected override void ReadMeta(ref Utf8JsonReader reader, JsonApiDocument document, JsonSerializerOptions options)
         {
             document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
         }
 
-        protected override void ReadLinks(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument document, JsonSerializerOptions options)
+        protected override void ReadLinks(ref Utf8JsonReader reader, JsonApiDocument document, JsonSerializerOptions options)
         {
             document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
         }
@@ -74,7 +76,24 @@ namespace Jsonyte.Converters.Objects
 
         protected override void WriteIncluded(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument value, JsonSerializerOptions options)
         {
-            WriteIfNotNull(writer, JsonApiMembers.IncludedEncoded, value.Included, options);
+            if (value.Included != null)
+            {
+                writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
+
+                writer.WriteStartArray();
+
+                foreach (var resource in value.Included)
+                {
+                    if (string.IsNullOrEmpty(resource.Id) || string.IsNullOrEmpty(resource.Type))
+                    {
+                        throw new JsonApiFormatException("JSON:API included resource must contain both 'id' and 'type' members");
+                    }
+
+                    JsonSerializer.Serialize(writer, resource, options);
+                }
+
+                writer.WriteEndArray();
+            }
         }
 
         protected override void ValidateDocument(JsonApiDocument document)
@@ -103,17 +122,17 @@ namespace Jsonyte.Converters.Objects
             document.Errors = ReadWrapped<JsonApiError[]>(ref reader, ref tracked, options);
         }
 
-        protected override void ReadJsonApi(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
+        protected override void ReadJsonApi(ref Utf8JsonReader reader, JsonApiDocument<T> document, JsonSerializerOptions options)
         {
             document.JsonApi = JsonSerializer.Deserialize<JsonApiObject>(ref reader, options);
         }
 
-        protected override void ReadMeta(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
+        protected override void ReadMeta(ref Utf8JsonReader reader, JsonApiDocument<T> document, JsonSerializerOptions options)
         {
             document.Meta = JsonSerializer.Deserialize<JsonApiMeta>(ref reader, options);
         }
 
-        protected override void ReadLinks(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
+        protected override void ReadLinks(ref Utf8JsonReader reader, JsonApiDocument<T> document, JsonSerializerOptions options)
         {
             document.Links = JsonSerializer.Deserialize<JsonApiDocumentLinks>(ref reader, options);
         }
@@ -188,21 +207,103 @@ namespace Jsonyte.Converters.Objects
         {
             if (tracked.Count > 0)
             {
-                writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
-                writer.WriteStartArray();
+                var elements = GetDataAsList(value.Data);
 
-                var index = 0;
-
-                while (index < tracked.Count)
+                if (elements != null)
                 {
-                    var included = tracked.Get(index);
-                    included.Converter.Write(writer, ref tracked, included.Value, options);
+                    WriteIncludedResourceCollection(writer, ref tracked, elements, options);
+                }
+                else
+                {
+                    WriteIncludedResource(writer, ref tracked, value.Data, options);
+                }
+            }
+        }
 
-                    index++;
+        private void WriteIncludedResource(Utf8JsonWriter writer, ref TrackedResources tracked, T? data, JsonSerializerOptions options)
+        {
+            var nameWritten = false;
+            var index = 0;
+
+            while (index < tracked.Count)
+            {
+                var included = tracked.Get(index);
+
+                if (!ReferenceEquals(data, included.Value))
+                {
+                    if (!nameWritten)
+                    {
+                        writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
+                        writer.WriteStartArray();
+
+                        nameWritten = true;
+                    }
+
+                    included.Converter.Write(writer, ref tracked, included.Value, options);
                 }
 
+                index++;
+            }
+
+            if (nameWritten)
+            {
                 writer.WriteEndArray();
             }
+        }
+
+        private void WriteIncludedResourceCollection(Utf8JsonWriter writer, ref TrackedResources tracked, IList elements, JsonSerializerOptions options)
+        {
+            var nameWritten = false;
+            var index = 0;
+
+            while (index < tracked.Count)
+            {
+                var included = tracked.Get(index);
+
+                var emitIncluded = true;
+
+                foreach (var element in elements)
+                {
+                    if (ReferenceEquals(element, included.Value))
+                    {
+                        emitIncluded = false;
+                        break;
+                    }
+                }
+
+                if (emitIncluded)
+                {
+                    if (!nameWritten)
+                    {
+                        writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
+                        writer.WriteStartArray();
+
+                        nameWritten = true;
+                    }
+
+                    included.Converter.Write(writer, ref tracked, included.Value, options);
+                }
+
+                index++;
+            }
+
+            if (nameWritten)
+            {
+                writer.WriteEndArray();
+            }
+        }
+
+        private IList? GetDataAsList(T? resources)
+        {
+            var enumerable = resources as IEnumerable;
+
+            return enumerable switch
+            {
+                object[] array => array,
+                IList list => list,
+                null => null,
+                _ => enumerable.Cast<object>().ToArray()
+            };
         }
     }
 }

@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Converters.Collections;
 using Jsonyte.Converters.Objects;
-using Jsonyte.Serialization.Metadata;
 
 namespace Jsonyte.Converters
 {
@@ -114,7 +113,7 @@ namespace Jsonyte.Converters
                     ? typeof(JsonApiResourceObjectExplicitRelationshipConverter<>)
                     : typeof(JsonApiResourceObjectRelationshipConverter<>);
 
-                return CreateConverter(converterType, info, relationshipType);
+                return CreateConverter(converterType, relationshipType);
             }
 
             if (typeToConvert.IsCollection())
@@ -152,13 +151,6 @@ namespace Jsonyte.Converters
             var genericType = converterType.MakeGenericType(typesToConvert);
 
             return Activator.CreateInstance(genericType) as JsonConverter;
-        }
-
-        protected JsonConverter? CreateConverter(Type converterType, JsonTypeInfo info, params Type[] typesToConvert)
-        {
-            var genericType = converterType.MakeGenericType(typesToConvert);
-
-            return Activator.CreateInstance(genericType, info) as JsonConverter;
         }
     }
 }

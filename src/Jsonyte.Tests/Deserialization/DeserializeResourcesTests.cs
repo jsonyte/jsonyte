@@ -210,5 +210,107 @@ namespace Jsonyte.Tests.Deserialization
             Assert.NotNull(articles);
             Assert.Equal(2, articles.Count());
         }
+
+        [Fact]
+        public void CanDeserializeCollectionWithCircularReferences()
+        {
+            const string json = @"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'first',
+                      'attributes': {
+                        'value': 'here1'
+                      },
+                      'relationships': {
+                        'first': {
+                          'data': {
+                            'id': '3',
+                            'type': 'second'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '2',
+                      'type': 'first',
+                      'attributes': {
+                        'value': 'here2'
+                      },
+                      'relationships': {
+                        'first': {
+                          'data': {
+                            'id': '4',
+                            'type': 'second'
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  'included': [
+                    {
+                      'id': '3',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we1'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '4',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we2'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '2',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }";
+
+            var models = json.Deserialize<ModelWithCircularType[]>();
+
+            Assert.NotNull(models);
+            Assert.Equal(2, models.Length);
+
+            Assert.Equal("1", models[0].Id);
+            Assert.Equal("first", models[0].Type);
+            Assert.Equal("here1", models[0].Value);
+
+            Assert.Equal("2", models[1].Id);
+            Assert.Equal("first", models[1].Type);
+            Assert.Equal("here2", models[1].Value);
+
+            Assert.NotNull(models[0].First);
+            Assert.NotNull(models[1].First);
+
+            Assert.Equal("3", models[0].First.Id);
+            Assert.Equal("second", models[0].First.Type);
+            Assert.Equal("we1", models[0].First.Value);
+
+            Assert.Equal("4", models[1].First.Id);
+            Assert.Equal("second", models[1].First.Type);
+            Assert.Equal("we2", models[1].First.Value);
+
+            Assert.NotNull(models[0].First.Second);
+            Assert.NotNull(models[1].First.Second);
+
+            Assert.Same(models[0], models[0].First.Second);
+            Assert.Same(models[1], models[1].First.Second);
+        }
     }
 }

@@ -20,11 +20,11 @@ namespace Jsonyte.Converters.Objects
 
         protected abstract void ReadErrors(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
 
-        protected abstract void ReadJsonApi(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
+        protected abstract void ReadJsonApi(ref Utf8JsonReader reader, T document, JsonSerializerOptions options);
 
-        protected abstract void ReadMeta(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
+        protected abstract void ReadMeta(ref Utf8JsonReader reader, T document, JsonSerializerOptions options);
 
-        protected abstract void ReadLinks(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
+        protected abstract void ReadLinks(ref Utf8JsonReader reader, T document, JsonSerializerOptions options);
 
         protected abstract void ReadIncluded(ref Utf8JsonReader reader, ref TrackedResources tracked, T document, JsonSerializerOptions options);
 
@@ -52,15 +52,15 @@ namespace Jsonyte.Converters.Objects
                 }
                 else if (name == DocumentFlags.Jsonapi)
                 {
-                    ReadJsonApi(ref reader, ref tracked, document, options);
+                    ReadJsonApi(ref reader, document, options);
                 }
                 else if (name == DocumentFlags.Meta)
                 {
-                    ReadMeta(ref reader, ref tracked, document, options);
+                    ReadMeta(ref reader, document, options);
                 }
                 else if (name == DocumentFlags.Links)
                 {
-                    ReadLinks(ref reader, ref tracked, document, options);
+                    ReadLinks(ref reader, document, options);
                 }
                 else if (name == DocumentFlags.Included)
                 {

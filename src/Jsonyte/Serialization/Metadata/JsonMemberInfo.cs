@@ -59,7 +59,7 @@ namespace Jsonyte.Serialization.Metadata
             MemberName = member.Name;
             Name = name;
             NameEncoded = JsonEncodedText.Encode(name);
-            IsPrimitiveType = GetIsPrimitiveType(memberType);
+            IsPrimitiveType = memberType.GetIsPrimitive();
             IsNumericType = GetIsNumericType(memberType);
             TypedConverter = (JsonConverter<T>) converter;
             WrappedConverter = converter as WrappedJsonConverter<T>;
@@ -325,18 +325,6 @@ namespace Jsonyte.Serialization.Metadata
             }
 
             return member.Name;
-        }
-
-        private bool GetIsPrimitiveType(Type type)
-        {
-            var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-
-            return underlyingType.IsPrimitive ||
-                   underlyingType == typeof(string) ||
-                   underlyingType == typeof(decimal) ||
-                   underlyingType == typeof(DateTime) ||
-                   underlyingType == typeof(Guid) ||
-                   underlyingType == typeof(TimeSpan);
         }
 
         private bool GetIsNumericType(Type? type)

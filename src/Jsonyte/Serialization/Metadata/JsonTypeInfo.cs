@@ -15,11 +15,15 @@ namespace Jsonyte.Serialization.Metadata
 
         private static readonly EmptyJsonMemberInfo EmptyMember = new();
 
+#if CONSTRUCTOR_CONVERTER
         private static readonly EmptyJsonParameterInfo EmptyParameter = new(-1);
+#endif
 
         private readonly Dictionary<string, JsonMemberInfo> nameCache;
 
+#if CONSTRUCTOR_CONVERTER
         private readonly Dictionary<string, JsonParameterInfo> parameterCache;
+#endif
 
         private readonly MemberRef[] memberCache;
 
@@ -29,6 +33,7 @@ namespace Jsonyte.Serialization.Metadata
 
             Creator = options.GetMemberAccessor().CreateCreator(type);
             CreatorWithArguments = options.GetMemberAccessor().CreateParameterizedCreator(constructor);
+            HasCircularReferences = GetHasCircularReferences(type, type, options);
 
             var members = GetProperties(type, options)
                 .Concat(GetFields(type, options))
@@ -44,7 +49,10 @@ namespace Jsonyte.Serialization.Metadata
             }
 
             nameCache = GetNameCache(members);
+
+#if CONSTRUCTOR_CONVERTER
             parameterCache = GetParameters(constructor, members, options);
+#endif
 
             AttributeMembers = members
                 .Where(x => !x.Name.Equals(JsonApiMembers.Id, StringComparison.OrdinalIgnoreCase) &&
@@ -68,6 +76,8 @@ namespace Jsonyte.Serialization.Metadata
         public Func<object?> Creator { get; }
 
         public Func<object[], object?> CreatorWithArguments { get; }
+
+        public bool HasCircularReferences { get; }
 
         public JsonMemberInfo[] AttributeMembers { get; }
 
@@ -106,6 +116,7 @@ namespace Jsonyte.Serialization.Metadata
                 : EmptyMember;
         }
 
+#if CONSTRUCTOR_CONVERTER
         public JsonParameterInfo? GetParameter(string? name)
         {
             if (name == null)
@@ -117,6 +128,7 @@ namespace Jsonyte.Serialization.Metadata
 
             return parameter;
         }
+#endif
 
         private Dictionary<string, JsonMemberInfo> GetNameCache(JsonMemberInfo[] members)
         {
@@ -256,6 +268,7 @@ namespace Jsonyte.Serialization.Metadata
             return publicConstructors.First();
         }
 
+#if CONSTRUCTOR_CONVERTER
         private Dictionary<string, JsonParameterInfo> GetParameters(ConstructorInfo constructor, JsonMemberInfo[] members, JsonSerializerOptions options)
         {
             var membersByName = members.ToDictionary(x => x.Name, options.GetPropertyComparer());
@@ -287,6 +300,74 @@ namespace Jsonyte.Serialization.Metadata
             }
 
             return jsonParameters;
+        }
+#endif
+
+        private bool GetHasCircularReferences(Type? type, Type parentType, JsonSerializerOptions options)
+        {
+            var types = new HashSet<Type>();
+
+            return GetHasCircularReferences(type, parentType, types, options);
+        }
+
+        private bool GetHasCircularReferences(Type? type, Type parentType, HashSet<Type> types, JsonSerializerOptions options)
+        {
+            if (types.Count > 0 && type == parentType)
+            {
+                return true;
+            }
+
+            if (type == null || types.Contains(type))
+            {
+                return false;
+            }
+
+            types.Add(type);
+
+            if (type.IsCollection())
+            {
+                return GetHasCircularReferences(type.GetCollectionElementType(), parentType, types, options);
+            }
+
+            var properties = type
+                .GetProperties(Flags)
+                .Where(x => !x.GetIndexParameters().Any())
+                .Where(x => x.GetMethod?.IsPublic == true || x.SetMethod?.IsPublic == true);
+
+            foreach (var property in properties)
+            {
+                if (property.PropertyType == parentType)
+                {
+                    return true;
+                }
+
+                if (!property.PropertyType.GetIsPrimitive())
+                {
+                    return GetHasCircularReferences(property.PropertyType, parentType, types, options);
+                }
+            }
+
+            if (options.IncludeFields)
+            {
+                var fields = type
+                    .GetFields(Flags)
+                    .Where(x => x.IsPublic);
+
+                foreach (var field in fields)
+                {
+                    if (field.FieldType == parentType)
+                    {
+                        return true;
+                    }
+
+                    if (!field.FieldType.GetIsPrimitive())
+                    {
+                        return GetHasCircularReferences(field.FieldType, parentType, types, options);
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

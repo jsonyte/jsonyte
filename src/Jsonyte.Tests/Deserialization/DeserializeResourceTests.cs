@@ -230,7 +230,7 @@ namespace Jsonyte.Tests.Deserialization
         [Fact]
         public void CanDeserializeModelWithNullableDecimalAsString()
         {
-            const string jsonapi = @"
+            const string json = @"
                 {
                   'data': {
                     'id': '1',
@@ -255,7 +255,7 @@ namespace Jsonyte.Tests.Deserialization
             var options = new JsonSerializerOptions();
             options.NumberHandling = JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString;
 
-            var model = jsonapi.Deserialize<ModelWithNullableTypes>(options);
+            var model = json.Deserialize<ModelWithNullableTypes>(options);
 
             Assert.Equal("1", model.Id);
             Assert.Equal("model", model.Type);
@@ -274,6 +274,159 @@ namespace Jsonyte.Tests.Deserialization
             Assert.IsType<JsonElement>(model.ObjectValue);
             Assert.Equal(JsonValueKind.String, ((JsonElement)model.ObjectValue).ValueKind);
             Assert.Equal("12", ((JsonElement)model.ObjectValue).GetString());
+        }
+
+        [Fact]
+        public void CanDeserializeModelsWithRecursiveProperties()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'referenced': {
+                        'data': {
+                          'id': '2',
+                          'type': 'articles'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'Another Jsonapi'
+                      }
+                    }
+                  ]
+                }";
+
+            var model = json.Deserialize<ArticleWithNestedArticles>();
+
+            Assert.Equal("1", model.Id);
+            Assert.Equal("articles", model.Type);
+            Assert.Equal("Jsonapi", model.Title);
+
+            Assert.NotNull(model.Referenced);
+            Assert.Equal("2", model.Referenced.Id);
+            Assert.Equal("articles", model.Referenced.Type);
+            Assert.Equal("Another Jsonapi", model.Referenced.Title);
+        }
+
+        [Fact]
+        public void CanDeserializeWithCircularReferences()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'first',
+                    'attributes': {
+                      'value': 'here'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': {
+                          'id': '2',
+                          'type': 'second'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }";
+
+            var model = json.Deserialize<ModelWithCircularType>();
+
+            Assert.Equal("1", model.Id);
+            Assert.Equal("first", model.Type);
+            Assert.Equal("here", model.Value);
+
+            Assert.NotNull(model.First);
+            Assert.Equal("2", model.First.Id);
+            Assert.Equal("second", model.First.Type);
+            Assert.Equal("we", model.First.Value);
+
+            Assert.NotNull(model.First.Second);
+            Assert.Same(model, model.First.Second);
+        }
+
+        [Fact]
+        public void CanDeserializeCircularTypeCollection()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'value': 'Hi'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': [
+                          {
+                            'id': '2',
+                            'type': 'nested'
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'nested',
+                      'attributes': {
+                        'value': 'Hi again'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'model'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }";
+
+            var model = json.Deserialize<ModelWithCircularTypeCollection>();
+
+            Assert.Equal("1", model.Id);
+            Assert.Equal("model", model.Type);
+            Assert.Equal("Hi", model.Value);
+
+            Assert.NotNull(model.First);
+            Assert.Single(model.First);
+            Assert.Equal("2", model.First[0].Id);
+            Assert.Equal("nested", model.First[0].Type);
+            Assert.Equal("Hi again", model.First[0].Value);
+
+            Assert.Same(model, model.First[0].Second);
         }
     }
 }
