@@ -129,17 +129,28 @@ namespace Jsonyte.Tests.Performance
 
             object GetArticle()
             {
-                return new
+                return new[]
                 {
-                    id = "1",
-                    type = "articles",
-                    title = "Jsonapi",
-                    authors = GetAuthors(),
-                    tags = GetTags()
+                    new
+                    {
+                        id = "1",
+                        type = "articles",
+                        title = "Jsonapi 1",
+                        authors = GetAuthors(),
+                        tags = GetTags()
+                    },
+                    new
+                    {
+                        id = "2",
+                        type = "articles",
+                        title = "Jsonapi 2",
+                        authors = GetAuthors(),
+                        tags = GetTags()
+                    }
                 };
             }
 
-            return new Data(GetArticle()) {SkipDeserialize = true};
+            return new Data(JsonApiDocument.Create(GetArticle())) {SkipDeserialize = true};
         }
     }
 }
