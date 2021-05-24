@@ -1,6 +1,7 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections;
+using System.Text.Json;
 using Jsonyte.Serialization;
-using Jsonyte.Serialization.Metadata;
 
 namespace Jsonyte.Converters.Objects
 {
@@ -111,8 +112,6 @@ namespace Jsonyte.Converters.Objects
 
     internal class JsonApiDocumentDataConverter<T> : JsonApiDocumentConverter<JsonApiDocument<T>>
     {
-        private JsonTypeInfo? info;
-
         protected override void ReadData(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
         {
             document.Data = ReadWrapped<T>(ref reader, ref tracked, options);
@@ -167,26 +166,6 @@ namespace Jsonyte.Converters.Objects
             }
         }
 
-        protected override void CacheResource(ref TrackedResources tracked, JsonApiDocument<T> document, JsonSerializerOptions options)
-        {
-            if (document.Data == null)
-            {
-                return;
-            }
-
-            EnsureTypeInfo(options);
-
-            var id = info!.IdMember.GetValue(document.Data) as string;
-            var type = info.TypeMember.GetValue(document.Data) as string;
-
-            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
-            {
-                return;
-            }
-
-            tracked.SetIncluded(new ResourceIdentifier(id!.ToByteArray(), type!.ToByteArray()), id!, type!, options.GetObjectConverter<T>(), document.Data);
-        }
-
         protected override void WriteData(Utf8JsonWriter writer, ref TrackedResources tracked, JsonApiDocument<T> value, JsonSerializerOptions options)
         {
             if (value.Errors == null && value.Meta == null && value.Data == null)
@@ -233,25 +212,77 @@ namespace Jsonyte.Converters.Objects
 
                 var index = 0;
 
-                while (index < tracked.Count)
+                var elements = GetCollection(value.Data!);
+
+                if (elements != null)
                 {
-                    var included = tracked.Get(index);
-
-                    if (!ReferenceEquals(value.Data, included.Value))
+                    while (index < tracked.Count)
                     {
-                        included.Converter.Write(writer, ref tracked, included.Value, options);
-                    }
+                        var included = tracked.Get(index);
 
-                    index++;
+                        var emitIncluded = true;
+
+                        foreach (var element in elements)
+                        {
+                            if (ReferenceEquals(element, included.Value))
+                            {
+                                emitIncluded = false;
+                                break;
+                            }
+                        }
+
+                        if (emitIncluded)
+                        {
+                            included.Converter.Write(writer, ref tracked, included.Value, options);
+                        }
+
+                        index++;
+                    }
+                }
+                else
+                {
+                    while (index < tracked.Count)
+                    {
+                        var included = tracked.Get(index);
+
+                        if (!ReferenceEquals(value.Data, included.Value))
+                        {
+                            included.Converter.Write(writer, ref tracked, included.Value, options);
+                        }
+
+                        index++;
+                    }
                 }
 
                 writer.WriteEndArray();
             }
         }
 
-        private void EnsureTypeInfo(JsonSerializerOptions options)
+        private IList? GetCollection(T resources)
         {
-            info ??= options.GetTypeInfo(typeof(T));
+            if (resources is not IEnumerable enumerable)
+            {
+                return null;
+            }
+
+            return enumerable switch
+            {
+                object[] array => array,
+                IList list => list,
+                _ => GetCollection(enumerable)
+            };
+        }
+
+        private IList GetCollection(IEnumerable elements)
+        {
+            var list = new ArrayList();
+
+            foreach (var element in elements)
+            {
+                list.Add(element);
+            }
+
+            return list;
         }
     }
 }

@@ -32,8 +32,6 @@ namespace Jsonyte.Converters.Objects
                 }
                 else if (name == DocumentFlags.Included)
                 {
-                    CacheResource(ref tracked, resource, options);
-
                     if (state.HasFlag(DocumentFlags.Data))
                     {
                         ReadIncluded(ref reader, ref tracked, options);
@@ -124,6 +122,11 @@ namespace Jsonyte.Converters.Objects
             }
 
             state.Validate();
+
+            if (info!.HasCircularReferences)
+            {
+                CacheResource(ref tracked, (T) resource, options);
+            }
 
             return (T) resource;
         }

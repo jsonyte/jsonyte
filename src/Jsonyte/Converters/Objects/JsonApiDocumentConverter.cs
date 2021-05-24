@@ -64,8 +64,6 @@ namespace Jsonyte.Converters.Objects
                 }
                 else if (name == DocumentFlags.Included)
                 {
-                    CacheResource(ref tracked, document, options);
-
                     if (state.HasFlag(DocumentFlags.Data))
                     {
                         ReadIncluded(ref reader, ref tracked, document, options);
@@ -106,10 +104,6 @@ namespace Jsonyte.Converters.Objects
             }
 
             return converter.ReadWrapped(ref reader, ref tracked, typeof(TConverter), default, options);
-        }
-
-        protected virtual void CacheResource(ref TrackedResources tracked, T document, JsonSerializerOptions options)
-        {
         }
 
         protected abstract void WriteData(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);

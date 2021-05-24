@@ -130,6 +130,18 @@ namespace Jsonyte
             return null;
         }
 
+        public static bool GetIsPrimitive(this Type type)
+        {
+            var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+
+            return underlyingType.IsPrimitive ||
+                   underlyingType == typeof(string) ||
+                   underlyingType == typeof(decimal) ||
+                   underlyingType == typeof(DateTime) ||
+                   underlyingType == typeof(Guid) ||
+                   underlyingType == typeof(TimeSpan);
+        }
+
         private static bool HasMember(Type type, string name)
         {
             var property = type.GetProperty(name, MemberFlags);
