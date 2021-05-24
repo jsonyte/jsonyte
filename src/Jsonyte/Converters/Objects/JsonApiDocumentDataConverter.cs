@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
+using System.Linq;
 using System.Text.Json;
 using Jsonyte.Serialization;
 
@@ -210,79 +210,77 @@ namespace Jsonyte.Converters.Objects
                 writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
                 writer.WriteStartArray();
 
-                var index = 0;
-
-                var elements = GetCollection(value.Data!);
+                var elements = GetDataAsList(value.Data);
 
                 if (elements != null)
                 {
-                    while (index < tracked.Count)
-                    {
-                        var included = tracked.Get(index);
-
-                        var emitIncluded = true;
-
-                        foreach (var element in elements)
-                        {
-                            if (ReferenceEquals(element, included.Value))
-                            {
-                                emitIncluded = false;
-                                break;
-                            }
-                        }
-
-                        if (emitIncluded)
-                        {
-                            included.Converter.Write(writer, ref tracked, included.Value, options);
-                        }
-
-                        index++;
-                    }
+                    WriteIncludedResourceCollection(writer, ref tracked, elements, options);
                 }
                 else
                 {
-                    while (index < tracked.Count)
-                    {
-                        var included = tracked.Get(index);
-
-                        if (!ReferenceEquals(value.Data, included.Value))
-                        {
-                            included.Converter.Write(writer, ref tracked, included.Value, options);
-                        }
-
-                        index++;
-                    }
+                    WriteIncludedResource(writer, ref tracked, value.Data, options);
                 }
 
                 writer.WriteEndArray();
             }
         }
 
-        private IList? GetCollection(T resources)
+        private void WriteIncludedResource(Utf8JsonWriter writer, ref TrackedResources tracked, T? data, JsonSerializerOptions options)
         {
-            if (resources is not IEnumerable enumerable)
+            var index = 0;
+
+            while (index < tracked.Count)
             {
-                return null;
+                var included = tracked.Get(index);
+
+                if (!ReferenceEquals(data, included.Value))
+                {
+                    included.Converter.Write(writer, ref tracked, included.Value, options);
+                }
+
+                index++;
             }
+        }
+
+        private void WriteIncludedResourceCollection(Utf8JsonWriter writer, ref TrackedResources tracked, IList elements, JsonSerializerOptions options)
+        {
+            var index = 0;
+
+            while (index < tracked.Count)
+            {
+                var included = tracked.Get(index);
+
+                var emitIncluded = true;
+
+                foreach (var element in elements)
+                {
+                    if (ReferenceEquals(element, included.Value))
+                    {
+                        emitIncluded = false;
+                        break;
+                    }
+                }
+
+                if (emitIncluded)
+                {
+                    included.Converter.Write(writer, ref tracked, included.Value, options);
+                }
+
+                index++;
+            }
+        }
+
+        private IList? GetDataAsList(T? resources)
+        {
+            var enumerable = resources as IEnumerable;
 
             return enumerable switch
             {
                 object[] array => array,
                 IList list => list,
-                _ => GetCollection(enumerable)
+                null => null,
+                _ => enumerable.Cast<object>().ToArray()
             };
-        }
-
-        private IList GetCollection(IEnumerable elements)
-        {
-            var list = new ArrayList();
-
-            foreach (var element in elements)
-            {
-                list.Add(element);
-            }
-
-            return list;
         }
     }
 }

@@ -965,5 +965,113 @@ namespace Jsonyte.Tests.Serialization
                   ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeDataThatUsesListWithTypedDocument()
+        {
+            var articles = new List<ArticleWithAuthor>
+            {
+                new()
+                {
+                    Id = "1",
+                    Type = "article",
+                    Title = "Jsonapi",
+                    Author = new Author
+                    {
+                        Id = "2",
+                        Type = "author",
+                        Name = "Joe"
+                    }
+                }
+            };
+
+            var document = JsonApiDocument.Create(articles);
+
+            var json = document.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'article',
+                      'attributes': {
+                        'title': 'Jsonapi'
+                      },
+                      'relationships': {
+                        'author': {
+                          'data': {
+                            'id': '2',
+                            'type': 'author'
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'author',
+                      'attributes': {
+                        'name': 'Joe',
+                        'twitter': null
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeDataThatUsesLinkedListWithTypedDocument()
+        {
+            var articles = new LinkedList<ArticleWithAuthor>();
+            articles.AddFirst(new ArticleWithAuthor
+            {
+                Id = "1",
+                Type = "article",
+                Title = "Jsonapi",
+                Author = new Author
+                {
+                    Id = "2",
+                    Type = "author",
+                    Name = "Joe"
+                }
+            });
+
+            var document = JsonApiDocument.Create(articles);
+
+            var json = document.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'article',
+                      'attributes': {
+                        'title': 'Jsonapi'
+                      },
+                      'relationships': {
+                        'author': {
+                          'data': {
+                            'id': '2',
+                            'type': 'author'
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'author',
+                      'attributes': {
+                        'name': 'Joe',
+                        'twitter': null
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }
