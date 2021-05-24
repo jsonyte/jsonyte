@@ -312,6 +312,11 @@ namespace Jsonyte.Serialization.Metadata
 
         private bool GetHasCircularReferences(Type? type, Type parentType, HashSet<Type> types, JsonSerializerOptions options)
         {
+            if (types.Count > 0 && type == parentType)
+            {
+                return true;
+            }
+
             if (type == null || types.Contains(type))
             {
                 return false;

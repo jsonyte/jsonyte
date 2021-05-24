@@ -20,8 +20,6 @@ namespace Jsonyte.Converters.Objects
             Utf8JsonReader savedReader = default;
             var includedReadFirst = false;
 
-            EnsureTypeInfo(options);
-
             while (reader.IsInObject())
             {
                 var name = reader.ReadMember(ref state);
@@ -197,9 +195,7 @@ namespace Jsonyte.Converters.Objects
             
             if (tracked.Count > 0)
             {
-                writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
-                writer.WriteStartArray();
-
+                var nameWritten = false;
                 var index = 0;
 
                 while (index < tracked.Count)
@@ -208,13 +204,24 @@ namespace Jsonyte.Converters.Objects
 
                     if (!ReferenceEquals(value, included.Value))
                     {
+                        if (!nameWritten)
+                        {
+                            writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
+                            writer.WriteStartArray();
+
+                            nameWritten = true;
+                        }
+
                         included.Converter.Write(writer, ref tracked, included.Value, options);
                     }
 
                     index++;
                 }
 
-                writer.WriteEndArray();
+                if (nameWritten)
+                {
+                    writer.WriteEndArray();
+                }
             }
 
             writer.WriteEndObject();

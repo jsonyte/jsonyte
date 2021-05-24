@@ -372,5 +372,61 @@ namespace Jsonyte.Tests.Deserialization
             Assert.NotNull(model.First.Second);
             Assert.Same(model, model.First.Second);
         }
+
+        [Fact]
+        public void CanDeserializeCircularTypeCollection()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'value': 'Hi'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': [
+                          {
+                            'id': '2',
+                            'type': 'nested'
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'nested',
+                      'attributes': {
+                        'value': 'Hi again'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'model'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }";
+
+            var model = json.Deserialize<ModelWithCircularTypeCollection>();
+
+            Assert.Equal("1", model.Id);
+            Assert.Equal("model", model.Type);
+            Assert.Equal("Hi", model.Value);
+
+            Assert.NotNull(model.First);
+            Assert.Single(model.First);
+            Assert.Equal("2", model.First[0].Id);
+            Assert.Equal("nested", model.First[0].Type);
+            Assert.Equal("Hi again", model.First[0].Value);
+
+            Assert.Same(model, model.First[0].Second);
+        }
     }
 }

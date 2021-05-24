@@ -207,9 +207,6 @@ namespace Jsonyte.Converters.Objects
         {
             if (tracked.Count > 0)
             {
-                writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
-                writer.WriteStartArray();
-
                 var elements = GetDataAsList(value.Data);
 
                 if (elements != null)
@@ -220,13 +217,12 @@ namespace Jsonyte.Converters.Objects
                 {
                     WriteIncludedResource(writer, ref tracked, value.Data, options);
                 }
-
-                writer.WriteEndArray();
             }
         }
 
         private void WriteIncludedResource(Utf8JsonWriter writer, ref TrackedResources tracked, T? data, JsonSerializerOptions options)
         {
+            var nameWritten = false;
             var index = 0;
 
             while (index < tracked.Count)
@@ -235,15 +231,29 @@ namespace Jsonyte.Converters.Objects
 
                 if (!ReferenceEquals(data, included.Value))
                 {
+                    if (!nameWritten)
+                    {
+                        writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
+                        writer.WriteStartArray();
+
+                        nameWritten = true;
+                    }
+
                     included.Converter.Write(writer, ref tracked, included.Value, options);
                 }
 
                 index++;
             }
+
+            if (nameWritten)
+            {
+                writer.WriteEndArray();
+            }
         }
 
         private void WriteIncludedResourceCollection(Utf8JsonWriter writer, ref TrackedResources tracked, IList elements, JsonSerializerOptions options)
         {
+            var nameWritten = false;
             var index = 0;
 
             while (index < tracked.Count)
@@ -263,10 +273,23 @@ namespace Jsonyte.Converters.Objects
 
                 if (emitIncluded)
                 {
+                    if (!nameWritten)
+                    {
+                        writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
+                        writer.WriteStartArray();
+
+                        nameWritten = true;
+                    }
+
                     included.Converter.Write(writer, ref tracked, included.Value, options);
                 }
 
                 index++;
+            }
+
+            if (nameWritten)
+            {
+                writer.WriteEndArray();
             }
         }
 

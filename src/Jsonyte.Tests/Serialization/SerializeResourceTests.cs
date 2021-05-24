@@ -539,5 +539,106 @@ namespace Jsonyte.Tests.Serialization
                   ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeResourceReferencingItself()
+        {
+            var model = new ModelReferencingItself
+            {
+                Id = "1",
+                Type = "model",
+                Value = "Hi"
+            };
+
+            model.Itself = new[]
+            {
+                model
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'value': 'Hi'
+                    },
+                    'relationships': {
+                      'itself': {
+                        'data': [
+                          {
+                            'id': '1',
+                            'type': 'model'
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeCircularTypeCollection()
+        {
+            var model = new ModelWithCircularTypeCollection
+            {
+                Id = "1",
+                Type = "model",
+                Value = "Hi",
+                First = new ModelWithCircularTypeCollectionNested[]
+                {
+                    new()
+                    {
+                        Id = "2",
+                        Type = "nested",
+                        Value = "Hi again"
+                    }
+                }
+            };
+
+            model.First[0].Second = model;
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'value': 'Hi'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': [
+                          {
+                            'id': '2',
+                            'type': 'nested'
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'nested',
+                      'attributes': {
+                        'value': 'Hi again'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'model'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

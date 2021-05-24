@@ -102,9 +102,7 @@ namespace Jsonyte.Converters.Collections
 
             if (tracked.Count > 0)
             {
-                writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
-                writer.WriteStartArray();
-
+                var nameWritten = false;
                 var index = 0;
 
                 var elements = GetCollection(value);
@@ -115,13 +113,24 @@ namespace Jsonyte.Converters.Collections
 
                     if (!elements.Any(x => ReferenceEquals(x, included.Value)))
                     {
+                        if (!nameWritten)
+                        {
+                            writer.WritePropertyName(JsonApiMembers.IncludedEncoded);
+                            writer.WriteStartArray();
+
+                            nameWritten = true;
+                        }
+
                         included.Converter.Write(writer, ref tracked, included.Value, options);
                     }
 
                     index++;
                 }
 
-                writer.WriteEndArray();
+                if (nameWritten)
+                {
+                    writer.WriteEndArray();
+                }
             }
 
             writer.WriteEndObject();
