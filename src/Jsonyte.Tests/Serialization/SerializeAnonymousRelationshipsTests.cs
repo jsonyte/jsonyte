@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Xunit;
 
@@ -1201,6 +1202,77 @@ namespace Jsonyte.Tests.Serialization
                       'id': '2',
                       'attributes': {
                         'name': 'Bill'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeCollectionWithCircularRelationships()
+        {
+            object GetNested(bool value)
+            {
+                return value
+                    ? new
+                    {
+                        id = "1",
+                        type = "articles"
+                    }
+                    : null;
+            }
+
+            IEnumerable<object> GetModel()
+            {
+                return new[]
+                {
+                    new
+                    {
+                        id = "1",
+                        type = "articles",
+                        title = "Jsonapi1",
+                        history = GetNested(false)
+                    },
+                    new
+                    {
+                        id = "2",
+                        type = "articles",
+                        title = "Jsonapi2",
+                        history = GetNested(true)
+                    }
+                };
+            }
+
+            var model = GetModel();
+
+            var document = JsonApiDocument.Create(model);
+
+            var json = document.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'Jsonapi1',
+                        'history': null
+                      }
+                    },
+                    {
+                      'id': '2',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'Jsonapi2'
+                      },
+                      'relationships': {
+                        'history': {
+                          'data': {
+                            'id': '1',
+                            'type': 'articles'
+                          }
+                        }
                       }
                     }
                   ]

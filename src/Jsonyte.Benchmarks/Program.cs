@@ -17,7 +17,7 @@ namespace Jsonyte.Benchmarks
             var config = DefaultConfig.Instance;
 #endif
 
-            BenchmarkRunner.Run<SerializeDeserializeBenchmarks>(config);
+            BenchmarkRunner.Run<MicroPerformanceBenchmarks>(config);
         }
     }
 }

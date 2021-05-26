@@ -260,18 +260,7 @@ namespace Jsonyte.Converters.Objects
             {
                 var included = tracked.Get(index);
 
-                var emitIncluded = true;
-
-                foreach (var element in elements)
-                {
-                    if (ReferenceEquals(element, included.Value))
-                    {
-                        emitIncluded = false;
-                        break;
-                    }
-                }
-
-                if (emitIncluded)
+                if (!tracked.HasResource(included.IdString, included.TypeString))
                 {
                     if (!nameWritten)
                     {

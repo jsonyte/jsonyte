@@ -180,6 +180,7 @@ namespace Jsonyte.Converters.Objects
             }
 
             tracked.SetIncluded(new ResourceIdentifier(id!.ToByteArray(), type!.ToByteArray()), id!, type!, options.GetObjectConverter<T>(), value);
+            tracked.SetResource(id!, type!);
         }
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
@@ -202,7 +203,7 @@ namespace Jsonyte.Converters.Objects
                 {
                     var included = tracked.Get(index);
 
-                    if (!ReferenceEquals(value, included.Value))
+                    if (!tracked.HasResource(included.IdString, included.TypeString))
                     {
                         if (!nameWritten)
                         {

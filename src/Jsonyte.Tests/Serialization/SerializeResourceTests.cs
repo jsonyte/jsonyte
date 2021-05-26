@@ -640,5 +640,34 @@ namespace Jsonyte.Tests.Serialization
                   ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void Test()
+        {
+            const string json = @"
+{
+  'data': {
+    'id': '1',
+    'type': 'type',
+    'attributes': {
+      'simple': 'simple',
+      'simplevalue': 'simplevalue'
+    }
+  }
+}";
+
+            var m = json.Deserialize<SimpleModel>();
+        }
+
+        private class SimpleModel
+        {
+            public string Id { get; set; }
+
+            public string Type { get; set; }
+
+            public string Simple { get; set; }
+
+            public string SimpleValue { get; set; }
+        }
     }
 }
