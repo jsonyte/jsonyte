@@ -30,10 +30,11 @@ namespace Jsonyte.Serialization.Metadata
 
         public JsonTypeInfo(Type type, JsonSerializerOptions options)
         {
-            var constructor = GetConstructor(type);
-
             Creator = options.GetMemberAccessor().CreateCreator(type);
-            CreatorWithArguments = options.GetMemberAccessor().CreateParameterizedCreator(constructor);
+
+#if CONSTRUCTOR_CONVERTER
+            CreatorWithArguments = options.GetMemberAccessor().CreateParameterizedCreator(GetConstructor(type));
+#endif
             HasCircularReferences = GetHasCircularReferences(type, type, options);
 
             var members = GetProperties(type, options)
@@ -76,7 +77,9 @@ namespace Jsonyte.Serialization.Metadata
 
         public Func<object?> Creator { get; }
 
+#if CONSTRUCTOR_CONVERTER
         public Func<object[], object?> CreatorWithArguments { get; }
+#endif
 
         public bool HasCircularReferences { get; }
 
@@ -231,6 +234,7 @@ namespace Jsonyte.Serialization.Metadata
             return converters.First();
         }
 
+#if CONSTRUCTOR_CONVERTER
         private ConstructorInfo GetConstructor(Type type)
         {
             var constructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -270,7 +274,6 @@ namespace Jsonyte.Serialization.Metadata
             return publicConstructors.First();
         }
 
-#if CONSTRUCTOR_CONVERTER
         private Dictionary<string, JsonParameterInfo> GetParameters(ConstructorInfo constructor, JsonMemberInfo[] members, JsonSerializerOptions options)
         {
             var membersByName = members.ToDictionary(x => x.Name, options.GetPropertyComparer());
