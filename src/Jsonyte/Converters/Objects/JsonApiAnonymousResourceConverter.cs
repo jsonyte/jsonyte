@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Text.Json;
 using Jsonyte.Serialization;
 using Jsonyte.Serialization.Contracts;
@@ -39,7 +38,7 @@ namespace Jsonyte.Converters.Objects
                 {
                     var included = tracked.Get(index);
 
-                    if (!tracked.HasResource(Encoding.UTF8.GetString(included.Id), Encoding.UTF8.GetString(included.Type)))
+                    if (!tracked.IsEmitted(included))
                     {
                         included.Converter.Write(writer, ref tracked, included.Value, options);
                     }
@@ -78,7 +77,7 @@ namespace Jsonyte.Converters.Objects
                 var id = info.IdMember.GetValue(value) as string;
                 var type = info.TypeMember.GetValue(value) as string;
 
-                tracked.SetResource(id!, type!);
+                tracked.SetEmitted(id!, type!);
             }
 
             WriteAttributes(writer, info, ref tracked, value);

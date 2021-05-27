@@ -66,15 +66,5 @@ namespace Jsonyte.Validation
 
             return ErrorFlags.None;
         }
-
-        public bool HasFlag(ErrorFlags flag)
-        {
-            return flags.IsSet(flag);
-        }
-
-        public bool IsEmpty()
-        {
-            return flags == ErrorFlags.None;
-        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Jsonyte.Converters;
+﻿using Jsonyte.Converters;
 
 namespace Jsonyte.Serialization
 {
@@ -23,7 +22,16 @@ namespace Jsonyte.Serialization
 
         public readonly int? RelationshipId;
 
-        public IncludedRef(ulong idKey, ulong typeKey, byte[] id, byte[] type, string idString, string typeString, JsonObjectConverter converter, object value, int? relationshipId = null)
+        public IncludedRef(
+            ulong idKey,
+            ulong typeKey,
+            byte[] id,
+            byte[] type,
+            string idString,
+            string typeString,
+            JsonObjectConverter converter,
+            object value,
+            int? relationshipId = null)
         {
             IdKey = idKey;
             TypeKey = typeKey;

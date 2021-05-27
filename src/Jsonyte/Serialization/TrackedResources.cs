@@ -9,13 +9,13 @@ namespace Jsonyte.Serialization
     {
         private const int CachedIncludes = 64;
 
-        private const int CachedResources = 8;
+        private const int CachedEmittedResources = 8;
 
         private IncludedRef[]? references;
 
-        private ResourceRef[]? resources;
+        private ResourceRef[]? emittedResources;
 
-        private int resourcesCount;
+        private int emittedResourcesCount;
 
         private Dictionary<(string type, string id), IncludedRef>? referencesOverflow;
 
@@ -47,13 +47,13 @@ namespace Jsonyte.Serialization
             return referencesOverflowByIndex[index - CachedIncludes];
         }
 
-        public void SetResource(string id, string type)
+        public void SetEmitted(string id, string type)
         {
-            resources ??= new ResourceRef[CachedResources];
+            emittedResources ??= new ResourceRef[CachedEmittedResources];
 
-            if (resourcesCount < CachedResources)
+            if (emittedResourcesCount < CachedEmittedResources)
             {
-                resources[resourcesCount] = new ResourceRef(id, type);
+                emittedResources[emittedResourcesCount] = new ResourceRef(id, type);
             }
             else
             {
@@ -62,30 +62,36 @@ namespace Jsonyte.Serialization
                 resourcesOverflow.Add(new ResourceRef(id, type));
             }
 
-            resourcesCount++;
+            emittedResourcesCount++;
         }
 
-        public bool HasResource(string id, string type)
+        public bool IsEmitted(IncludedRef included)
         {
-            if (resources == null)
+            if (emittedResources == null)
             {
                 return false;
             }
 
-            for (var i = 0; i < resourcesCount; i++)
+            for (var i = 0; i < emittedResourcesCount; i++)
             {
-                var resource = resources![i];
+                var resource = emittedResources![i];
 
-                if (resource.Id == id && resource.Type == type)
+                if (resource.Id == included.IdString && resource.Type == included.TypeString)
                 {
                     return true;
                 }
             }
 
-            return resourcesOverflow != null && resourcesOverflow.Contains(new ResourceRef(id, type));
+            return resourcesOverflow != null && resourcesOverflow.Contains(new ResourceRef(included.IdString, included.TypeString));
         }
 
-        public void SetIncluded(ResourceIdentifier identifier, string idString, string typeString, JsonObjectConverter converter, object value)
+        public void SetIncluded(
+            ResourceIdentifier identifier,
+            string idString,
+            string typeString,
+            JsonObjectConverter converter,
+            object value,
+            JsonEncodedText? unwrittenRelationship = null)
         {
             references ??= new IncludedRef[CachedIncludes];
 
@@ -94,10 +100,17 @@ namespace Jsonyte.Serialization
                 return;
             }
 
-            SetIncluded(idKey, typeKey, identifier.Id.ToArray(), identifier.Type.ToArray(), idString, typeString, converter, value);
+            SetIncluded(idKey, typeKey, identifier.Id.ToArray(), identifier.Type.ToArray(), idString, typeString, converter, value, unwrittenRelationship);
         }
 
-        public void SetIncluded(byte[] id, byte[] type, string idString, string typeString, JsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
+        public void SetIncluded(
+            byte[] id,
+            byte[] type,
+            string idString,
+            string typeString,
+            JsonObjectConverter converter,
+            object value,
+            JsonEncodedText? unwrittenRelationship = null)
         {
             references ??= new IncludedRef[CachedIncludes];
 
@@ -111,7 +124,16 @@ namespace Jsonyte.Serialization
             SetIncluded(idKey, typeKey, id, type, idString, typeString, converter, value, unwrittenRelationship);
         }
 
-        private void SetIncluded(ulong idKey, ulong typeKey, byte[] id, byte[] type, string idString, string typeString, JsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
+        private void SetIncluded(
+            ulong idKey,
+            ulong typeKey,
+            byte[] id,
+            byte[] type,
+            string idString,
+            string typeString,
+            JsonObjectConverter converter,
+            object value,
+            JsonEncodedText? unwrittenRelationship = null)
         {
             var relationshipId = unwrittenRelationship != null
                 ? Relationships.SetRelationship(unwrittenRelationship.Value)

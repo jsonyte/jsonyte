@@ -1278,5 +1278,230 @@ namespace Jsonyte.Tests.Serialization
                   ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeResourceWithCircularRelationship()
+        {
+            object GetModel()
+            {
+                return new
+                {
+                    id = "1",
+                    type = "articles",
+                    title = "Jsonapi",
+                    author = new
+                    {
+                        id = "2",
+                        type = "authors",
+                        name = "Joe",
+                        location = new
+                        {
+                            id = "3",
+                            type = "locations",
+                            article = new
+                            {
+                                id = "1",
+                                type = "articles",
+                                title = "thrown away"
+                            }
+                        }
+                    }
+                };
+            }
+
+            var model = GetModel();
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'author': {
+                        'data': {
+                          'id': '2',
+                          'type': 'authors'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'authors',
+                      'attributes': {
+                        'name': 'Joe'
+                      },
+                      'relationships': {
+                        'location': {
+                          'data': {
+                            'id': '3',
+                            'type': 'locations'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '3',
+                      'type': 'locations',
+                      'relationships': {
+                        'article': {
+                          'data': {
+                            'id': '1',
+                            'type': 'articles'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeResourceCollectionWithCircularRelationshipsOfSameIdAndType()
+        {
+            object GetModel()
+            {
+                return new[]
+                {
+                    new
+                    {
+                        id = "1",
+                        type = "articles",
+                        value = "Jsonapi1",
+                        authors = new[]
+                        {
+                            new
+                            {
+                                id = "1",
+                                type = "authors",
+                                name = "Joe",
+                                related = new
+                                {
+                                    id = "2",
+                                    type = "articles"
+                                }
+                            },
+                            new
+                            {
+                                id = "2",
+                                type = "authors",
+                                name = "Blow",
+                                related = new
+                                {
+                                    id = "2",
+                                    type = "articles"
+                                }
+                            }
+                        }
+                    },
+                    new
+                    {
+                        id = "2",
+                        type = "articles",
+                        value = "Jsonapi2",
+                        authors = new[]
+                        {
+                            new
+                            {
+                                id = "1",
+                                type = "authors",
+                                name = "Joe",
+                                related = new
+                                {
+                                    id = "2",
+                                    type = "articles"
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+
+            var document = JsonApiDocument.Create(GetModel());
+
+            var json = document.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'articles',
+                      'attributes': {
+                        'value': 'Jsonapi1'
+                      },
+                      'relationships': {
+                        'authors': {
+                          'data': [
+                            {
+                              'id': '1',
+                              'type': 'authors'
+                            },
+                            {
+                              'id': '2',
+                              'type': 'authors'
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      'id': '2',
+                      'type': 'articles',
+                      'attributes': {
+                        'value': 'Jsonapi2'
+                      },
+                      'relationships': {
+                        'authors': {
+                          'data': [
+                            {
+                              'id': '1',
+                              'type': 'authors'
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  'included': [
+                    {
+                      'id': '1',
+                      'type': 'authors',
+                      'attributes': {
+                        'name': 'Joe'
+                      },
+                      'relationships': {
+                        'related': {
+                          'data': {
+                            'id': '2',
+                            'type': 'articles'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '2',
+                      'type': 'authors',
+                      'attributes': {
+                        'name': 'Blow'
+                      },
+                      'relationships': {
+                        'related': {
+                          'data': {
+                            'id': '2',
+                            'type': 'articles'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }
