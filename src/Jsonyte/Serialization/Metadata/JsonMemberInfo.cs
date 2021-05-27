@@ -13,8 +13,6 @@ namespace Jsonyte.Serialization.Metadata
     {
         public abstract string Name { get; }
 
-        public abstract string MemberName { get; }
-
         public abstract Type MemberType { get; }
 
         public abstract JsonEncodedText NameEncoded { get; }
@@ -56,7 +54,6 @@ namespace Jsonyte.Serialization.Metadata
             Options = options;
             MemberType = memberType;
             Converter = converter;
-            MemberName = member.Name;
             Name = name;
             NameEncoded = JsonEncodedText.Encode(name);
             IsPrimitiveType = memberType.GetIsPrimitive();
@@ -72,8 +69,6 @@ namespace Jsonyte.Serialization.Metadata
         public override string Name { get; }
 
         public override JsonEncodedText NameEncoded { get; }
-
-        public override string MemberName { get; }
 
         public override Type MemberType { get; }
 
