@@ -767,5 +767,117 @@ namespace Jsonyte.Tests.Serialization
                   ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeCollectionWithCircularReferencesWithSameIdAndType()
+        {
+            var model1 = new ModelWithCircularType
+            {
+                Id = "1",
+                Type = "first",
+                Value = "here1",
+                First = new ModelWithAnotherCircularType
+                {
+                    Id = "3",
+                    Type = "second",
+                    Value = "we1",
+                    Second = new ModelWithCircularType
+                    {
+                        Id = "1",
+                        Type = "first"
+                    }
+                }
+            };
+
+            var model2 = new ModelWithCircularType
+            {
+                Id = "2",
+                Type = "first",
+                Value = "here2",
+                First = new ModelWithAnotherCircularType
+                {
+                    Id = "4",
+                    Type = "second",
+                    Value = "we2",
+                    Second = new ModelWithCircularType
+                    {
+                        Id = "2",
+                        Type = "first"
+                    }
+                }
+            };
+
+            var models = new[] { model1, model2 };
+
+            var json = models.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'first',
+                      'attributes': {
+                        'value': 'here1'
+                      },
+                      'relationships': {
+                        'first': {
+                          'data': {
+                            'id': '3',
+                            'type': 'second'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '2',
+                      'type': 'first',
+                      'attributes': {
+                        'value': 'here2'
+                      },
+                      'relationships': {
+                        'first': {
+                          'data': {
+                            'id': '4',
+                            'type': 'second'
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  'included': [
+                    {
+                      'id': '3',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we1'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '4',
+                      'type': 'second',
+                      'attributes': {
+                        'value': 'we2'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '2',
+                            'type': 'first'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

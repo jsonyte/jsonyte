@@ -571,5 +571,62 @@ namespace Jsonyte.Tests.Reflection
             Assert.Equal(5, model.PublicNullableCount);
             Assert.Equal(5, model.PublicReadOnlyNullableCount);
         }
+
+        [Fact]
+        public void CaseSensitiveNamesOutputCamelCaseByDefaultWhenSerializing()
+        {
+            var model = new ModelWithCaseSensitiveNames
+            {
+                Id = "1",
+                Type = "model",
+                Value = "value",
+                ValueWithNameAttribute = "another"
+            };
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = false
+            };
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'value': 'value',
+                      'ValueWithNameAttribute': 'another'
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CaseSensitiveNamesAreIgnoredWhenDeserializing()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'Value': 'value',
+                      'valueWithNameAttribute': 'another'
+                    }
+                  }
+                }";
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = false
+            };
+
+            var model = json.Deserialize<ModelWithCaseSensitiveNames>(options);
+
+            Assert.Null(model.Value);
+            Assert.Null(model.ValueWithNameAttribute);
+        }
     }
 }

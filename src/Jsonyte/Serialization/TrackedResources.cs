@@ -7,11 +7,19 @@ namespace Jsonyte.Serialization
 {
     internal ref struct TrackedResources
     {
-        private const int CachedReferences = 64;
+        private const int CachedIncludes = 64;
+
+        private const int CachedEmittedResources = 8;
 
         private IncludedRef[]? references;
 
+        private ResourceRef[]? emittedResources;
+
+        private int emittedResourcesCount;
+
         private Dictionary<(string type, string id), IncludedRef>? referencesOverflow;
+
+        private HashSet<ResourceRef>? resourcesOverflow;
 
         private List<IncludedRef>? referencesOverflowByIndex;
 
@@ -26,7 +34,7 @@ namespace Jsonyte.Serialization
                 return default;
             }
 
-            if (index < CachedReferences)
+            if (index < CachedIncludes)
             {
                 return references[index];
             }
@@ -36,24 +44,75 @@ namespace Jsonyte.Serialization
                 return default;
             }
 
-            return referencesOverflowByIndex[index - CachedReferences];
+            return referencesOverflowByIndex[index - CachedIncludes];
         }
 
-        public void SetIncluded(ResourceIdentifier identifier, string idString, string typeString, JsonObjectConverter converter, object value)
+        public void SetEmitted(string id, string type)
         {
-            references ??= new IncludedRef[CachedReferences];
+            emittedResources ??= new ResourceRef[CachedEmittedResources];
+
+            if (emittedResourcesCount < CachedEmittedResources)
+            {
+                emittedResources[emittedResourcesCount] = new ResourceRef(id, type);
+            }
+            else
+            {
+                resourcesOverflow ??= new HashSet<ResourceRef>();
+
+                resourcesOverflow.Add(new ResourceRef(id, type));
+            }
+
+            emittedResourcesCount++;
+        }
+
+        public bool IsEmitted(IncludedRef included)
+        {
+            if (emittedResources == null)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < emittedResourcesCount; i++)
+            {
+                var resource = emittedResources![i];
+
+                if (resource.Id == included.IdString && resource.Type == included.TypeString)
+                {
+                    return true;
+                }
+            }
+
+            return resourcesOverflow != null && resourcesOverflow.Contains(new ResourceRef(included.IdString, included.TypeString));
+        }
+
+        public void SetIncluded(
+            ResourceIdentifier identifier,
+            string idString,
+            string typeString,
+            JsonObjectConverter converter,
+            object value,
+            JsonEncodedText? unwrittenRelationship = null)
+        {
+            references ??= new IncludedRef[CachedIncludes];
 
             if (HasIdentifier(identifier, out var idKey, out var typeKey, idString, typeString))
             {
                 return;
             }
 
-            SetIncluded(idKey, typeKey, identifier.Id.ToArray(), identifier.Type.ToArray(), idString, typeString, converter, value);
+            SetIncluded(idKey, typeKey, identifier.Id.ToArray(), identifier.Type.ToArray(), idString, typeString, converter, value, unwrittenRelationship);
         }
 
-        public void SetIncluded(byte[] id, byte[] type, string idString, string typeString, JsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
+        public void SetIncluded(
+            byte[] id,
+            byte[] type,
+            string idString,
+            string typeString,
+            JsonObjectConverter converter,
+            object value,
+            JsonEncodedText? unwrittenRelationship = null)
         {
-            references ??= new IncludedRef[CachedReferences];
+            references ??= new IncludedRef[CachedIncludes];
 
             var identifier = new ResourceIdentifier(id, type);
 
@@ -65,22 +124,31 @@ namespace Jsonyte.Serialization
             SetIncluded(idKey, typeKey, id, type, idString, typeString, converter, value, unwrittenRelationship);
         }
 
-        private void SetIncluded(ulong idKey, ulong typeKey, byte[] id, byte[] type, string idString, string typeString, JsonObjectConverter converter, object value, JsonEncodedText? unwrittenRelationship = null)
+        private void SetIncluded(
+            ulong idKey,
+            ulong typeKey,
+            byte[] id,
+            byte[] type,
+            string idString,
+            string typeString,
+            JsonObjectConverter converter,
+            object value,
+            JsonEncodedText? unwrittenRelationship = null)
         {
             var relationshipId = unwrittenRelationship != null
                 ? Relationships.SetRelationship(unwrittenRelationship.Value)
                 : null;
 
-            var included = new IncludedRef(idKey, typeKey, id, type, converter, value, relationshipId);
+            var included = new IncludedRef(idKey, typeKey, id, type, idString, typeString, converter, value, relationshipId);
 
-            if (Count < CachedReferences)
+            if (Count < CachedIncludes)
             {
                 references![Count] = included;
             }
             else
             {
-                referencesOverflow ??= new Dictionary<(string, string), IncludedRef>(CachedReferences * 2);
-                referencesOverflowByIndex ??= new List<IncludedRef>(CachedReferences * 2);
+                referencesOverflow ??= new Dictionary<(string, string), IncludedRef>(CachedIncludes * 2);
+                referencesOverflowByIndex ??= new List<IncludedRef>(CachedIncludes * 2);
 
                 referencesOverflow[(typeString, idString)] = included;
                 referencesOverflowByIndex.Add(included);
@@ -101,9 +169,9 @@ namespace Jsonyte.Serialization
             var idKey = identifier.Id.GetKey();
             var typeKey = identifier.Type.GetKey();
 
-            var cachedCount = Count < CachedReferences
+            var cachedCount = Count < CachedIncludes
                 ? Count
-                : CachedReferences;
+                : CachedIncludes;
 
             for (var i = 0; i < cachedCount; i++)
             {
@@ -157,9 +225,9 @@ namespace Jsonyte.Serialization
             idKey = identifier.Id.GetKey();
             typeKey = identifier.Type.GetKey();
 
-            var cachedCount = Count < CachedReferences
+            var cachedCount = Count < CachedIncludes
                 ? Count
-                : CachedReferences;
+                : CachedIncludes;
 
             for (var i = 0; i < cachedCount; i++)
             {

@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Linq;
 using System.Text.Json;
 using Jsonyte.Serialization;
 
@@ -207,20 +206,18 @@ namespace Jsonyte.Converters.Objects
         {
             if (tracked.Count > 0)
             {
-                var elements = GetDataAsList(value.Data);
-
-                if (elements != null)
+                if (IsCollection(value.Data))
                 {
-                    WriteIncludedResourceCollection(writer, ref tracked, elements, options);
+                    WriteIncludedResourceCollection(writer, ref tracked, options);
                 }
                 else
                 {
-                    WriteIncludedResource(writer, ref tracked, value.Data, options);
+                    WriteIncludedResource(writer, ref tracked, options);
                 }
             }
         }
 
-        private void WriteIncludedResource(Utf8JsonWriter writer, ref TrackedResources tracked, T? data, JsonSerializerOptions options)
+        private void WriteIncludedResource(Utf8JsonWriter writer, ref TrackedResources tracked, JsonSerializerOptions options)
         {
             var nameWritten = false;
             var index = 0;
@@ -229,7 +226,7 @@ namespace Jsonyte.Converters.Objects
             {
                 var included = tracked.Get(index);
 
-                if (!ReferenceEquals(data, included.Value))
+                if (!tracked.IsEmitted(included))
                 {
                     if (!nameWritten)
                     {
@@ -251,7 +248,7 @@ namespace Jsonyte.Converters.Objects
             }
         }
 
-        private void WriteIncludedResourceCollection(Utf8JsonWriter writer, ref TrackedResources tracked, IList elements, JsonSerializerOptions options)
+        private void WriteIncludedResourceCollection(Utf8JsonWriter writer, ref TrackedResources tracked, JsonSerializerOptions options)
         {
             var nameWritten = false;
             var index = 0;
@@ -260,18 +257,7 @@ namespace Jsonyte.Converters.Objects
             {
                 var included = tracked.Get(index);
 
-                var emitIncluded = true;
-
-                foreach (var element in elements)
-                {
-                    if (ReferenceEquals(element, included.Value))
-                    {
-                        emitIncluded = false;
-                        break;
-                    }
-                }
-
-                if (emitIncluded)
+                if (!tracked.IsEmitted(included))
                 {
                     if (!nameWritten)
                     {
@@ -293,17 +279,9 @@ namespace Jsonyte.Converters.Objects
             }
         }
 
-        private IList? GetDataAsList(T? resources)
+        private bool IsCollection(T? resources)
         {
-            var enumerable = resources as IEnumerable;
-
-            return enumerable switch
-            {
-                object[] array => array,
-                IList list => list,
-                null => null,
-                _ => enumerable.Cast<object>().ToArray()
-            };
+            return resources is IEnumerable;
         }
     }
 }

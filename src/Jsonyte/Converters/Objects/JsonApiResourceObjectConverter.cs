@@ -202,7 +202,7 @@ namespace Jsonyte.Converters.Objects
                 {
                     var included = tracked.Get(index);
 
-                    if (!ReferenceEquals(value, included.Value))
+                    if (!tracked.IsEmitted(included))
                     {
                         if (!nameWritten)
                         {
@@ -240,8 +240,10 @@ namespace Jsonyte.Converters.Objects
 
             writer.WriteStartObject();
 
-            info!.IdMember.Write(writer, ref tracked, value);
-            info.TypeMember.Write(writer, ref tracked, value);
+            var idWritten = info!.IdMember.Write(writer, ref tracked, value);
+            var typeWritten = info.TypeMember.Write(writer, ref tracked, value);
+
+            SetEmitted(ref tracked, value, idWritten, typeWritten);
 
             WriteAttributes(writer, ref tracked, value);
             WriteRelationships(writer, ref tracked, value);
@@ -331,6 +333,20 @@ namespace Jsonyte.Converters.Objects
             }
 
             tracked.Relationships.Clear();
+        }
+
+        private void SetEmitted(ref TrackedResources tracked, T value, bool idWritten, bool typeWritten)
+        {
+            if (idWritten && typeWritten)
+            {
+                var id = info!.IdMember.GetValue(value!) as string;
+                var type = info.TypeMember.GetValue(value!) as string;
+
+                if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(type))
+                {
+                    tracked.SetEmitted(id!, type!);
+                }
+            }
         }
 
         private void EnsureTypeInfo(JsonSerializerOptions options)

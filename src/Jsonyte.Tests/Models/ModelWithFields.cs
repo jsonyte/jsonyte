@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Jsonyte.Tests.Models
 {
@@ -36,5 +37,15 @@ namespace Jsonyte.Tests.Models
 
         [JsonPropertyName("publicReadOnlyNullableCount")]
         public readonly int? PublicReadOnlyNullableCount = 5;
+
+        public override string ToString()
+        {
+            return new StringBuilder()
+                .Append(readOnlyTitle)
+                .Append(readWriteTitle)
+                .Append(readWriteCount)
+                .Append(readWriteNullableCount)
+                .ToString();
+        }
     }
 }

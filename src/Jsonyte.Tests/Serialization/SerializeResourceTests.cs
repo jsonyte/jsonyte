@@ -414,26 +414,24 @@ namespace Jsonyte.Tests.Serialization
         }
 
         [Fact]
-        public void CanSerializeCircularReferenceIfItDoesntRecurse()
+        public void CanSerializeWithCircularReferences()
         {
             var model = new ModelWithCircularType
             {
                 Id = "1",
                 Type = "first",
-                Value = "here",
-                First = new ModelWithAnotherCircularType
-                {
-                    Id = "2",
-                    Type = "second",
-                    Value = "we",
-                    Second = new ModelWithCircularType
-                    {
-                        Id = "3",
-                        Type = "first",
-                        Value = "go"
-                    }
-                }
+                Value = "here"
             };
+
+            var another = new ModelWithAnotherCircularType
+            {
+                Id = "2",
+                Type = "second",
+                Value = "we",
+                Second = model
+            };
+
+            model.First = another;
 
             var json = model.Serialize();
 
@@ -464,17 +462,10 @@ namespace Jsonyte.Tests.Serialization
                       'relationships': {
                         'second': {
                           'data': {
-                            'id': '3',
+                            'id': '1',
                             'type': 'first'
                           }
                         }
-                      }
-                    },
-                    {
-                      'id': '3',
-                      'type': 'first',
-                      'attributes': {
-                        'value': 'go'
                       }
                     }
                   ]
@@ -482,24 +473,25 @@ namespace Jsonyte.Tests.Serialization
         }
 
         [Fact]
-        public void CanSerializeWithCircularReferences()
+        public void CanSerializeWithCircularReferencesWithSameIdAndType()
         {
             var model = new ModelWithCircularType
             {
                 Id = "1",
                 Type = "first",
-                Value = "here"
+                Value = "here",
+                First = new ModelWithAnotherCircularType
+                {
+                    Id = "2",
+                    Type = "second",
+                    Value = "we",
+                    Second = new ModelWithCircularType
+                    {
+                        Id = "1",
+                        Type = "first"
+                    }
+                }
             };
-
-            var another = new ModelWithAnotherCircularType
-            {
-                Id = "2",
-                Type = "second",
-                Value = "we",
-                Second = model
-            };
-
-            model.First = another;
 
             var json = model.Serialize();
 
@@ -580,6 +572,50 @@ namespace Jsonyte.Tests.Serialization
         }
 
         [Fact]
+        public void CanSerializeResourceReferencingItselfWithSameIdAndType()
+        {
+            var model = new ModelReferencingItself
+            {
+                Id = "1",
+                Type = "model",
+                Value = "Hi"
+            };
+
+            model.Itself = new[]
+            {
+                new ModelReferencingItself
+                {
+                    Id = "1",
+                    Type = "model",
+                    Value = "thrown away"
+                }
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'value': 'Hi'
+                    },
+                    'relationships': {
+                      'itself': {
+                        'data': [
+                          {
+                            'id': '1',
+                            'type': 'model'
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
         public void CanSerializeCircularTypeCollection()
         {
             var model = new ModelWithCircularTypeCollection
@@ -599,6 +635,72 @@ namespace Jsonyte.Tests.Serialization
             };
 
             model.First[0].Second = model;
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'value': 'Hi'
+                    },
+                    'relationships': {
+                      'first': {
+                        'data': [
+                          {
+                            'id': '2',
+                            'type': 'nested'
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'nested',
+                      'attributes': {
+                        'value': 'Hi again'
+                      },
+                      'relationships': {
+                        'second': {
+                          'data': {
+                            'id': '1',
+                            'type': 'model'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeCircularTypeCollectionWithSameIdAndType()
+        {
+            var model = new ModelWithCircularTypeCollection
+            {
+                Id = "1",
+                Type = "model",
+                Value = "Hi",
+                First = new ModelWithCircularTypeCollectionNested[]
+                {
+                    new()
+                    {
+                        Id = "2",
+                        Type = "nested",
+                        Value = "Hi again",
+                        Second = new ModelWithCircularTypeCollection
+                        {
+                            Id = "1",
+                            Type = "model",
+                            Value = "thrown away"
+                        }
+                    }
+                }
+            };
 
             var json = model.Serialize();
 

@@ -10,7 +10,6 @@ namespace Jsonyte.Serialization.Metadata
         {
             Name = string.Empty;
             NameEncoded = default;
-            MemberName = string.Empty;
             MemberType = typeof(string);
             Ignored = true;
             Converter = null!;
@@ -18,8 +17,6 @@ namespace Jsonyte.Serialization.Metadata
         }
 
         public override string Name { get; }
-
-        public override string MemberName { get; }
 
         public override Type MemberType { get; }
 

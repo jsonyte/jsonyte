@@ -15,11 +15,11 @@ namespace Jsonyte.Tests.Performance
 #if RUN_FULL_BENCHMARK
     [SimpleJob(RuntimeMoniker.Net472)]
     [SimpleJob(RuntimeMoniker.NetCoreApp31)]
-    [SimpleJob(RuntimeMoniker.NetCoreApp50)]
+    [SimpleJob(RuntimeMoniker.Net50)]
 #else
     [ShortRunJob(RuntimeMoniker.Net472)]
     [ShortRunJob(RuntimeMoniker.NetCoreApp31)]
-    [ShortRunJob(RuntimeMoniker.NetCoreApp50)]
+    [ShortRunJob(RuntimeMoniker.Net50)]
 #endif
     [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class SerializeDeserializeBenchmarks
