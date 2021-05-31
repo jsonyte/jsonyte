@@ -72,7 +72,7 @@ namespace Jsonyte.Serialization
                 return false;
             }
 
-            for (var i = 0; i < emittedResourcesCount; i++)
+            for (var i = 0; i < emittedResourcesCount && i < CachedEmittedResources; i++)
             {
                 var resource = emittedResources![i];
 
