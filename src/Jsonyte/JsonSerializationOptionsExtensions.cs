@@ -81,7 +81,14 @@ namespace Jsonyte
                 var converterType = typeof(JsonObjectConverter<>).MakeGenericType(x);
                 var converter = options.GetConverter(type);
 
-                return (JsonObjectConverter) Activator.CreateInstance(converterType, converter);
+                var objectConverter = Activator.CreateInstance(converterType, converter);
+
+                if (objectConverter is not JsonObjectConverter jsonObjectConverter)
+                {
+                    throw new JsonApiException($"Cannot create JSON:API converter: {type}");
+                }
+
+                return jsonObjectConverter;
             });
         }
 
@@ -91,7 +98,14 @@ namespace Jsonyte
             {
                 var converterType = typeof(JsonApiAnonymousRelationshipConverter<>).MakeGenericType(x);
 
-                return (AnonymousRelationshipConverter) Activator.CreateInstance(converterType, options);
+                var converter = Activator.CreateInstance(converterType, options);
+
+                if (converter is not AnonymousRelationshipConverter relationshipConverter)
+                {
+                    throw new JsonApiException($"Cannot create JSON:API relationship converter: {type}");
+                }
+
+                return relationshipConverter;
             });
         }
 
