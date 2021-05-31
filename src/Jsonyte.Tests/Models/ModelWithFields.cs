@@ -13,7 +13,7 @@ namespace Jsonyte.Tests.Models
 
         [JsonPropertyName("readWriteTitle")]
         private string readWriteTitle = "title";
-         
+
         [JsonPropertyName("publicTitle")]
         public string PublicTitle = "title";
 
