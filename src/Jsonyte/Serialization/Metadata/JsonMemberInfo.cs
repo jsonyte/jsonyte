@@ -377,6 +377,11 @@ namespace Jsonyte.Serialization.Metadata
                     return RelationshipType.None;
                 }
 
+                if (MemberType != JsonApiTypes.Object && MemberType.IsAssignableFrom(x))
+                {
+                    return RelationshipType.None;
+                }
+
                 if (x.IsResourceIdentifier() || x.IsExplicitRelationship())
                 {
                     return RelationshipType.Object;

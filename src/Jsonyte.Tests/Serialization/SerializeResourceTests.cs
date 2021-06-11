@@ -750,6 +750,8 @@ namespace Jsonyte.Tests.Serialization
         public void CanSerializeResourceWithCollections(IDictionary<string, string> dictionary, ICollection<string> collection, IList<string> list)
         {
             var model = new ModelWithCollectionInterfaces();
+            model.Id = "1";
+            model.Type = "type";
             model.Dictionary = (IDictionary) dictionary;
             model.GenericDictionary = dictionary;
             model.Collection = (ICollection) collection;
@@ -774,7 +776,6 @@ namespace Jsonyte.Tests.Serialization
                     'id': '1',
                     'type': 'type',
                     'attributes': {
-                      'name': 'name',
                       'dictionary': {
                         'k1': 'v1',
                         'k2': 'v2'
@@ -792,12 +793,12 @@ namespace Jsonyte.Tests.Serialization
                         'c2'
                       ],
                       'list': [
-                        'c1',
-                        'c2'
+                        'l1',
+                        'l2'
                       ],
                       'genericList': [
-                        'c1',
-                        'c2'
+                        'l1',
+                        'l2'
                       ]
                     }
                   }
