@@ -58,7 +58,7 @@ namespace Jsonyte.Converters
                 return true;
             }
 
-            if (typeToConvert.IsRelationship())
+            if (typeToConvert.IsDefinedRelationship())
             {
                 return true;
             }
@@ -106,8 +106,6 @@ namespace Jsonyte.Converters
                         return CreateConverter(typeof(JsonApiRelationshipCollectionConverter<,>), relationshipType, elementType);
                     }
                 }
-
-                var info = options.GetTypeInfo(relationshipType);
 
                 var converterType = relationshipType.IsExplicitRelationship()
                     ? typeof(JsonApiResourceObjectExplicitRelationshipConverter<>)

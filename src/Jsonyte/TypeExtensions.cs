@@ -21,6 +21,11 @@ namespace Jsonyte
             return HasMember(type, JsonApiMembers.Id) && HasMember(type, JsonApiMembers.Type);
         }
 
+        public static bool IsRelationship(this Type type)
+        {
+            return type.IsResourceIdentifier() || type.IsResourceIdentifierCollection() || type.IsExplicitRelationship();
+        }
+
         public static bool IsResourceIdentifierCollection(this Type type)
         {
             if (type.IsCollection())
@@ -76,7 +81,7 @@ namespace Jsonyte
             return false;
         }
 
-        public static bool IsRelationship(this Type type)
+        public static bool IsDefinedRelationship(this Type type)
         {
             if (type.IsGenericType)
             {
