@@ -2,7 +2,7 @@
 
 namespace Jsonyte.Serialization.Contracts
 {
-    internal struct PotentialRelationshipCollection
+    internal readonly struct PotentialRelationshipCollection
     {
         public readonly JsonEncodedText Relationship;
 
