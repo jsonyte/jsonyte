@@ -8,8 +8,23 @@ using Jsonyte.Serialization.Reflection;
 
 namespace Jsonyte
 {
+    /// <summary>
+    /// Contains the <see cref="JsonSerializerOptions"/> extension methods.
+    /// </summary>
     public static class JsonSerializationOptionsExtensions
     {
+        /// <summary>
+        /// Add JSON:API converters and capabilities to the specified <see cref="JsonSerializerOptions"/> instance.
+        /// </summary>
+        /// <remarks>
+        /// In addition to adding the converters required for serializing and deserializing JSON:API data, the default
+        /// <see cref="JsonSerializerOptions.PropertyNamingPolicy"/> value is set by default to be <see cref="JsonNamingPolicy.CamelCase"/>.
+        /// This is only set, however, if there is no naming policy already set.
+        ///
+        /// To disable this behavior, simply set your naming policy prior to calling <see cref="AddJsonApi"/>.
+        /// </remarks>
+        /// <param name="options">The <see cref="JsonSerializerOptions"/> instance.</param>
+        /// <returns>The <see cref="JsonSerializerOptions"/> instance with JSON:API capabilities.</returns>
         public static JsonSerializerOptions AddJsonApi(this JsonSerializerOptions options)
         {
             if (!options.Converters.OfType<JsonApiStateConverter>().Any())
