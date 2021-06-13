@@ -11,8 +11,6 @@ namespace Jsonyte.Converters.Collections
     {
         private WrappedJsonConverter<TElement>? wrappedConverter;
 
-        public Type? ElementType { get; } = typeof(TElement);
-
         public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -28,7 +26,7 @@ namespace Jsonyte.Converters.Collections
 
                 if (name == DocumentFlags.Data)
                 {
-                    resources = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
+                    resources = ReadWrapped(ref reader, ref tracked, default, options);
                 }
                 else if (name == DocumentFlags.Included)
                 {
@@ -45,7 +43,7 @@ namespace Jsonyte.Converters.Collections
             return resources;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, T? existingValue, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
@@ -60,7 +58,7 @@ namespace Jsonyte.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var resource = converter.ReadWrapped(ref reader, ref tracked, ElementType!, default, options);
+                var resource = converter.ReadWrapped(ref reader, ref tracked, default, options);
 
                 if (resource != null)
                 {

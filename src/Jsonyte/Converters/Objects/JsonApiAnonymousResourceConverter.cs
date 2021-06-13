@@ -13,7 +13,7 @@ namespace Jsonyte.Converters.Objects
             throw new NotSupportedException();
         }
 
-        public override AnonymousResource ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, AnonymousResource existingValue, JsonSerializerOptions options)
+        public override AnonymousResource ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, AnonymousResource existingValue, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }

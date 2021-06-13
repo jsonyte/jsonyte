@@ -20,7 +20,7 @@ namespace Jsonyte.Converters.Objects
             throw new NotImplementedException();
         }
 
-        public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, RelationshipResource<T> existingValue, JsonSerializerOptions options)
+        public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, RelationshipResource<T> existingValue, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
         }

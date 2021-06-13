@@ -103,7 +103,7 @@ namespace Jsonyte.Converters.Objects
                 throw new JsonApiException($"Could not find converter for type '{typeof(TConverter)}'");
             }
 
-            return converter.ReadWrapped(ref reader, ref tracked, typeof(TConverter), default, options);
+            return converter.ReadWrapped(ref reader, ref tracked, default, options);
         }
 
         protected abstract void WriteData(Utf8JsonWriter writer, ref TrackedResources tracked, T value, JsonSerializerOptions options);

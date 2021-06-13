@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
@@ -244,13 +245,13 @@ namespace Jsonyte.Serialization.Metadata
 
                 var relationshipType = GetRelationshipType(value);
 
-                if (relationshipType == RelationshipType.None)
+                if (relationshipType == RelationshipType.Declared)
                 {
                     RelationshipConverter.Write(writer, ref tracked, new RelationshipResource<T>(value), Options);
                 }
                 else
                 {
-                    Options.GetAnonymousRelationshipConverter(value.GetType()).Write(writer, ref tracked, value);
+                    Options.GetRelationshipConverter(value.GetType()).Write(writer, ref tracked, value, Options);
                 }
             }
         }
@@ -281,7 +282,7 @@ namespace Jsonyte.Serialization.Metadata
                 }
                 else if (relationshipType is RelationshipType.Object or RelationshipType.TypedCollection)
                 {
-                    Options.GetAnonymousRelationshipConverter(value.GetType()).WriteWrapped(writer, ref tracked, value);
+                    Options.GetRelationshipConverter(value.GetType()).WriteWrapped(writer, ref tracked, value, Options);
                 }
                 else
                 {
@@ -361,40 +362,56 @@ namespace Jsonyte.Serialization.Metadata
                 return RelationshipType.None;
             }
 
-            // Anonymous object types sometimes aren't declared until we inspect the actual value
+            // Anonymous object types or implementations of an interface aren't declared until we inspect the actual value
 
-            // There are 4 possibilities here:
-            // 1. The type is nullable and the value is null, this will just get skipped
-            // 2. The type is declared as object but the value is a relationship or explicit relationship
+            // Assuming the type is not null, there are 4 possibilities here:
+            // 1. The type is declared as a relationship, in which case IsRelationship should be true already
+            // 2. The type is declared as object or interface but the value is a relationship or explicit relationship
             // 3. The type is declared as collection of a type that is a relationship
-            // 4. The type is declared as collection of IEnumerable and we need to enumerate to see if contains relationships
+            // 4. The type is declared as collection of IEnumerable with an unknown type and we need to enumerate to see if contains relationships
             var valueType = value.GetType();
 
             return relationshipTypes.GetOrAdd(valueType, x =>
             {
+                // 1. The value type is the same as the declared type
                 if (x == MemberType)
+                {
+                    return RelationshipType.Declared;
+                }
+
+                // Dictionaries are always treated as dictionaries, they can never be relationships
+                if (typeof(IDictionary).IsAssignableFrom(x))
                 {
                     return RelationshipType.None;
                 }
 
+                // 2. The value is a relationship or explicit relationship
                 if (x.IsResourceIdentifier() || x.IsExplicitRelationship())
                 {
                     return RelationshipType.Object;
                 }
 
-                if (!x.IsCollection())
+                var collectionType = x.GetCollectionElementType();
+
+                if (collectionType == null)
                 {
                     return RelationshipType.None;
                 }
 
-                var collectionType = x.GetCollectionElementType();
-
-                if (collectionType != null && collectionType.IsResourceIdentifier())
+                // 3. The type is a collection of a declared type that is a relationship
+                if (collectionType.IsResourceIdentifier())
                 {
                     return RelationshipType.TypedCollection;
                 }
 
-                return RelationshipType.PotentialCollection;
+                // 4. The type of the collection is Object (which usually means an anonymous type) and so we need to
+                // enumerate to find out what the real collection type is
+                if (collectionType == JsonApiTypes.Object)
+                {
+                    return RelationshipType.PotentialCollection;
+                }
+
+                return RelationshipType.None;
             });
         }
     }

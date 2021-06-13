@@ -33,7 +33,7 @@ namespace Jsonyte.Converters.Collections
 
                 if (name == RelationshipFlags.Data)
                 {
-                    relationships = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
+                    relationships = ReadWrapped(ref reader, ref tracked, default, options);
                 }
                 else
                 {
@@ -48,7 +48,7 @@ namespace Jsonyte.Converters.Collections
             return relationships;
         }
 
-        public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, RelationshipResource<T> existingValue, JsonSerializerOptions options)
+        public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, RelationshipResource<T> existingValue, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
@@ -63,7 +63,7 @@ namespace Jsonyte.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var value = converter.ReadWrapped(ref reader, ref tracked, ElementType!, default, options);
+                var value = converter.ReadWrapped(ref reader, ref tracked, default, options);
 
                 if (value.Resource != null)
                 {

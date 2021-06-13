@@ -30,7 +30,7 @@ namespace Jsonyte.Converters.Objects
 
                 if (name == RelationshipFlags.Data)
                 {
-                    relationship = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
+                    relationship = ReadWrapped(ref reader, ref tracked, default, options);
                 }
                 else
                 {
@@ -45,7 +45,7 @@ namespace Jsonyte.Converters.Objects
             return relationship;
         }
 
-        public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, RelationshipResource<T> existingValue, JsonSerializerOptions options)
+        public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, RelationshipResource<T> existingValue, JsonSerializerOptions options)
         {
             var identifier = reader.ReadResourceIdentifier();
 

@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JsonApiSerializer;
 using Jsonyte.Tests.Data;
 using Jsonyte.Tests.Models;
-using Newtonsoft.Json;
 using Xunit;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -900,76 +898,20 @@ namespace Jsonyte.Tests.Serialization
 
             model.Dictionary["k1"] = "v1";
 
-            // Should ignore Id and Type of IDictionary and just write it as an object with key/value
-            var json = JsonSerializer.Serialize(model);
-        }
+            var json = model.Serialize();
 
-        public class MyModel
-        {
-            public string Id { get; set; }
-
-            public string Type { get; set; }
-
-            public MyOtherModel Other { get; set; }
-
-            public object Obj { get; set; }
-        }
-
-        public class MyOtherModel
-        {
-            public string Id { get; set; }
-
-            public string Type { get; set; }
-
-            public string Name { get; set; }
-        }
-
-        [Fact]
-        public void T()
-        {
-            object GetRelationshipArray()
-            {
-                return new[]
+            Assert.Equal(@"
                 {
-                    new
-                    {
-                        id = "2",
-                        type = "author",
-                        name = "Bob"
-                    },
-                    new
-                    {
-                        id = "3",
-                        type = "author",
-                        name = "Tim"
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'dictionary': {
+                        'k1': 'v1'
+                      }
                     }
-                };
-            }
-
-            object GetRelationship()
-            {
-                return new
-                {
-                    id = "2",
-                    type = "author",
-                    name = "Bob"
-                };
-            }
-
-            var model = new MyModel
-            {
-                Id = "1",
-                Type = "type",
-                Other = new MyOtherModel
-                {
-                    Id = "5",
-                    Type = "other",
-                    Name = "Joe"
-                },
-                Obj = GetRelationship()
-            };
-
-            var j = model.Serialize();
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
     }
 }

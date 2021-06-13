@@ -1,8 +1,8 @@
-﻿using System.Text.Json.Serialization;
+﻿#if NET5_0_OR_GREATER
+using System.Text.Json.Serialization;
 
 namespace Jsonyte.Tests.Models
 {
-#if NET5_0_OR_GREATER
     public class ModelWithInitProperty
     {
         [JsonPropertyName("id")]
@@ -14,5 +14,5 @@ namespace Jsonyte.Tests.Models
         [JsonPropertyName("initTitle")]
         public string InitTitle { get; init; } = "value";
     }
-#endif
 }
+#endif

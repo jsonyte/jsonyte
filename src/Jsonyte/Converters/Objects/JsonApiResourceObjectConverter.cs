@@ -26,7 +26,7 @@ namespace Jsonyte.Converters.Objects
 
                 if (name == DocumentFlags.Data)
                 {
-                    resource = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
+                    resource = ReadWrapped(ref reader, ref tracked, default, options);
                 }
                 else if (name == DocumentFlags.Included)
                 {
@@ -60,7 +60,7 @@ namespace Jsonyte.Converters.Objects
             return resource;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, T? existingValue, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {

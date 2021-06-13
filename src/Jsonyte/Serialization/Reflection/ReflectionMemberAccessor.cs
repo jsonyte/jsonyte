@@ -1,9 +1,9 @@
-﻿using System;
+﻿#if !NETCOREAPP && !NETFRAMEWORK
+using System;
 using System.Reflection;
 
 namespace Jsonyte.Serialization.Reflection
 {
-#if !NETCOREAPP && !NETFRAMEWORK
     internal class ReflectionMemberAccessor : MemberAccessor
     {
         public override Func<object?> CreateCreator(Type type)
@@ -36,5 +36,5 @@ namespace Jsonyte.Serialization.Reflection
             return (resource, value) => field.SetValue(resource, value);
         }
     }
-#endif
 }
+#endif
