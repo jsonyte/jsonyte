@@ -105,7 +105,7 @@ namespace Jsonyte
     }
 
     /// <summary>
-    /// Represents a JSON:API document. You can use this class to create and modify JSON:API data.
+    /// Represents a <see href="https://jsonapi.org/">JSON:API</see> document. You can use this class to create and modify JSON:API data.
     /// </summary>
     /// <remarks>
     /// The <see cref="JsonApiDocument"/> class is an in-memory representation of a JSON:API document. It
