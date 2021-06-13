@@ -7,8 +7,6 @@ namespace Jsonyte.Converters.Objects
 {
     internal class JsonApiErrorConverter : WrappedJsonConverter<JsonApiError>
     {
-        public Type TypeToConvert { get; } = typeof(JsonApiError);
-
         public override JsonApiError? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             JsonApiError? firstError = null;
@@ -28,7 +26,7 @@ namespace Jsonyte.Converters.Objects
                     {
                         if (firstError == null)
                         {
-                            firstError = ReadWrapped(ref reader, ref tracked, TypeToConvert!, null, options);
+                            firstError = ReadWrapped(ref reader, ref tracked, null, options);
                         }
                         else
                         {
@@ -53,7 +51,7 @@ namespace Jsonyte.Converters.Objects
                 : default;
         }
 
-        public override JsonApiError ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonApiError? existingValue, JsonSerializerOptions options)
+        public override JsonApiError ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonApiError? existingValue, JsonSerializerOptions options)
         {
             var error = new JsonApiError();
 

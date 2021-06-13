@@ -1,5 +1,4 @@
-﻿using System;
-using Jsonyte.Tests.Models;
+﻿using Jsonyte.Tests.Models;
 using Xunit;
 
 namespace Jsonyte.Tests.Deserialization

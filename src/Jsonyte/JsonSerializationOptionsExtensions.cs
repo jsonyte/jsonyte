@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Text.Json;
 using Jsonyte.Converters;
-using Jsonyte.Converters.Objects;
 using Jsonyte.Serialization.Contracts;
 using Jsonyte.Serialization.Metadata;
 using Jsonyte.Serialization.Reflection;
@@ -69,6 +68,23 @@ namespace Jsonyte
             return jsonApiConverter;
         }
 
+        internal static AnonymousRelationshipConverter GetAnonymousRelationshipConverter(this JsonSerializerOptions options, Type type)
+        {
+            return GetState(options).AnonymousConverters.GetOrAdd(type, x =>
+            {
+                var converterType = typeof(AnonymousRelationshipConverter<>).MakeGenericType(x);
+
+                var converter = Activator.CreateInstance(converterType, options);
+
+                if (converter is not AnonymousRelationshipConverter relationshipConverter)
+                {
+                    throw new JsonApiException($"Cannot create JSON:API relationship converter: {type}");
+                }
+
+                return relationshipConverter;
+            });
+        }
+
         internal static JsonObjectConverter GetObjectConverter<T>(this JsonSerializerOptions options)
         {
             return GetState(options).ObjectConverters.GetOrAdd(typeof(T), _ => new JsonObjectConverter<T>(options.GetWrappedConverter<T>()));
@@ -89,23 +105,6 @@ namespace Jsonyte
                 }
 
                 return jsonObjectConverter;
-            });
-        }
-
-        internal static AnonymousRelationshipConverter GetAnonymousRelationshipConverter(this JsonSerializerOptions options, Type type)
-        {
-            return GetState(options).AnonymousConverters.GetOrAdd(type, x =>
-            {
-                var converterType = typeof(JsonApiAnonymousRelationshipConverter<>).MakeGenericType(x);
-
-                var converter = Activator.CreateInstance(converterType, options);
-
-                if (converter is not AnonymousRelationshipConverter relationshipConverter)
-                {
-                    throw new JsonApiException($"Cannot create JSON:API relationship converter: {type}");
-                }
-
-                return relationshipConverter;
             });
         }
 

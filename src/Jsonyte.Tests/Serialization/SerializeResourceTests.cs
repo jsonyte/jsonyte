@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Jsonyte.Tests.Data;
 using Jsonyte.Tests.Models;
 using Xunit;
 
@@ -740,6 +742,174 @@ namespace Jsonyte.Tests.Serialization
                       }
                     }
                   ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Theory]
+        [ClassData(typeof(ModelWithCollectionInterfacesData))]
+        public void CanSerializeResourceWithCollections(IDictionary<string, string> dictionary, ICollection<string> collection, IList<string> list)
+        {
+            var model = new ModelWithCollectionInterfaces();
+            model.Id = "1";
+            model.Type = "type";
+            model.Dictionary = (IDictionary) dictionary;
+            model.GenericDictionary = dictionary;
+            model.Collection = (ICollection) collection;
+            model.GenericCollection = collection;
+            model.List = (IList) list;
+            model.GenericList = list;
+
+            dictionary.Add("k1", "v1");
+            dictionary.Add("k2", "v2");
+
+            collection.Add("c1");
+            collection.Add("c2");
+
+            list.Add("l1");
+            list.Add("l2");
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'type',
+                    'attributes': {
+                      'dictionary': {
+                        'k1': 'v1',
+                        'k2': 'v2'
+                      },
+                      'genericDictionary': {
+                        'k1': 'v1',
+                        'k2': 'v2'
+                      },
+                      'collection': [
+                        'c1',
+                        'c2'
+                      ],
+                      'genericCollection': [
+                        'c1',
+                        'c2'
+                      ],
+                      'list': [
+                        'l1',
+                        'l2'
+                      ],
+                      'genericList': [
+                        'l1',
+                        'l2'
+                      ]
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeAnonymousResourceWithDictionary()
+        {
+            var model = new
+            {
+                id = "1",
+                type = "type",
+                name = "name",
+                dictionary = new Dictionary<string, string>
+                {
+                    {"k1", "v1"},
+                    {"k2", "v2"}
+                }
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'type',
+                    'attributes': {
+                      'name': 'name',
+                      'dictionary': {
+                        'k1': 'v1',
+                        'k2': 'v2'
+                      }
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeResourceWithHiddenRelationshipInInterface()
+        {
+            var model = new ModelWithInterfaceRelationship
+            {
+                Id = "1",
+                Type = "model",
+                Article = new ArticleWithInterface
+                {
+                    Id = "2",
+                    Type = "articles",
+                    Title = "Jsonapi"
+                }
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'relationships': {
+                      'article': {
+                        'data': {
+                          'id': '2',
+                          'type': 'articles'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'Jsonapi'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeResourceWithDictionaryThatIsARelationship()
+        {
+            var model = new ModelWithDictionaryProperty
+            {
+                Id = "1",
+                Type = "model",
+                Dictionary = new ModelImplementingDictionary
+                {
+                    Id = "2",
+                    Type = "dictionaries"
+                }
+            };
+
+            model.Dictionary["k1"] = "v1";
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'dictionary': {
+                        'k1': 'v1'
+                      }
+                    }
+                  }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
     }

@@ -879,5 +879,68 @@ namespace Jsonyte.Tests.Serialization
                   ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeRelationshipsFromCollectionInterface()
+        {
+            var model = new ModelWithCollectionInterfaceRelationships();
+            model.Id = "1";
+            model.Type = "type";
+            model.Articles = new List<Article>
+            {
+                new()
+                {
+                    Id = "2",
+                    Type = "articles",
+                    Title = "Jsonapi"
+                },
+                new()
+                {
+                    Id = "3",
+                    Type = "articles",
+                    Title = "More"
+                }
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'type',
+                    'relationships': {
+                      'articles': {
+                        'data': [
+                          {
+                            'id': '2',
+                            'type': 'articles'
+                          },
+                          {
+                            'id': '3',
+                            'type': 'articles'
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '2',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'Jsonapi'
+                      }
+                    },
+                    {
+                      'id': '3',
+                      'type': 'articles',
+                      'attributes': {
+                        'title': 'More'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

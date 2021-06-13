@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Jsonyte.Serialization.Metadata
 {
@@ -12,7 +11,6 @@ namespace Jsonyte.Serialization.Metadata
             NameEncoded = default;
             MemberType = typeof(string);
             Ignored = true;
-            Converter = null!;
             IsRelationship = false;
         }
 
@@ -21,8 +19,6 @@ namespace Jsonyte.Serialization.Metadata
         public override Type MemberType { get; }
 
         public override JsonEncodedText NameEncoded { get; }
-
-        public override JsonConverter Converter { get; }
 
         public override bool Ignored { get; }
 

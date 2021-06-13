@@ -21,6 +21,11 @@ namespace Jsonyte
             return HasMember(type, JsonApiMembers.Id) && HasMember(type, JsonApiMembers.Type);
         }
 
+        public static bool IsRelationship(this Type type)
+        {
+            return type.IsResourceIdentifier() || type.IsResourceIdentifierCollection() || type.IsExplicitRelationshipByMembers();
+        }
+
         public static bool IsResourceIdentifierCollection(this Type type)
         {
             if (type.IsCollection())
@@ -34,11 +39,6 @@ namespace Jsonyte
             }
 
             return false;
-        }
-
-        public static bool IsExplicitRelationship(this Type type)
-        {
-            return HasMemberIgnoreType(type, JsonApiMembers.Data) || HasMemberIgnoreType(type, JsonApiMembers.Links);
         }
 
         public static bool IsError(this Type type)
@@ -76,7 +76,7 @@ namespace Jsonyte
             return false;
         }
 
-        public static bool IsRelationship(this Type type)
+        public static bool IsExplicitRelationship(this Type type)
         {
             if (type.IsGenericType)
             {
@@ -89,6 +89,11 @@ namespace Jsonyte
             }
 
             return false;
+        }
+
+        public static bool IsExplicitRelationshipByMembers(this Type type)
+        {
+            return HasMemberIgnoreType(type, JsonApiMembers.Data) || HasMemberIgnoreType(type, JsonApiMembers.Links);
         }
 
         public static bool IsCollection(this Type type)

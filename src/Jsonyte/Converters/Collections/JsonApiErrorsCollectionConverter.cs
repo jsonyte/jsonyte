@@ -9,8 +9,6 @@ namespace Jsonyte.Converters.Collections
 {
     internal class JsonApiErrorsCollectionConverter<T> : WrappedJsonConverter<T>
     {
-        public Type? ElementType { get; } = typeof(JsonApiError);
-
         public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -26,7 +24,7 @@ namespace Jsonyte.Converters.Collections
 
                 if (name == DocumentFlags.Errors)
                 {
-                    errors = ReadWrapped(ref reader, ref tracked, typeToConvert, default, options);
+                    errors = ReadWrapped(ref reader, ref tracked, default, options);
                 }
                 else
                 {
@@ -43,7 +41,7 @@ namespace Jsonyte.Converters.Collections
                 : default;
         }
 
-        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, T? existingValue, JsonSerializerOptions options)
+        public override T? ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, T? existingValue, JsonSerializerOptions options)
         {
             var errors = new List<JsonApiError>();
             var converter = options.GetWrappedConverter<JsonApiError>();
@@ -52,7 +50,7 @@ namespace Jsonyte.Converters.Collections
 
             while (reader.IsInArray())
             {
-                var error = converter.ReadWrapped(ref reader, ref tracked, ElementType!, null, options);
+                var error = converter.ReadWrapped(ref reader, ref tracked, null, options);
 
                 if (error == null)
                 {

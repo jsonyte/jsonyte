@@ -17,7 +17,7 @@ namespace Jsonyte.Converters.Collections
             throw new NotSupportedException();
         }
 
-        public override PotentialRelationshipCollection ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, PotentialRelationshipCollection existingValue, JsonSerializerOptions options)
+        public override PotentialRelationshipCollection ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, PotentialRelationshipCollection existingValue, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }

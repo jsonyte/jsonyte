@@ -21,7 +21,7 @@ namespace Jsonyte.Converters
 
         public override void Read(ref Utf8JsonReader reader, ref TrackedResources tracked, object existingValue, JsonSerializerOptions options)
         {
-            converter.ReadWrapped(ref reader, ref tracked, typeof(T), (T) existingValue, options);
+            converter.ReadWrapped(ref reader, ref tracked, (T) existingValue, options);
         }
 
         public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value, JsonSerializerOptions options)

@@ -1,7 +1,7 @@
-﻿namespace Jsonyte.Converters.Objects
+﻿#if CONSTRUCTOR_CONVERTER
+namespace Jsonyte.Converters.Objects
 {
     // TODO: Not working yet
-#if CONSTRUCTOR_CONVERTER
     internal class JsonApiResourceObjectConstructorConverter<T> : JsonApiResourceObjectConverter<T>
     {
         public JsonApiResourceObjectConstructorConverter(JsonTypeInfo type)
@@ -100,5 +100,5 @@
             }
         }
     }
-#endif
 }
+#endif

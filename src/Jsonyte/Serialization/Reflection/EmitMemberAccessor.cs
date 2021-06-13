@@ -1,10 +1,10 @@
-﻿using System;
+﻿#if NETCOREAPP || NETFRAMEWORK
+using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Jsonyte.Serialization.Reflection
 {
-#if NETCOREAPP || NETFRAMEWORK
     internal class EmitMemberAccessor : MemberAccessor
     {
         public override Func<object?> CreateCreator(Type type)
@@ -210,5 +210,5 @@ namespace Jsonyte.Serialization.Reflection
             return (Action<object, T?>) method.CreateDelegate(typeof(Action<object, T?>));
         }
     }
-#endif
 }
+#endif

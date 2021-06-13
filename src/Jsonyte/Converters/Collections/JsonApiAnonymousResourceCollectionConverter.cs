@@ -15,7 +15,7 @@ namespace Jsonyte.Converters.Collections
             throw new NotSupportedException();
         }
 
-        public override AnonymousResourceCollection ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, AnonymousResourceCollection existingValue, JsonSerializerOptions options)
+        public override AnonymousResourceCollection ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, AnonymousResourceCollection existingValue, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }

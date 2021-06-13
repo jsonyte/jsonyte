@@ -1503,5 +1503,136 @@ namespace Jsonyte.Tests.Serialization
                   ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeRelationshipFromQueryable()
+        {
+            IEnumerable<object> GetData()
+            {
+                return new[]
+                {
+                    new
+                    {
+                        id = "3",
+                        type = "books",
+                        value = "Up is down"
+                    },
+                    new
+                    {
+                        id = "4",
+                        type = "books",
+                        value = "Right is left"
+                    }
+                };
+            }
+
+            IQueryable<object> GetRelationship()
+            {
+                return GetData().AsQueryable();
+            }
+
+            var model = new
+            {
+                id = "1",
+                type = "model",
+                name = "weird",
+                books = GetRelationship()
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'name': 'weird'
+                    },
+                    'relationships': {
+                      'books': {
+                        'data': [
+                          {
+                            'id': '3',
+                            'type': 'books'
+                          },
+                          {
+                            'id': '4',
+                            'type': 'books'
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '3',
+                      'type': 'books',
+                      'attributes': {
+                        'value': 'Up is down'
+                      }
+                    },
+                    {
+                      'id': '4',
+                      'type': 'books',
+                      'attributes': {
+                        'value': 'Right is left'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeAnonymousCollectionThatIsNotRelationship()
+        {
+            IEnumerable<object> GetData()
+            {
+                return new[]
+                {
+                    new
+                    {
+                        name = "Bob",
+                        age = 25
+                    },
+                    new
+                    {
+                        name = "Jane",
+                        age = 28
+                    }
+                };
+            }
+
+            var model = new
+            {
+                id = "1",
+                type = "model",
+                title = "Jsonapi",
+                employees = GetData()
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'title': 'Jsonapi',
+                      'employees': [
+                        {
+                          'name': 'Bob',
+                          'age': 25
+                        },
+                        {
+                          'name': 'Jane',
+                          'age': 28
+                        }
+                      ]
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Jsonyte.Serialization.Contracts
 {
-    internal struct RelationshipResource<T>
+    internal readonly struct RelationshipResource<T>
     {
         public readonly T Resource;
 
