@@ -246,7 +246,7 @@ namespace Jsonyte.Serialization.Metadata
                 }
                 else
                 {
-                    Options.GetRelationshipConverter(value.GetType()).Write(writer, ref tracked, value, Options);
+                    Options.GetAnonymousRelationshipConverter(value.GetType()).Write(writer, ref tracked, value, Options);
                 }
             }
         }
@@ -277,7 +277,7 @@ namespace Jsonyte.Serialization.Metadata
                 }
                 else if (relationshipType is RelationshipType.Object or RelationshipType.TypedCollection)
                 {
-                    Options.GetRelationshipConverter(value.GetType()).WriteWrapped(writer, ref tracked, value, Options);
+                    Options.GetAnonymousRelationshipConverter(value.GetType()).WriteWrapped(writer, ref tracked, value, Options);
                 }
                 else
                 {

@@ -5,7 +5,6 @@ using System.Text.Json.Serialization;
 using Jsonyte.Tests.Data;
 using Jsonyte.Tests.Models;
 using Xunit;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Jsonyte.Tests.Serialization
 {

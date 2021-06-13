@@ -68,7 +68,7 @@ namespace Jsonyte
             return jsonApiConverter;
         }
 
-        internal static AnonymousRelationshipConverter GetRelationshipConverter(this JsonSerializerOptions options, Type type)
+        internal static AnonymousRelationshipConverter GetAnonymousRelationshipConverter(this JsonSerializerOptions options, Type type)
         {
             return GetState(options).AnonymousConverters.GetOrAdd(type, x =>
             {
