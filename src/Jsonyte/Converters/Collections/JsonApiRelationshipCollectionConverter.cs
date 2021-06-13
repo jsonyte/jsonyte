@@ -12,8 +12,6 @@ namespace Jsonyte.Converters.Collections
     {
         private JsonApiRelationshipDetailsConverter<TElement>? relationshipConverter;
 
-        public Type? ElementType { get; } = typeof(TElement);
-
         public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
 
         public override RelationshipResource<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -21,7 +19,7 @@ namespace Jsonyte.Converters.Collections
             throw new NotSupportedException();
         }
 
-        public override RelationshipResource<T> Read(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonSerializerOptions options)
+        public override RelationshipResource<T> Read(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonSerializerOptions options)
         {
             var relationships = default(RelationshipResource<T>);
 

@@ -18,8 +18,6 @@ namespace Jsonyte.Serialization.Metadata
 
         public abstract JsonEncodedText NameEncoded { get; }
 
-        public abstract JsonConverter Converter { get; }
-
         public abstract bool Ignored { get; }
 
         public abstract bool IsRelationship { get; }
@@ -54,7 +52,6 @@ namespace Jsonyte.Serialization.Metadata
 
             Options = options;
             MemberType = memberType;
-            Converter = converter;
             Name = name;
             NameEncoded = JsonEncodedText.Encode(name);
             IsPrimitiveType = memberType.GetIsPrimitive();
@@ -62,7 +59,7 @@ namespace Jsonyte.Serialization.Metadata
             TypedConverter = (JsonConverter<T>) converter;
             WrappedConverter = converter as WrappedJsonConverter<T>;
             IgnoreCondition = ignoreCondition;
-            isRelationship = GetIsRelationship(memberType);
+            isRelationship = memberType.IsRelationship();
         }
 
         public JsonSerializerOptions Options { get; }
@@ -72,8 +69,6 @@ namespace Jsonyte.Serialization.Metadata
         public override JsonEncodedText NameEncoded { get; }
 
         public override Type MemberType { get; }
-
-        public override JsonConverter Converter { get; }
 
         public bool IsPrimitiveType { get; }
 
@@ -142,7 +137,7 @@ namespace Jsonyte.Serialization.Metadata
                 return;
             }
 
-            var value = RelationshipConverter.Read(ref reader, ref tracked, MemberType, Options);
+            var value = RelationshipConverter.Read(ref reader, ref tracked, Options);
 
             if (Options.IgnoreNullValues && value.Resource == null)
             {
@@ -350,11 +345,6 @@ namespace Jsonyte.Serialization.Metadata
             return method != null && method.IsPublic;
         }
 
-        private bool GetIsRelationship(Type type)
-        {
-            return type.IsResourceIdentifier() || type.IsResourceIdentifierCollection() || type.IsExplicitRelationship();
-        }
-
         private RelationshipType GetRelationshipType(T value)
         {
             if (value == null || IsPrimitiveType)
@@ -386,7 +376,7 @@ namespace Jsonyte.Serialization.Metadata
                 }
 
                 // 2. The value is a relationship or explicit relationship
-                if (x.IsResourceIdentifier() || x.IsExplicitRelationship())
+                if (x.IsResourceIdentifier() || x.IsExplicitRelationshipByMembers())
                 {
                     return RelationshipType.Object;
                 }

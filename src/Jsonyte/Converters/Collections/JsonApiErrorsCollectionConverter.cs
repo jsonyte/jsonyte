@@ -9,8 +9,6 @@ namespace Jsonyte.Converters.Collections
 {
     internal class JsonApiErrorsCollectionConverter<T> : WrappedJsonConverter<T>
     {
-        public Type? ElementType { get; } = typeof(JsonApiError);
-
         public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

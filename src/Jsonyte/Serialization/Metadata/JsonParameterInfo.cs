@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿#if CONSTRUCTOR_CONVERTER
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -32,3 +33,4 @@ namespace Jsonyte.Serialization.Metadata
         }
     }
 }
+#endif

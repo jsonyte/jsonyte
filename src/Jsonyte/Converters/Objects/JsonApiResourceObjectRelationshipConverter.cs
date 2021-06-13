@@ -18,7 +18,7 @@ namespace Jsonyte.Converters.Objects
             throw new NotSupportedException();
         }
 
-        public override RelationshipResource<T> Read(ref Utf8JsonReader reader, ref TrackedResources tracked, Type typeToConvert, JsonSerializerOptions options)
+        public override RelationshipResource<T> Read(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonSerializerOptions options)
         {
             var relationship = default(RelationshipResource<T>);
 
