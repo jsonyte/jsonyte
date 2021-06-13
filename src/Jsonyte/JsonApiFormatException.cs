@@ -1,7 +1,14 @@
 ﻿namespace Jsonyte
 {
+    /// <summary>
+    /// The exception that is thrown when the format of a <see href="https://jsonapi.org/">JSON:API</see> document is invalid or when a document is not well formed.
+    /// </summary>
     public class JsonApiFormatException : JsonApiException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonApiException"/> class with the specified error message.
+        /// </summary>
+        /// <param name="message">The message the describes the error.</param>
         public JsonApiFormatException(string? message)
             : base(message)
         {

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Jsonyte.Tests.Deserialization
 {
-    public class DeserializeResourceTests : ValidationTests
+    public class DeserializeResourceTests
     {
         [Fact]
         public void CanDeserializeResourceObject()
