@@ -43,5 +43,85 @@ namespace Jsonyte.Tests.Deserialization
             Assert.Equal("people", article.Author.Type);
             Assert.Equal("9", article.Author.Id);
         }
+
+        [Fact]
+        public void CanDeserializeRelationshipCollectionWithNoInclude()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'tags': {
+                        'data': [
+                          {
+                            'type': 'tags',
+                            'id': '4'
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }";
+
+            var article = json.Deserialize<ArticleWithTags>();
+
+            Assert.NotNull(article);
+            Assert.NotNull(article.Tags);
+            Assert.NotEmpty(article.Tags);
+
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal("Jsonapi", article.Title);
+
+            Assert.Single(article.Tags);
+            Assert.Equal("4", article.Tags[0].Id);
+            Assert.Equal("tags", article.Tags[0].Type);
+            Assert.Null(article.Tags[0].Value);
+        }
+
+        [Fact]
+        public void CanDeserializeRelationshipThatContainsDataKeyword()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'tags': {
+                        'data': [
+                          {
+                            'type': 'tags',
+                            'id': '4'
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }";
+
+            var article = json.Deserialize<ArticleWithTagsData>();
+
+            Assert.NotNull(article);
+            Assert.NotNull(article.Tags);
+            Assert.NotEmpty(article.Tags);
+
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal("Jsonapi", article.Title);
+
+            Assert.Single(article.Tags);
+            Assert.Equal("4", article.Tags[0].Id);
+            Assert.Equal("tags", article.Tags[0].Type);
+            Assert.Null(article.Tags[0].Value);
+        }
     }
 }

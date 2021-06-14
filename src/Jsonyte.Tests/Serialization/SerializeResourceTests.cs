@@ -912,5 +912,31 @@ namespace Jsonyte.Tests.Serialization
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeResourceWithDataNameAsAttribute()
+        {
+            var model = new TagWithData
+            {
+                Id = "1",
+                Type = "tags",
+                Value = "tagname",
+                Data = "data"
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'tags',
+                    'attributes': {
+                      'value': 'tagname',
+                      'data': 'data'
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }
