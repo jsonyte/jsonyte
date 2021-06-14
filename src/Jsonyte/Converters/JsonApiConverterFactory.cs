@@ -107,7 +107,7 @@ namespace Jsonyte.Converters
                     }
                 }
 
-                var converterType = relationshipType.IsExplicitRelationshipByMembers()
+                var converterType = relationshipType.IsExplicitRelationshipByMembers() && !relationshipType.IsResource()
                     ? typeof(JsonApiResourceObjectExplicitRelationshipConverter<>)
                     : typeof(JsonApiResourceObjectRelationshipConverter<>);
 

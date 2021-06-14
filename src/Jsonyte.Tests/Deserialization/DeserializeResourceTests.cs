@@ -428,5 +428,29 @@ namespace Jsonyte.Tests.Deserialization
 
             Assert.Same(model, model.First[0].Second);
         }
+
+        [Fact]
+        public void CanDeserializeResourceWithDataAsAttributeName()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'tags',
+                    'attributes': {
+                      'value': 'tagname',
+                      'data': 'data'
+                    }
+                  }
+                }";
+
+            var model = json.Deserialize<TagWithData>();
+
+            Assert.NotNull(model);
+            Assert.Equal("1", model.Id);
+            Assert.Equal("tags", model.Type);
+            Assert.Equal("tagname", model.Value);
+            Assert.Equal("data", model.Data);
+        }
     }
 }
