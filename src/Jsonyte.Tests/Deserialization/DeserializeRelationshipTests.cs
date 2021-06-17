@@ -230,5 +230,56 @@ namespace Jsonyte.Tests.Deserialization
             Assert.Equal("http://here", article.Author.Links.First?.Href);
             Assert.Equal(5, article.Author.Meta["count"].GetInt32());
         }
+
+        [Fact]
+        public void CanDeserializeModelWithTypedRelationshipArray()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'author': {
+                        'data': [
+                          {
+                            'id': '4',
+                            'type': 'people'
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '4',
+                      'type': 'people',
+                      'attributes': {
+                        'name': 'Joe Blow',
+                        'twitter': 'jblow'
+                      }
+                    }
+                  ]
+                }";
+
+            var article = json.Deserialize<ArticleWithExplicitRelationshipArray>();
+
+            Assert.NotNull(article);
+            Assert.NotNull(article.Author);
+            Assert.NotNull(article.Author.Data);
+
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal("Jsonapi", article.Title);
+
+            Assert.Single(article.Author.Data);
+            Assert.Equal("4", article.Author.Data[0].Id);
+            Assert.Equal("people", article.Author.Data[0].Type);
+            Assert.Equal("Joe Blow", article.Author.Data[0].Name);
+            Assert.Equal("jblow", article.Author.Data[0].Twitter);
+        }
     }
 }

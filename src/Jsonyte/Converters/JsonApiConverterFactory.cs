@@ -58,11 +58,6 @@ namespace Jsonyte.Converters
                 return true;
             }
 
-            if (typeToConvert.IsExplicitRelationship())
-            {
-                return true;
-            }
-
             if (typeToConvert.IsRelationshipResource())
             {
                 return true;
@@ -91,13 +86,6 @@ namespace Jsonyte.Converters
             if (typeToConvert.IsDocument())
             {
                 return CreateConverter(typeof(JsonApiDocumentDataConverter<>), typeToConvert.GenericTypeArguments.First());
-            }
-
-            if (typeToConvert.IsExplicitRelationship())
-            {
-                var relationshipType = typeToConvert.GenericTypeArguments.First();
-
-                return CreateConverter(typeof(JsonApiRelationshipConverter<>), relationshipType);
             }
 
             if (typeToConvert.IsRelationshipResource())
