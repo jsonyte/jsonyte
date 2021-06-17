@@ -93,6 +93,13 @@ namespace Jsonyte.Converters
                 return CreateConverter(typeof(JsonApiDocumentDataConverter<>), typeToConvert.GenericTypeArguments.First());
             }
 
+            if (typeToConvert.IsExplicitRelationship())
+            {
+                var relationshipType = typeToConvert.GenericTypeArguments.First();
+
+                return CreateConverter(typeof(JsonApiRelationshipConverter<>), relationshipType);
+            }
+
             if (typeToConvert.IsRelationshipResource())
             {
                 var relationshipType = typeToConvert.GenericTypeArguments.First();

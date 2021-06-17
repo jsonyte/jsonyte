@@ -52,6 +52,28 @@ namespace Jsonyte.Tests.Deserialization
         }
 
         [Fact]
+        public void CanDeserializeResourceWithLinks()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'links': {
+                      'self': 'http://here'
+                    }
+                  }
+                }";
+
+            var article = json.Deserialize<ArticleWithLinks>();
+
+            Assert.NotNull(article);
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal("http://here", article.Links.Self);
+        }
+
+        [Fact]
         public void CanDeserializeResourceWithTypedMeta()
         {
             const string json = @"

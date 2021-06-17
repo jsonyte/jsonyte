@@ -123,5 +123,112 @@ namespace Jsonyte.Tests.Deserialization
             Assert.Equal("tags", article.Tags[0].Type);
             Assert.Null(article.Tags[0].Value);
         }
+
+        [Fact]
+        public void CanDeserializeModelWithTypedRelationship()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'author': {
+                        'data': {
+                          'id': '4',
+                          'type': 'people'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '4',
+                      'type': 'people',
+                      'attributes': {
+                        'name': 'Joe Blow',
+                        'twitter': 'jblow'
+                      }
+                    }
+                  ]
+                }";
+
+            var article = json.Deserialize<ArticleWithExplicitRelationship>();
+
+            Assert.NotNull(article);
+            Assert.NotNull(article.Author);
+            Assert.NotNull(article.Author.Data);
+
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal("Jsonapi", article.Title);
+
+            Assert.Equal("4", article.Author.Data.Id);
+            Assert.Equal("people", article.Author.Data.Type);
+            Assert.Equal("Joe Blow", article.Author.Data.Name);
+            Assert.Equal("jblow", article.Author.Data.Twitter);
+        }
+
+        [Fact]
+        public void CanSerializeModelWithTypedRelationshipAndMeta()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'author': {
+                        'data': {
+                          'id': '4',
+                          'type': 'people'
+                        },
+                        'links': {
+                          'first': 'http://here'
+                        },
+                        'meta': {
+                          'count': 5
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '4',
+                      'type': 'people',
+                      'attributes': {
+                        'name': 'Joe Blow',
+                        'twitter': 'jblow'
+                      }
+                    }
+                  ]
+                }";
+
+            var article = json.Deserialize<ArticleWithExplicitRelationship>();
+
+            Assert.NotNull(article);
+            Assert.NotNull(article.Author);
+            Assert.NotNull(article.Author.Data);
+            Assert.NotNull(article.Author.Links);
+            Assert.NotNull(article.Author.Meta);
+
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal("Jsonapi", article.Title);
+
+            Assert.Equal("4", article.Author.Data.Id);
+            Assert.Equal("people", article.Author.Data.Type);
+            Assert.Equal("Joe Blow", article.Author.Data.Name);
+            Assert.Equal("jblow", article.Author.Data.Twitter);
+
+            Assert.Equal("http://here", article.Author.Links.First?.Href);
+            Assert.Equal(5, article.Author.Meta["count"].GetInt32());
+        }
     }
 }

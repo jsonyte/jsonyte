@@ -44,6 +44,11 @@ namespace Jsonyte.Validation
                 return ResourceFlags.Meta;
             }
 
+            if (key == JsonApiMembers.LinksKey)
+            {
+                return ResourceFlags.Links;
+            }
+
             if (key == JsonApiMembers.AttributesKey && member.SequenceEqual(JsonApiMembers.AttributesEncoded.EncodedUtf8Bytes))
             {
                 return ResourceFlags.Attributes;

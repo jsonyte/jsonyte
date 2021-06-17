@@ -22,11 +22,11 @@ namespace Jsonyte.Converters.Objects
         {
             var relationship = default(RelationshipResource<T>);
 
-            var relationshipState = reader.ReadRelationship();
+            var state = reader.ReadRelationship();
 
             while (reader.IsInObject())
             {
-                var name = reader.ReadMember(ref relationshipState);
+                var name = reader.ReadMember(ref state);
 
                 if (name == RelationshipFlags.Data)
                 {
@@ -40,7 +40,7 @@ namespace Jsonyte.Converters.Objects
                 reader.Read();
             }
 
-            relationshipState.Validate();
+            state.Validate();
 
             return relationship;
         }

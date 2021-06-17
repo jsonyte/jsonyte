@@ -10,6 +10,7 @@ namespace Jsonyte.Validation
         Type = 2,
         Relationships = 4,
         Meta = 8,
-        Attributes = 16
+        Attributes = 16,
+        Links = 32
     }
 }

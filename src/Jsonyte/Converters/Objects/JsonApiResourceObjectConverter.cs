@@ -111,6 +111,10 @@ namespace Jsonyte.Converters.Objects
                 {
                     ReadRelationships(ref reader, ref tracked, resource);
                 }
+                else if (name == ResourceFlags.Links)
+                {
+                    info!.LinksMember.Read(ref reader, resource);
+                }
                 else
                 {
                     reader.Skip();

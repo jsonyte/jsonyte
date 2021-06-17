@@ -39,6 +39,11 @@ namespace Jsonyte.Serialization.Metadata
             reader.Skip();
         }
 
+        public override void ReadRelationshipWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)
+        {
+            reader.Skip();
+        }
+
         public override bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default)
         {
             return false;

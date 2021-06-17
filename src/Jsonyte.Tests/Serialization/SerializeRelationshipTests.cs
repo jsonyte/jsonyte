@@ -59,5 +59,57 @@ namespace Jsonyte.Tests.Serialization
                   ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeExplicitRelationshipResource()
+        {
+            var model = new ArticleWithExplicitRelationship
+            {
+                Id = "1",
+                Type = "articles",
+                Title = "Jsonapi",
+                Author = new JsonApiRelationship<Author>
+                {
+                    Data = new Author
+                    {
+                        Id = "4",
+                        Type = "people",
+                        Name = "Joe Blow",
+                        Twitter = "jblow"
+                    }
+                }
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'articles',
+                    'attributes': {
+                      'title': 'Jsonapi'
+                    },
+                    'relationships': {
+                      'author': {
+                        'data': {
+                          'id': '4',
+                          'type': 'people'
+                        }
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '4',
+                      'type': 'people',
+                      'attributes': {
+                        'name': 'Joe Blow',
+                        'twitter': 'jblow'
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }
