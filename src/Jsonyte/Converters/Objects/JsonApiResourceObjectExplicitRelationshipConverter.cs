@@ -62,7 +62,7 @@ namespace Jsonyte.Converters.Objects
 
         public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, RelationshipResource<T> existingValue, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public override void Write(Utf8JsonWriter writer, RelationshipResource<T> value, JsonSerializerOptions options)
