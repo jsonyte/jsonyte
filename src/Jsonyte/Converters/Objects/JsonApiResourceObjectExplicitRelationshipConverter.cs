@@ -3,12 +3,15 @@ using System.Text.Json;
 using Jsonyte.Serialization;
 using Jsonyte.Serialization.Contracts;
 using Jsonyte.Serialization.Metadata;
+using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Objects
 {
     internal class JsonApiResourceObjectExplicitRelationshipConverter<T> : JsonApiRelationshipDetailsConverter<T>
     {
         private JsonTypeInfo? info;
+
+        private JsonApiRelationshipDetailsConverter<T>? relationshipConverter;
 
         public override RelationshipResource<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -17,12 +20,49 @@ namespace Jsonyte.Converters.Objects
 
         public override RelationshipResource<T> Read(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            var state = reader.ReadRelationship();
+
+            EnsureTypeInfo(options);
+
+            var resource = info!.Creator();
+
+            if (resource == null)
+            {
+                return default;
+            }
+
+            while (reader.IsInObject())
+            {
+                var name = reader.ReadMember(ref state);
+
+                if (name == RelationshipFlags.Data)
+                {
+                    info.DataMember.ReadRelationshipWrapped(ref reader, ref tracked, resource);
+                }
+                else if (name == RelationshipFlags.Links)
+                {
+                    info!.LinksMember.Read(ref reader, resource);
+                }
+                else if (name == RelationshipFlags.Meta)
+                {
+                    info!.MetaMember.Read(ref reader, resource);
+                }
+                else
+                {
+                    reader.Skip();
+                }
+
+                reader.Read();
+            }
+
+            state.Validate();
+
+            return new RelationshipResource<T>((T) resource);
         }
 
         public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, RelationshipResource<T> existingValue, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public override void Write(Utf8JsonWriter writer, RelationshipResource<T> value, JsonSerializerOptions options)
@@ -74,6 +114,11 @@ namespace Jsonyte.Converters.Objects
         private void EnsureTypeInfo(JsonSerializerOptions options)
         {
             info ??= options.GetTypeInfo(typeof(T));
+        }
+
+        private JsonApiRelationshipDetailsConverter<T> GetRelationshipConverter(JsonSerializerOptions options)
+        {
+            return relationshipConverter ??= options.GetRelationshipConverter<T>();
         }
     }
 }

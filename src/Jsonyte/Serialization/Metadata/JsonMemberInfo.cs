@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
@@ -29,6 +30,8 @@ namespace Jsonyte.Serialization.Metadata
         public abstract void Read(ref Utf8JsonReader reader, object resource);
 
         public abstract void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource);
+
+        public abstract void ReadRelationshipWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource);
 
         public abstract bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default);
 
@@ -147,6 +150,23 @@ namespace Jsonyte.Serialization.Metadata
             Set(resource, value.Resource!);
         }
 
+        public override void ReadRelationshipWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)
+        {
+            if (Set == null)
+            {
+                return;
+            }
+
+            var value = RelationshipConverter.ReadWrapped(ref reader, ref tracked, default, Options);
+
+            if (Options.IgnoreNullValues && value.Resource == null)
+            {
+                return;
+            }
+
+            Set(resource, value.Resource!);
+        }
+
         public override bool Write(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, JsonEncodedText section = default)
         {
             if (Get == null || Ignored)
@@ -156,7 +176,12 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = Get(resource);
 
-            if (Options.IgnoreNullValues && value == null)
+            if ((Options.IgnoreNullValues || IgnoreCondition == JsonIgnoreCondition.WhenWritingNull) && value == null)
+            {
+                return false;
+            }
+
+            if (value != null && IgnoreCondition == JsonIgnoreCondition.WhenWritingDefault && EqualityComparer<T>.Default.Equals(default!, value))
             {
                 return false;
             }

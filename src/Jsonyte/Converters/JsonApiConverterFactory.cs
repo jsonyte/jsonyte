@@ -58,11 +58,6 @@ namespace Jsonyte.Converters
                 return true;
             }
 
-            if (typeToConvert.IsExplicitRelationship())
-            {
-                return true;
-            }
-
             if (typeToConvert.IsRelationshipResource())
             {
                 return true;
