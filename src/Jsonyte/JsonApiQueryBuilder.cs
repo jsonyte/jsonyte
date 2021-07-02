@@ -40,7 +40,67 @@ namespace Jsonyte
         Filtering (needs strategy)
         filter[name]=something
      */
-    public class JsonApiQueryBuilder<T>
+    public class JsonApiQueryBuilder
+    {
+        private readonly List<string> includes = new();
+
+        private readonly List<string> sorts = new();
+
+        private readonly Dictionary<string, List<string>> includedFields = new();
+
+        public JsonNamingPolicy NamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
+
+        public JsonApiQueryBuilder Include(string relationship)
+        {
+            AddMember(includes, NamingPolicy.ConvertName(relationship));
+
+            return this;
+        }
+
+        public JsonApiQueryBuilder OrderBy(string member)
+        {
+            AddMember(sorts, NamingPolicy.ConvertName(member));
+
+            return this;
+        }
+
+        public JsonApiQueryBuilder OrderByDescending(string member)
+        {
+            AddMember(sorts, $"-{NamingPolicy.ConvertName(member)}");
+
+            return this;
+        }
+
+        public JsonApiQueryBuilder IncludeField(string type, string member)
+        {
+            return IncludeFields(type, member);
+        }
+
+        public JsonApiQueryBuilder IncludeFields(string type, params string[] members)
+        {
+            if (includedFields.TryGetValue(type, out var values))
+            {
+                includedFields[type] = values = new List<string>();
+            }
+
+            foreach (var member in members)
+            {
+                AddMember(values, NamingPolicy.ConvertName(member));
+            }
+
+            return this;
+        }
+
+        private void AddMember(List<string> values, string value)
+        {
+            if (!values.Contains(value))
+            {
+                values.Add(value);
+            }
+        }
+    }
+
+    public class JsonApiQueryBuilder<T> : JsonApiQueryBuilder
     {
         private readonly List<string> includes = new();
 
