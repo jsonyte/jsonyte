@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Jsonyte.Text;
 
 namespace Jsonyte
@@ -40,7 +44,7 @@ namespace Jsonyte
         Filtering (needs strategy)
         filter[name]=something
      */
-    public class JsonApiQueryBuilder
+    public class JsonApiUriBuilder : UriBuilder
     {
         private readonly List<string> includes = new();
 
@@ -48,35 +52,39 @@ namespace Jsonyte
 
         private readonly Dictionary<string, List<string>> includedFields = new();
 
+        private static readonly ConcurrentDictionary<Type, string> TypeNames = new();
+
         public JsonNamingPolicy NamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
 
-        public JsonApiQueryBuilder Include(string relationship)
+        public JsonApiUriBuilder Include(string relationship)
         {
             AddMember(includes, NamingPolicy.ConvertName(relationship));
+
+            UpdateQuery();
 
             return this;
         }
 
-        public JsonApiQueryBuilder OrderBy(string member)
+        public JsonApiUriBuilder OrderBy(string member)
         {
             AddMember(sorts, NamingPolicy.ConvertName(member));
 
             return this;
         }
 
-        public JsonApiQueryBuilder OrderByDescending(string member)
+        public JsonApiUriBuilder OrderByDescending(string member)
         {
             AddMember(sorts, $"-{NamingPolicy.ConvertName(member)}");
 
             return this;
         }
 
-        public JsonApiQueryBuilder IncludeField(string type, string member)
+        public JsonApiUriBuilder IncludeField(string type, string member)
         {
             return IncludeFields(type, member);
         }
 
-        public JsonApiQueryBuilder IncludeFields(string type, params string[] members)
+        public JsonApiUriBuilder IncludeFields(string type, params string[] members)
         {
             if (includedFields.TryGetValue(type, out var values))
             {
@@ -91,6 +99,66 @@ namespace Jsonyte
             return this;
         }
 
+        internal static string GetTypeName(Type type, JsonNamingPolicy namingPolicy, string? name)
+        {
+            return TypeNames.GetOrAdd(type, x =>
+            {
+                // 1. Use name passed in first
+                if (!string.IsNullOrEmpty(name))
+                {
+                    TypeNames[x] = name;
+
+                    return name;
+                }
+
+                // 2. Try and create the object and use the Type property
+                if (x.IsResource())
+                {
+                    var member = x.GetTypeMember();
+                    var constructor = x.GetConstructor(Type.EmptyTypes);
+
+                    if (constructor != null)
+                    {
+                        var resource = constructor.Invoke(null);
+
+                        var value = member switch
+                        {
+                            PropertyInfo property => property.GetValue(resource)?.ToString(),
+                            FieldInfo field => field.GetValue(resource)?.ToString(),
+                            _ => null
+                        };
+
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            TypeNames[x] = value;
+
+                            return value;
+                        }
+                    }
+                }
+
+                // 3. Use the type name and make a best guess
+                var typeName = namingPolicy.ConvertName(x.Name);
+
+                return Pluralizer.Pluralize(typeName);
+            });
+        }
+
+        internal void UpdateQuery()
+        {
+            var parameters = new NameValueCollection();
+
+            if (includes.Any())
+            {
+                parameters.Add("include", string.Join(",", includes));
+            }
+
+            var values = parameters.AllKeys
+                .Select(x => $"{Uri.EscapeDataString(x)}={Uri.EscapeDataString(parameters[x])}");
+
+            Query = string.Join("&", values);
+        }
+
         private void AddMember(List<string> values, string value)
         {
             if (!values.Contains(value))
@@ -100,7 +168,7 @@ namespace Jsonyte
         }
     }
 
-    public class JsonApiQueryBuilder<T> : JsonApiQueryBuilder
+    public class JsonApiUriBuilder<T> : JsonApiUriBuilder
     {
         private readonly List<string> includes = new();
 
@@ -110,44 +178,44 @@ namespace Jsonyte
 
         private readonly Dictionary<string, List<string>> excludedFields = new();
 
-        private readonly Dictionary<Type, string> types = new();
-
         public JsonNamingPolicy NamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
 
-        public JsonApiQueryBuilder<T> Include<TRelationship>(Expression<Func<T, TRelationship>> expression)
+        public JsonApiUriBuilder<T> Include<TRelationship>(Expression<Func<T, TRelationship>> expression)
         {
-            AddMember(includes, GetMemberName(expression));
+            AddMember(includes, GetMember(expression));
+
+            UpdateQuery();
 
             return this;
         }
 
-        public JsonApiQueryBuilder<T> OrderBy<TMember>(Expression<Func<T, TMember>> expression)
+        public JsonApiUriBuilder<T> OrderBy<TMember>(Expression<Func<T, TMember>> expression)
         {
-            AddMember(sorts, GetMemberName(expression));
+            AddMember(sorts, GetMember(expression));
 
             return this;
         }
 
-        public JsonApiQueryBuilder<T> OrderByDescending<TMember>(Expression<Func<T, TMember>> expression)
+        public JsonApiUriBuilder<T> OrderByDescending<TMember>(Expression<Func<T, TMember>> expression)
         {
-            AddMember(sorts, $"-{GetMemberName(expression)}");
+            AddMember(sorts, $"-{GetMember(expression)}");
 
             return this;
         }
 
-        public JsonApiQueryBuilder<T> IncludeAllFields()
+        public JsonApiUriBuilder<T> IncludeAllFields()
         {
             return this;
         }
 
-        public JsonApiQueryBuilder<T> IncludeField<TMember>(Expression<Func<T, TMember>> expression, string? type = null)
+        public JsonApiUriBuilder<T> IncludeField<TMember>(Expression<Func<T, TMember>> expression, string? type = null)
         {
             AddIncludedField(expression, includedFields, type);
 
             return this;
         }
 
-        public JsonApiQueryBuilder<T> ExcludeField<TMember>(Expression<Func<T, TMember>> expression, string? type = null)
+        public JsonApiUriBuilder<T> ExcludeField<TMember>(Expression<Func<T, TMember>> expression, string? type = null)
         {
             AddIncludedField(expression, excludedFields, type);
 
@@ -171,8 +239,8 @@ namespace Jsonyte
                 throw new JsonApiException($"Cannot parse expression: {expression}");
             }
 
-            var field = NamingPolicy.ConvertName(member.Member.Name);
-            var typeName = GetTypeName(member.Member.DeclaringType!, type);
+            var field = NamingPolicy.ConvertName(GetMemberName(member.Member));
+            var typeName = GetTypeName(member.Member.DeclaringType!, NamingPolicy, type);
 
             if (!fields.TryGetValue(typeName, out var values))
             {
@@ -183,53 +251,6 @@ namespace Jsonyte
             {
                 values.Add(field);
             }
-        }
-
-        private string GetTypeName(Type type, string? name)
-        {
-            if (types.TryGetValue(type, out var cached))
-            {
-                return cached;
-            }
-
-            // 1. Use name passed in first
-            if (!string.IsNullOrEmpty(name))
-            {
-                types[type] = name;
-
-                return name;
-            }
-
-            // 2. Try and create the object and use the Type property
-            if (type.IsResource())
-            {
-                var member = type.GetTypeMember();
-                var constructor = type.GetConstructor(Type.EmptyTypes);
-
-                if (constructor != null)
-                {
-                    var resource = constructor.Invoke(null);
-
-                    var value = member switch
-                    {
-                        PropertyInfo property => property.GetValue(resource)?.ToString(),
-                        FieldInfo field => field.GetValue(resource)?.ToString(),
-                        _ => null
-                    };
-
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        types[type] = value;
-
-                        return value;
-                    }
-                }
-            }
-
-            // 3. Use the type name and make a best guess
-            var typeName = NamingPolicy.ConvertName(type.Name);
-
-            return Pluralizer.Pluralize(typeName);
         }
 
         private MemberExpression? GetFinalMember<TMember>(Expression<Func<T, TMember>> expression)
@@ -249,27 +270,33 @@ namespace Jsonyte
             return null;
         }
 
-        private string GetMemberName<TMember>(Expression<Func<T, TMember>> expression)
+        private string GetMember<TMember>(Expression<Func<T, TMember>> expression)
         {
             var memberExpression = expression.Body as MemberExpression;
 
-            var value = new StringBuilder();
+            var values = new List<string>();
 
             while (memberExpression != null)
             {
-                var name = memberExpression.Member.Name;
+                var name = GetMemberName(memberExpression.Member);
 
-                if (value.Length > 0)
-                {
-                    value.Append('.');
-                }
-
-                value.Append(NamingPolicy.ConvertName(name));
+                values.Add(NamingPolicy.ConvertName(name));
 
                 memberExpression = memberExpression.Expression as MemberExpression;
             }
 
-            return value.ToString();
+            values.Reverse();
+
+            return string.Join(".", values);
+        }
+
+        private string GetMemberName(MemberInfo member)
+        {
+            var nameAttribute = member.GetCustomAttribute<JsonPropertyNameAttribute>();
+
+            return nameAttribute != null
+                ? nameAttribute.Name
+                : member.Name;
         }
     }
 }
