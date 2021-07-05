@@ -5,7 +5,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Text;
@@ -46,23 +45,57 @@ namespace Jsonyte
      */
     public class JsonApiUriBuilder : UriBuilder
     {
+        private static readonly ConcurrentDictionary<Type, string> TypeNames = new();
+
         private readonly List<string> includes = new();
 
         private readonly List<string> sorts = new();
 
         private readonly Dictionary<string, List<string>> includedFields = new();
 
-        private static readonly ConcurrentDictionary<Type, string> TypeNames = new();
-
         public JsonNamingPolicy NamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
+
+        public NameValueCollection GetQueryParameters()
+        {
+            return ParseQuery();
+        }
+
+        public JsonApiUriBuilder AddQuery(string key, params string[] values)
+        {
+            var parameters = ParseQuery();
+
+            if (values.Length == 0)
+            {
+                AddQueryParameter(parameters, null, key);
+            }
+            else
+            {
+                foreach (var value in values)
+                {
+                    AddQueryParameter(parameters, key, value);
+                }
+            }
+
+            Query = parameters.ToString();
+
+            return this;
+        }
+
+        private void AddQueryParameter(NameValueCollection parameters, string? key, string value)
+        {
+            var existing = parameters.GetValues(key);
+
+            if (existing == null || !existing.Contains(value))
+            {
+                parameters.Add(key, value);
+            }
+        }
 
         public JsonApiUriBuilder Include(string relationship)
         {
-            AddMember(includes, NamingPolicy.ConvertName(relationship));
+            var include = NamingPolicy.ConvertName(relationship);
 
-            UpdateQuery();
-
-            return this;
+            return AddQuery("include", include);
         }
 
         public JsonApiUriBuilder OrderBy(string member)
@@ -106,9 +139,9 @@ namespace Jsonyte
                 // 1. Use name passed in first
                 if (!string.IsNullOrEmpty(name))
                 {
-                    TypeNames[x] = name;
+                    TypeNames[x] = name!;
 
-                    return name;
+                    return name!;
                 }
 
                 // 2. Try and create the object and use the Type property
@@ -144,9 +177,9 @@ namespace Jsonyte
             });
         }
 
-        internal void UpdateQuery()
+        private void UpdateQuery()
         {
-            var parameters = new NameValueCollection();
+            var parameters = ParseQuery();
 
             if (includes.Any())
             {
@@ -157,6 +190,39 @@ namespace Jsonyte
                 .Select(x => $"{Uri.EscapeDataString(x)}={Uri.EscapeDataString(parameters[x])}");
 
             Query = string.Join("&", values);
+        }
+
+        private NameValueCollection ParseQuery()
+        {
+            var result = new QueryParametersCollection();
+
+            var query = Query;
+
+            if (query.Length > 0 && query[0] == '?')
+            {
+                query = query.Substring(1);
+            }
+
+            var queryParts = query.Split(new[] {"&"}, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var queryPart in queryParts)
+            {
+                var index = queryPart.IndexOf('=');
+
+                if (index != -1)
+                {
+                    var name = queryPart.Substring(0, index);
+                    var value = queryPart.Substring(index + 1, queryPart.Length - index - 1);
+
+                    result.Add(name, value);
+                }
+                else
+                {
+                    result.Add(null, queryPart);
+                }
+            }
+
+            return result;
         }
 
         private void AddMember(List<string> values, string value)
@@ -170,21 +236,15 @@ namespace Jsonyte
 
     public class JsonApiUriBuilder<T> : JsonApiUriBuilder
     {
-        private readonly List<string> includes = new();
-
         private readonly List<string> sorts = new();
 
         private readonly Dictionary<string, List<string>> includedFields = new();
 
         private readonly Dictionary<string, List<string>> excludedFields = new();
 
-        public JsonNamingPolicy NamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
-
         public JsonApiUriBuilder<T> Include<TRelationship>(Expression<Func<T, TRelationship>> expression)
         {
-            AddMember(includes, GetMember(expression));
-
-            UpdateQuery();
+            Include(GetMember(expression));
 
             return this;
         }

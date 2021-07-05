@@ -1,4 +1,6 @@
-﻿namespace Jsonyte.Tests.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Jsonyte.Tests.Models
 {
     public class Account
     {
@@ -13,5 +15,8 @@
         public HoldingBank HoldingBank { get; set; }
 
         public Transaction[] Transactions { get; set; }
+
+        [JsonPropertyName("myBank")]
+        public HoldingBank OwnerBank { get; set; }
     }
 }

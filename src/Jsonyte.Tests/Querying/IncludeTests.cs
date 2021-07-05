@@ -34,6 +34,16 @@ namespace Jsonyte.Tests.Querying
         }
 
         [Fact]
+        public void CanIncludeMultipleRelationshipsByName()
+        {
+            var builder = new JsonApiUriBuilder()
+                .Include(nameof(Account.HoldingBank))
+                .Include(nameof(Account.Transactions));
+
+            Assert.Equal("?include=holdingBank,transactions".EncodeQuery(), builder.Query);
+        }
+
+        [Fact]
         public void CanIncludeNestedRelationship()
         {
             var builder = new JsonApiUriBuilder<Account>()
@@ -45,10 +55,32 @@ namespace Jsonyte.Tests.Querying
         [Fact]
         public void IncludeUsesPropertyNameAttribute()
         {
-            var builder = new JsonApiUriBuilder<AccountWithAttributes>()
-                .Include(x => x.Bank);
+            var builder = new JsonApiUriBuilder<Account>()
+                .Include(x => x.OwnerBank);
 
             Assert.Equal("?include=myBank".EncodeQuery(), builder.Query);
+        }
+
+        [Fact]
+        public void IncludeRelationshipAddsToParameters()
+        {
+            var builder = new JsonApiUriBuilder<Account>()
+                .Include(x => x.HoldingBank)
+                .Include(x => x.Transactions);
+
+            Assert.Contains("include", builder.GetQueryParameters().AllKeys);
+            Assert.Contains("holdingBank,transactions", builder.GetQueryParameters()[0]);
+        }
+
+        [Fact]
+        public void IncludeRelationshipByNameAddsToParameters()
+        {
+            var builder = new JsonApiUriBuilder()
+                .Include(nameof(Account.HoldingBank))
+                .Include(nameof(Account.Transactions));
+
+            Assert.Contains("include", builder.GetQueryParameters().AllKeys);
+            Assert.Contains("holdingBank,transactions", builder.GetQueryParameters()[0]);
         }
     }
 }
