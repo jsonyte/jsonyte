@@ -20,7 +20,16 @@ namespace Jsonyte.Tests.Querying
             var builder = new JsonApiUriBuilder()
                 .AddQuery("include", "something", "second");
 
-            Assert.Equal("?include=something&include=second", builder.Query);
+            Assert.Equal("?include=something,second", builder.Query);
+        }
+
+        [Fact]
+        public void CanParseExistingQuery()
+        {
+            var builder = new JsonApiUriBuilder("http://localhost?include=something,second&isTrue")
+                .AddQuery("include", "third");
+
+            Assert.Equal("?include=something,second,third&isTrue", builder.Query);
         }
     }
 }

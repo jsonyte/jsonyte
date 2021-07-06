@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
@@ -43,36 +42,104 @@ namespace Jsonyte
         Filtering (needs strategy)
         filter[name]=something
      */
+
+    /// <summary>
+    /// Provides a fluent builder for creating <see href="https://jsonapi.org/">JSON:API</see> uniform resource identifiers (URIs).
+    /// </summary>
     public class JsonApiUriBuilder : UriBuilder
     {
         private static readonly ConcurrentDictionary<Type, string> TypeNames = new();
 
-        private readonly List<string> includes = new();
-
-        private readonly List<string> sorts = new();
-
         private readonly Dictionary<string, List<string>> includedFields = new();
 
-        public JsonNamingPolicy NamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonApiUriBuilder" /> class.
+        /// </summary>
+        public JsonApiUriBuilder()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonApiUriBuilder" /> class with the specified URI.
+        /// </summary>
+        /// <param name="uri">A URI string.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
+        /// <exception cref="UriFormatException"><paramref name="uri"/> is not a valid URI.</exception>
+        public JsonApiUriBuilder(string uri)
+            : base(uri)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonApiUriBuilder" /> class with the scheme and host.
+        /// </summary>
+        /// <param name="schemeName">An Internet access protocol.</param>
+        /// <param name="hostName">A DNS-style domain name or IP address.</param>
+        public JsonApiUriBuilder(string schemeName, string hostName)
+            : base(schemeName, hostName)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonApiUriBuilder" /> class with the scheme, host and port.
+        /// </summary>
+        /// <param name="scheme">An Internet access protocol.</param>
+        /// <param name="host">A DNS-style domain name or IP address.</param>
+        /// <param name="portNumber">An IP port number for the service.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="portNumber" /> is less than -1 or greater than 65,535.</exception>
+        public JsonApiUriBuilder(string scheme, string host, int portNumber)
+            : base(scheme, host, portNumber)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonApiUriBuilder" /> class with the scheme, host, port and path.
+        /// </summary>
+        /// <param name="scheme">An Internet access protocol.</param>
+        /// <param name="host">A DNS-style domain name or IP address.</param>
+        /// <param name="port">An IP port number for the service.</param>
+        /// <param name="pathValue">The path to the Internet resource.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="port" /> is less than -1 or greater than 65,535.</exception>
+        public JsonApiUriBuilder(string scheme, string host, int port, string pathValue)
+            : base(scheme, host, port, pathValue)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonApiUriBuilder" /> class with the specified <see cref="Uri" /> instance.
+        /// </summary>
+        /// <param name="uri">An instance of the <see cref="Uri" /> class.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="uri" /> is <see langword="null" />.</exception>
+        public JsonApiUriBuilder(Uri uri)
+            : base(uri)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the naming policy used to convert property names for includes, sparse fields, sorting and filtering.
+        /// Default value is camel-casing.
+        /// </summary>
+        /// <returns>A property naming policy, or <see langword="null" /> to leave property names unchanged. </returns>
+        public JsonNamingPolicy? NamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
 
         public NameValueCollection GetQueryParameters()
         {
-            return ParseQuery();
+            return QueryParametersCollection.Parse(Query);
         }
 
         public JsonApiUriBuilder AddQuery(string key, params string[] values)
         {
-            var parameters = ParseQuery();
+            var parameters = QueryParametersCollection.Parse(Query);
 
             if (values.Length == 0)
             {
-                AddQueryParameter(parameters, null, key);
+                parameters.Add(null, key);
             }
             else
             {
                 foreach (var value in values)
                 {
-                    AddQueryParameter(parameters, key, value);
+                    parameters.Add(key, value);
                 }
             }
 
@@ -81,35 +148,19 @@ namespace Jsonyte
             return this;
         }
 
-        private void AddQueryParameter(NameValueCollection parameters, string? key, string value)
-        {
-            var existing = parameters.GetValues(key);
-
-            if (existing == null || !existing.Contains(value))
-            {
-                parameters.Add(key, value);
-            }
-        }
-
         public JsonApiUriBuilder Include(string relationship)
         {
-            var include = NamingPolicy.ConvertName(relationship);
-
-            return AddQuery("include", include);
+            return AddQuery("include", ConvertName(relationship));
         }
 
         public JsonApiUriBuilder OrderBy(string member)
         {
-            AddMember(sorts, NamingPolicy.ConvertName(member));
-
-            return this;
+            return AddQuery("sort", ConvertName(member));
         }
 
         public JsonApiUriBuilder OrderByDescending(string member)
         {
-            AddMember(sorts, $"-{NamingPolicy.ConvertName(member)}");
-
-            return this;
+            return AddQuery("sort", $"-{ConvertName(member)}");
         }
 
         public JsonApiUriBuilder IncludeField(string type, string member)
@@ -126,10 +177,15 @@ namespace Jsonyte
 
             foreach (var member in members)
             {
-                AddMember(values, NamingPolicy.ConvertName(member));
+                AddMember(values, NamingPolicy?.ConvertName(member) ?? member);
             }
 
             return this;
+        }
+
+        internal string ConvertName(string name)
+        {
+            return NamingPolicy?.ConvertName(name) ?? name;
         }
 
         internal static string GetTypeName(Type type, JsonNamingPolicy namingPolicy, string? name)
@@ -177,54 +233,6 @@ namespace Jsonyte
             });
         }
 
-        private void UpdateQuery()
-        {
-            var parameters = ParseQuery();
-
-            if (includes.Any())
-            {
-                parameters.Add("include", string.Join(",", includes));
-            }
-
-            var values = parameters.AllKeys
-                .Select(x => $"{Uri.EscapeDataString(x)}={Uri.EscapeDataString(parameters[x])}");
-
-            Query = string.Join("&", values);
-        }
-
-        private NameValueCollection ParseQuery()
-        {
-            var result = new QueryParametersCollection();
-
-            var query = Query;
-
-            if (query.Length > 0 && query[0] == '?')
-            {
-                query = query.Substring(1);
-            }
-
-            var queryParts = query.Split(new[] {"&"}, StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (var queryPart in queryParts)
-            {
-                var index = queryPart.IndexOf('=');
-
-                if (index != -1)
-                {
-                    var name = queryPart.Substring(0, index);
-                    var value = queryPart.Substring(index + 1, queryPart.Length - index - 1);
-
-                    result.Add(name, value);
-                }
-                else
-                {
-                    result.Add(null, queryPart);
-                }
-            }
-
-            return result;
-        }
-
         private void AddMember(List<string> values, string value)
         {
             if (!values.Contains(value))
@@ -234,31 +242,69 @@ namespace Jsonyte
         }
     }
 
+    /// <summary>
+    /// Provides a fluent builder for creating <see href="https://jsonapi.org/">JSON:API</see> uniform resource identifiers (URIs)
+    /// using the specified <typeparamref name="T"/> resource type.
+    /// </summary>
+    /// <typeparam name="T">The JSON:API resource type.</typeparam>
     public class JsonApiUriBuilder<T> : JsonApiUriBuilder
     {
-        private readonly List<string> sorts = new();
-
         private readonly Dictionary<string, List<string>> includedFields = new();
 
         private readonly Dictionary<string, List<string>> excludedFields = new();
 
+        /// <inheritdoc />
+        public JsonApiUriBuilder()
+        {
+        }
+
+        /// <inheritdoc />
+        public JsonApiUriBuilder(string uri)
+            : base(uri)
+        {
+        }
+
+        /// <inheritdoc />
+        public JsonApiUriBuilder(string schemeName, string hostName)
+            : base(schemeName, hostName)
+        {
+        }
+
+        /// <inheritdoc />
+        public JsonApiUriBuilder(string scheme, string host, int portNumber)
+            : base(scheme, host, portNumber)
+        {
+        }
+
+        /// <inheritdoc />
+        public JsonApiUriBuilder(string scheme, string host, int port, string pathValue)
+            : base(scheme, host, port, pathValue)
+        {
+        }
+
+        /// <inheritdoc />
+        public JsonApiUriBuilder(Uri uri)
+            : base(uri)
+        {
+        }
+
         public JsonApiUriBuilder<T> Include<TRelationship>(Expression<Func<T, TRelationship>> expression)
         {
-            Include(GetMember(expression));
+            Include(GetMemberPath(expression));
 
             return this;
         }
 
         public JsonApiUriBuilder<T> OrderBy<TMember>(Expression<Func<T, TMember>> expression)
         {
-            AddMember(sorts, GetMember(expression));
+            OrderBy(GetMemberPath(expression));
 
             return this;
         }
 
         public JsonApiUriBuilder<T> OrderByDescending<TMember>(Expression<Func<T, TMember>> expression)
         {
-            AddMember(sorts, $"-{GetMember(expression)}");
+            OrderByDescending(GetMemberPath(expression));
 
             return this;
         }
@@ -280,14 +326,6 @@ namespace Jsonyte
             AddIncludedField(expression, excludedFields, type);
 
             return this;
-        }
-
-        private void AddMember(List<string> values, string value)
-        {
-            if (!values.Contains(value))
-            {
-                values.Add(value);
-            }
         }
 
         private void AddIncludedField<TMember>(Expression<Func<T, TMember>> expression, Dictionary<string, List<string>> fields, string? type = null)
@@ -330,7 +368,7 @@ namespace Jsonyte
             return null;
         }
 
-        private string GetMember<TMember>(Expression<Func<T, TMember>> expression)
+        private string GetMemberPath<TMember>(Expression<Func<T, TMember>> expression)
         {
             var memberExpression = expression.Body as MemberExpression;
 
@@ -340,7 +378,7 @@ namespace Jsonyte
             {
                 var name = GetMemberName(memberExpression.Member);
 
-                values.Add(NamingPolicy.ConvertName(name));
+                values.Add(NamingPolicy?.ConvertName(name) ?? name);
 
                 memberExpression = memberExpression.Expression as MemberExpression;
             }

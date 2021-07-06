@@ -11,7 +11,7 @@ namespace Jsonyte.Tests
         {
             var parameters = new NameValueCollection();
 
-            var parts = value.TrimStart('?').Split('%');
+            var parts = value.TrimStart('?').Split('&');
 
             foreach (var part in parts)
             {
