@@ -474,5 +474,98 @@ namespace Jsonyte.Tests.Deserialization
             Assert.Equal("tagname", model.Value);
             Assert.Equal("data", model.Data);
         }
+
+        public class ArticleWithAuthor2
+        {
+            [JsonPropertyName("id")]
+            public string Id { get; set; }
+
+            [JsonPropertyName("type")]
+            public string Type { get; set; }
+
+            [JsonPropertyName("title")]
+            public string Title { get; set; }
+
+            [JsonPropertyName("author")]
+            public Author2 Author { get; set; }
+
+            [JsonPropertyName("comments")]
+            public Comment[] Comments { get; set; }
+        }
+
+        public class Author2
+        {
+            [JsonPropertyName("name")]
+            public string Name { get; set; }
+
+            [JsonPropertyName("twitter")]
+            public string Twitter { get; set; }
+        }
+
+        [Fact]
+        public void CanDeserializeResourceWithRelationshipInAttributes()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi',
+                      'author': {
+                        'name': 'Brown Smith',
+                        'twitter': 'bsmith'
+                      }
+                    }
+                  }
+                }";
+
+            var model = json.Deserialize<ArticleWithAuthor2>();
+
+            Assert.NotNull(model);
+            Assert.NotNull(model.Author);
+
+            Assert.Equal("1", model.Id);
+            Assert.Equal("articles", model.Type);
+            Assert.Equal("Jsonapi", model.Title);
+            Assert.Equal("Brown Smith", model.Author.Name);
+            Assert.Equal("bsmith", model.Author.Twitter);
+        }
+
+        [Fact]
+        public void CanDeserializeResourceWithRelationshipCollectionInAttributes()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Jsonapi',
+                      'comments': [
+                        {
+                          'body': 'comment 1'
+                        },
+                        {
+                          'body': 'comment 2'
+                        },
+                      ]
+                    }
+                  }
+                }";
+
+            var model = json.Deserialize<ArticleWithAuthor>();
+
+            Assert.NotNull(model);
+            Assert.NotNull(model.Comments);
+            Assert.Equal(2, model.Comments.Length);
+
+            Assert.Equal("1", model.Id);
+            Assert.Equal("articles", model.Type);
+            Assert.Equal("Jsonapi", model.Title);
+
+            Assert.Equal("comment 1", model.Comments[0].Body);
+            Assert.Equal("comment 2", model.Comments[1].Body);
+        }
     }
 }
