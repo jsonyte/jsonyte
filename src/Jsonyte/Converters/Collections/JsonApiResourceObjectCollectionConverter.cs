@@ -7,11 +7,13 @@ using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Collections
 {
-    internal class JsonApiResourceObjectCollectionConverter<T, TElement> : WrappedJsonConverter<T>
+    internal class JsonApiResourceObjectCollectionConverter<T, TElement> : WrappedResourceJsonConverter<T>
     {
         private WrappedJsonConverter<TElement>? wrappedConverter;
 
         public JsonTypeCategory TypeCategory { get; } = typeof(T).GetTypeCategory();
+
+        public override Type ElementType { get; } = typeof(TElement);
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
