@@ -76,6 +76,21 @@ namespace Jsonyte
             return false;
         }
 
+        public static bool IsInlineResource(this Type type)
+        {
+            if (type.IsGenericType)
+            {
+                var genericType = type.GetGenericTypeDefinition();
+
+                if (genericType == typeof(InlineResource<>))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public static bool IsExplicitRelationship(this Type type)
         {
             if (type.IsGenericType)

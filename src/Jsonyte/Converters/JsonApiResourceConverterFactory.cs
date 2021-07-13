@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Converters.Collections;
@@ -27,6 +28,11 @@ namespace Jsonyte.Converters
                 return true;
             }
 
+            if (typeToConvert.IsInlineResource())
+            {
+                return true;
+            }
+
             if (typeToConvert.IsCollection())
             {
                 var elementType = typeToConvert.GetCollectionElementType();
@@ -47,15 +53,30 @@ namespace Jsonyte.Converters
                 return converter;
             }
 
+            if (typeToConvert.IsInlineResource())
+            {
+                var inlineType = typeToConvert.GenericTypeArguments.First();
+
+                if (inlineType.IsCollection())
+                {
+                    var elementType = inlineType.GetCollectionElementType();
+
+                    if (elementType != null)
+                    {
+                        return CreateConverter(typeof(JsonApiResourceInlineCollectionConverter<,>), inlineType, elementType);
+                    }
+                }
+
+                return CreateConverter(typeof(JsonApiResourceInlineConverter<>), inlineType);
+            }
+
             if (typeToConvert.IsCollection())
             {
                 var elementType = typeToConvert.GetCollectionElementType();
 
                 if (elementType != null)
                 {
-                    var collectionConverterType = typeof(JsonApiResourceObjectCollectionConverter<,>);
-
-                    return CreateConverter(collectionConverterType, typeToConvert, elementType);
+                    return CreateConverter(typeof(JsonApiResourceObjectCollectionConverter<,>), typeToConvert, elementType);
                 }
             }
 

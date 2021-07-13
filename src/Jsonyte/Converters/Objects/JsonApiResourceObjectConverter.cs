@@ -6,7 +6,7 @@ using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Objects
 {
-    internal class JsonApiResourceObjectConverter<T> : WrappedJsonConverter<T>
+    internal class JsonApiResourceObjectConverter<T> : WrappedResourceJsonConverter<T>
     {
         private JsonTypeInfo? info;
 
