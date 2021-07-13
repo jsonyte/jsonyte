@@ -47,6 +47,8 @@ namespace Jsonyte.Serialization.Metadata
 
         private JsonApiRelationshipDetailsConverter<T>? relationshipConverter;
 
+        private JsonConverter<InlineResource<T>>? inlineResourceConverter;
+
         private bool isRelationship;
 
         protected JsonMemberInfo(MemberInfo member, Type memberType, JsonIgnoreCondition? ignoreCondition, JsonConverter converter, JsonSerializerOptions options)
@@ -91,6 +93,14 @@ namespace Jsonyte.Serialization.Metadata
             }
         }
 
+        public JsonConverter<InlineResource<T>> InlineResourceConverter
+        {
+            get
+            {
+                return inlineResourceConverter ??= Options.GetConverter<InlineResource<T>>();
+            }
+        }
+
         public JsonIgnoreCondition? IgnoreCondition { get; }
 
         public abstract Func<object, T>? Get { get; }
@@ -121,9 +131,18 @@ namespace Jsonyte.Serialization.Metadata
                 return;
             }
 
-            var value = Options.NumberHandling > 0 && (IsNumericType || MemberType == JsonApiTypes.Object)
-                ? JsonSerializer.Deserialize<T>(ref reader, Options)
-                : TypedConverter.Read(ref reader, MemberType, Options);
+            T? value;
+
+            if (IsInlineResource())
+            {
+                value = InlineResourceConverter.Read(ref reader, MemberType, Options).Resource;
+            }
+            else
+            {
+                value = Options.NumberHandling > 0 && (IsNumericType || MemberType == JsonApiTypes.Object)
+                    ? JsonSerializer.Deserialize<T>(ref reader, Options)
+                    : TypedConverter.Read(ref reader, MemberType, Options);
+            }
 
             if (Options.IgnoreNullValues && value == null)
             {
@@ -428,6 +447,11 @@ namespace Jsonyte.Serialization.Metadata
 
                 return RelationshipType.None;
             });
+        }
+
+        private bool IsInlineResource()
+        {
+            return TypedConverter is WrappedResourceJsonConverter<T>;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Jsonyte.Converters;
 using Jsonyte.Serialization.Contracts;
 using Jsonyte.Serialization.Metadata;
@@ -121,6 +122,11 @@ namespace Jsonyte
 
                 return jsonObjectConverter;
             });
+        }
+
+        internal static JsonConverter<T> GetConverter<T>(this JsonSerializerOptions options)
+        {
+            return (JsonConverter<T>) options.GetConverter(typeof(T));
         }
 
         internal static JsonTypeInfo GetTypeInfo(this JsonSerializerOptions options, Type type)
