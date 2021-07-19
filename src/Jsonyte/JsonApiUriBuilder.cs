@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
@@ -117,16 +118,27 @@ namespace Jsonyte
 
         /// <summary>
         /// Gets or sets the naming policy used to convert property names for includes, sparse fields, sorting and filtering.
+        /// 
         /// Default value is camel-casing.
         /// </summary>
         /// <returns>A property naming policy, or <see langword="null" /> to leave property names unchanged. </returns>
         public JsonNamingPolicy? NamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
 
+        /// <summary>
+        /// Gets a read-only instance of a <see cref="NameValueCollection"/> that contains the keys and values of the query string.
+        /// </summary>
+        /// <returns>A read-only instance containing the keys and values of the query string.</returns>
         public NameValueCollection GetQueryParameters()
         {
             return QueryParametersCollection.Parse(Query);
         }
 
+        /// <summary>
+        /// Add a query parameter and optional values to the query.
+        /// </summary>
+        /// <param name="key">The query parameter to add to the query.</param>
+        /// <param name="values">The optional query parameter values to add to the query.</param>
+        /// <returns></returns>
         public JsonApiUriBuilder AddQuery(string key, params string[] values)
         {
             var parameters = QueryParametersCollection.Parse(Query);
@@ -148,26 +160,53 @@ namespace Jsonyte
             return this;
         }
 
+        /// <summary>
+        /// Add an included relationship parameter to the query.
+        /// </summary>
+        /// <param name="relationship">The name of the relationship.</param>
+        /// <returns>The query builder instance.</returns>
         public JsonApiUriBuilder Include(string relationship)
         {
             return AddQuery("include", ConvertName(relationship));
         }
 
+        /// <summary>
+        /// Add a sort parameter to the query.
+        /// </summary>
+        /// <param name="member">The name of the attribute to sort by.</param>
+        /// <returns>The query builder instance.</returns>
         public JsonApiUriBuilder OrderBy(string member)
         {
             return AddQuery("sort", ConvertName(member));
         }
 
+        /// <summary>
+        /// Add a descending sort parameter to the query.
+        /// </summary>
+        /// <param name="member">The name of the attribute to sort descending by.</param>
+        /// <returns>The query builder instance.</returns>
         public JsonApiUriBuilder OrderByDescending(string member)
         {
             return AddQuery("sort", $"-{ConvertName(member)}");
         }
 
+        /// <summary>
+        /// Add a sparse field parameter to the query for a given resource type.
+        /// </summary>
+        /// <param name="type">The type of the resource.</param>
+        /// <param name="member">The attribute in the resource to include.</param>
+        /// <returns>The query builder instance.</returns>
         public JsonApiUriBuilder IncludeField(string type, string member)
         {
             return IncludeFields(type, member);
         }
 
+        /// <summary>
+        /// Add multiple sparse field parameters to the query for a given resource type.
+        /// </summary>
+        /// <param name="type">The type of the resource.</param>
+        /// <param name="members">The attributes in the resource to include.</param>
+        /// <returns>The query builder instance</returns>
         public JsonApiUriBuilder IncludeFields(string type, params string[] members)
         {
             if (includedFields.TryGetValue(type, out var values))
@@ -188,7 +227,7 @@ namespace Jsonyte
             return NamingPolicy?.ConvertName(name) ?? name;
         }
 
-        internal static string GetTypeName(Type type, JsonNamingPolicy namingPolicy, string? name)
+        internal string GetTypeName(Type type, string? name = null)
         {
             return TypeNames.GetOrAdd(type, x =>
             {
@@ -219,15 +258,15 @@ namespace Jsonyte
 
                         if (!string.IsNullOrEmpty(value))
                         {
-                            TypeNames[x] = value;
+                            TypeNames[x] = value!;
 
-                            return value;
+                            return value!;
                         }
                     }
                 }
 
                 // 3. Use the type name and make a best guess
-                var typeName = namingPolicy.ConvertName(x.Name);
+                var typeName = ConvertName(x.Name);
 
                 return Pluralizer.Pluralize(typeName);
             });
@@ -249,6 +288,8 @@ namespace Jsonyte
     /// <typeparam name="T">The JSON:API resource type.</typeparam>
     public class JsonApiUriBuilder<T> : JsonApiUriBuilder
     {
+        private const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
         private readonly Dictionary<string, List<string>> includedFields = new();
 
         private readonly Dictionary<string, List<string>> excludedFields = new();
@@ -288,6 +329,12 @@ namespace Jsonyte
         {
         }
 
+        /// <summary>
+        /// Add an included relationship parameter to the query using an expression.
+        /// </summary>
+        /// <typeparam name="TRelationship">The type of the resource.</typeparam>
+        /// <param name="expression">The expression path to a relationship to include.</param>
+        /// <returns>The query builder instance.</returns>
         public JsonApiUriBuilder<T> Include<TRelationship>(Expression<Func<T, TRelationship>> expression)
         {
             Include(GetMemberPath(expression));
@@ -295,6 +342,12 @@ namespace Jsonyte
             return this;
         }
 
+        /// <summary>
+        /// Add a sort parameter to the query using an expression.
+        /// </summary>
+        /// <typeparam name="TMember">The type of the resource.</typeparam>
+        /// <param name="expression">The expression path to an attribute to sort by.</param>
+        /// <returns>The query builder instance.</returns>
         public JsonApiUriBuilder<T> OrderBy<TMember>(Expression<Func<T, TMember>> expression)
         {
             OrderBy(GetMemberPath(expression));
@@ -302,6 +355,12 @@ namespace Jsonyte
             return this;
         }
 
+        /// <summary>
+        /// Add a descending sort parameter to the query using an expression.
+        /// </summary>
+        /// <typeparam name="TMember">The type of the resource.</typeparam>
+        /// <param name="expression">The expression path to an attribute to sort descending by.</param>
+        /// <returns>The query builder instance.</returns>
         public JsonApiUriBuilder<T> OrderByDescending<TMember>(Expression<Func<T, TMember>> expression)
         {
             OrderByDescending(GetMemberPath(expression));
@@ -309,11 +368,94 @@ namespace Jsonyte
             return this;
         }
 
-        public JsonApiUriBuilder<T> IncludeAllFields()
+        /// <summary>
+        /// Add sparse field parameters for all attributes of a given resource type.
+        /// </summary>
+        /// <param name="filter">An optional filter to exclude certain fields or properties.</param>
+        /// <returns>The query builder instance.</returns>
+        public JsonApiUriBuilder<T> IncludeAllFields(Func<Type, string, bool>? filter = null)
         {
+            var type = typeof(T);
+
+            var processed = new List<Type>();
+
+            IncludeFields(type, processed, filter);
+
             return this;
         }
 
+        private void IncludeFields(Type type, List<Type> processed, Func<Type, string, bool>? filter)
+        {
+            if (processed.Contains(type))
+            {
+                return;
+            }
+
+            var typeName = GetTypeName(type);
+
+            var properties = type
+                .GetProperties(Flags)
+                .Where(x => !x.GetIndexParameters().Any())
+                .Where(x => x.GetMethod?.IsPublic == true || x.SetMethod?.IsPublic == true)
+                .ToArray();
+
+            var typeFields = type
+                .GetFields(Flags)
+                .Where(x => x.IsPublic)
+                .ToArray();
+
+            var members = properties.Cast<MemberInfo>()
+                .Concat(typeFields);
+
+            var eligibleMembers = members
+                .Where(x => GetIgnoreCondition(x) != JsonIgnoreCondition.Always)
+                .Where(x => filter == null || !filter(type, x.Name))
+                .ToArray();
+
+            var includeMembers = eligibleMembers
+                .Select(GetMemberName)
+                .ToArray();
+
+            var relationshipTypes = properties
+                .Select(x => x.PropertyType)
+                .Concat(typeFields.Select(x => x.FieldType))
+                .Where(x => x.IsResourceIdentifier());
+
+            IncludeFields(typeName, includeMembers);
+
+            foreach (var relationshipType in relationshipTypes)
+            {
+                IncludeFields(relationshipType, processed, filter);
+            }
+        }
+
+        private JsonIgnoreCondition? GetIgnoreCondition(MemberInfo member)
+        {
+            return member.GetCustomAttribute<JsonIgnoreAttribute>()?.Condition;
+        }
+
+        /// <summary>
+        /// Add a sparse field parameter to the query for a given resource type using an expression.
+        /// </summary>
+        /// <remarks>
+        /// The type of the resource to include is discovered by the query builder, in order, using the below strategies:
+        ///
+        /// <list type="number">
+        ///   <item>
+        ///     <description>Use the optional 'type' argument from the method.</description>
+        ///   </item>
+        ///   <item>
+        ///     <description>Try and create an instance of the type and use the 'type' string property or field, if it exists.</description>
+        ///   </item>
+        ///   <item>
+        ///     <description>Use the name of the type from reflection and apply a rudimentary pluralization strategy, eg. 'BankAccount' becomes 'bankAccounts'.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        /// <typeparam name="TMember">The type of the property or field to include.</typeparam>
+        /// <param name="expression">The expression path to the attribute to include as a sparse field.</param>
+        /// <param name="type">An optional string representing the type of the resource.</param>
+        /// <returns>The query builder instance.</returns>
         public JsonApiUriBuilder<T> IncludeField<TMember>(Expression<Func<T, TMember>> expression, string? type = null)
         {
             AddIncludedField(expression, includedFields, type);
@@ -321,6 +463,30 @@ namespace Jsonyte
             return this;
         }
 
+        /// <summary>
+        /// Exclude a sparse field from the query for a given resource type using an expression.
+        /// </summary>
+        /// <remarks>
+        /// This method is useful is <see cref="IncludeAllFields"/> was called, but where one or two attributes should be excluded.
+        ///
+        /// The type of the resources to include is discovered by the query builder, in order, using the below strategies:
+        ///
+        /// <list type="number">
+        ///   <item>
+        ///     <description>Use the optional 'type' argument from the method.</description>
+        ///   </item>
+        ///   <item>
+        ///     <description>Try and create an instance of the type and use the 'type' string property or field, if it exists.</description>
+        ///   </item>
+        ///   <item>
+        ///     <description>Use the name of the type from reflection and apply a rudimentary pluralization strategy, eg. 'BankAccount' becomes 'bankAccounts'.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        /// <typeparam name="TMember"></typeparam>
+        /// <param name="expression"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public JsonApiUriBuilder<T> ExcludeField<TMember>(Expression<Func<T, TMember>> expression, string? type = null)
         {
             AddIncludedField(expression, excludedFields, type);
@@ -337,8 +503,8 @@ namespace Jsonyte
                 throw new JsonApiException($"Cannot parse expression: {expression}");
             }
 
-            var field = NamingPolicy.ConvertName(GetMemberName(member.Member));
-            var typeName = GetTypeName(member.Member.DeclaringType!, NamingPolicy, type);
+            var field = GetMemberName(member.Member);
+            var typeName = GetTypeName(member.Member.DeclaringType!, type);
 
             if (!fields.TryGetValue(typeName, out var values))
             {
@@ -376,9 +542,7 @@ namespace Jsonyte
 
             while (memberExpression != null)
             {
-                var name = GetMemberName(memberExpression.Member);
-
-                values.Add(NamingPolicy?.ConvertName(name) ?? name);
+                values.Add(GetMemberName(memberExpression.Member));
 
                 memberExpression = memberExpression.Expression as MemberExpression;
             }
@@ -394,7 +558,7 @@ namespace Jsonyte
 
             return nameAttribute != null
                 ? nameAttribute.Name
-                : member.Name;
+                : ConvertName(member.Name);
         }
     }
 }

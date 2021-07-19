@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using Jsonyte.Tests.Models;
+using Xunit;
 
 namespace Jsonyte.Tests.Querying
 {
@@ -30,6 +31,16 @@ namespace Jsonyte.Tests.Querying
                 .AddQuery("include", "third");
 
             Assert.Equal("?include=something,second,third&isTrue", builder.Query);
+        }
+
+        [Fact]
+        public void CanParseExistingQueryTyped()
+        {
+            var builder = new JsonApiUriBuilder<Account>("http://localhost?include=something,second&isTrue")
+                .Include(x => x.Balance)
+                .Include(x => x.HoldingBank);
+
+            Assert.Equal("?include=something,second,balance,holdingBank&isTrue", builder.Query);
         }
     }
 }
