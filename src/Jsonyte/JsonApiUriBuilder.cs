@@ -209,15 +209,7 @@ namespace Jsonyte
         /// <returns>The query builder instance</returns>
         public JsonApiUriBuilder IncludeFields(string type, params string[] members)
         {
-            if (includedFields.TryGetValue(type, out var values))
-            {
-                includedFields[type] = values = new List<string>();
-            }
-
-            foreach (var member in members)
-            {
-                AddMember(values, NamingPolicy?.ConvertName(member) ?? member);
-            }
+            AddQuery($"fields[{type}]", members.Select(ConvertName).ToArray());
 
             return this;
         }
@@ -229,16 +221,14 @@ namespace Jsonyte
 
         internal string GetTypeName(Type type, string? name = null)
         {
+            // 1. Use name passed in first
+            if (!string.IsNullOrEmpty(name))
+            {
+                return name!;
+            }
+
             return TypeNames.GetOrAdd(type, x =>
             {
-                // 1. Use name passed in first
-                if (!string.IsNullOrEmpty(name))
-                {
-                    TypeNames[x] = name!;
-
-                    return name!;
-                }
-
                 // 2. Try and create the object and use the Type property
                 if (x.IsResource())
                 {
@@ -271,14 +261,6 @@ namespace Jsonyte
                 return Pluralizer.Pluralize(typeName);
             });
         }
-
-        private void AddMember(List<string> values, string value)
-        {
-            if (!values.Contains(value))
-            {
-                values.Add(value);
-            }
-        }
     }
 
     /// <summary>
@@ -289,8 +271,6 @@ namespace Jsonyte
     public class JsonApiUriBuilder<T> : JsonApiUriBuilder
     {
         private const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private readonly Dictionary<string, List<string>> includedFields = new();
 
         private readonly Dictionary<string, List<string>> excludedFields = new();
 
@@ -458,7 +438,9 @@ namespace Jsonyte
         /// <returns>The query builder instance.</returns>
         public JsonApiUriBuilder<T> IncludeField<TMember>(Expression<Func<T, TMember>> expression, string? type = null)
         {
-            AddIncludedField(expression, includedFields, type);
+            var (typeName, field) = GetMemberTypeAndName(expression, type);
+
+            AddQuery($"fields[{typeName}]", field);
 
             return this;
         }
@@ -494,9 +476,22 @@ namespace Jsonyte
             return this;
         }
 
+        private (string type, string field) GetMemberTypeAndName<TMember>(Expression<Func<T, TMember>> expression, string? type = null)
+        {
+            if (expression.Body is not MemberExpression member)
+            {
+                throw new JsonApiException($"Cannot parse expression: {expression}");
+            }
+
+            var field = GetMemberName(member.Member);
+            var typeName = GetTypeName(member.Member.DeclaringType!, type);
+
+            return (typeName, field);
+        }
+
         private void AddIncludedField<TMember>(Expression<Func<T, TMember>> expression, Dictionary<string, List<string>> fields, string? type = null)
         {
-            var member = GetFinalMember(expression);
+            var member = expression.Body as MemberExpression;
 
             if (member == null)
             {
@@ -515,23 +510,6 @@ namespace Jsonyte
             {
                 values.Add(field);
             }
-        }
-
-        private MemberExpression? GetFinalMember<TMember>(Expression<Func<T, TMember>> expression)
-        {
-            var memberExpression = expression.Body as MemberExpression;
-
-            while (memberExpression != null)
-            {
-                if (memberExpression.Expression is not MemberExpression nested)
-                {
-                    return memberExpression;
-                }
-
-                memberExpression = nested;
-            }
-
-            return null;
         }
 
         private string GetMemberPath<TMember>(Expression<Func<T, TMember>> expression)

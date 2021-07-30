@@ -204,7 +204,8 @@ namespace Jsonyte
             }
 
             return name.Equals("include", StringComparison.OrdinalIgnoreCase) ||
-                   name.Equals("sort", StringComparison.OrdinalIgnoreCase);
+                   name.Equals("sort", StringComparison.OrdinalIgnoreCase) ||
+                   name.StartsWith("fields[", StringComparison.InvariantCultureIgnoreCase);
         }
 
         private string? ToString(NameValue? entry)
