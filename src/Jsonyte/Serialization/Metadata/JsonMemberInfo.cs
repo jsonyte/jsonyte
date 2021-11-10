@@ -116,7 +116,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = Get(resource);
 
-            if (Options.IgnoreNullValues && value == null)
+            if (Options.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull && value == null)
             {
                 return null;
             }
@@ -144,7 +144,7 @@ namespace Jsonyte.Serialization.Metadata
                     : TypedConverter.Read(ref reader, MemberType, Options);
             }
 
-            if (Options.IgnoreNullValues && value == null)
+            if (Options.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull && value == null)
             {
                 return;
             }
@@ -161,7 +161,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = RelationshipConverter.Read(ref reader, ref tracked, Options);
 
-            if (Options.IgnoreNullValues && value.Resource == null)
+            if (Options.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull && value.Resource == null)
             {
                 return;
             }
@@ -178,7 +178,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = RelationshipConverter.ReadWrapped(ref reader, ref tracked, default, Options);
 
-            if (Options.IgnoreNullValues && value.Resource == null)
+            if (Options.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull && value.Resource == null)
             {
                 return;
             }
@@ -195,7 +195,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = Get(resource);
 
-            if ((Options.IgnoreNullValues || IgnoreCondition == JsonIgnoreCondition.WhenWritingNull) && value == null)
+            if ((Options.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull || IgnoreCondition == JsonIgnoreCondition.WhenWritingNull) && value == null)
             {
                 return false;
             }
@@ -265,7 +265,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = Get(resource);
 
-            if (Options.IgnoreNullValues && value == null)
+            if (Options.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull && value == null)
             {
                 return;
             }
@@ -304,7 +304,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = Get(resource);
 
-            if (Options.IgnoreNullValues && value == null)
+            if (Options.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull && value == null)
             {
                 return;
             }
@@ -337,7 +337,7 @@ namespace Jsonyte.Serialization.Metadata
                 return;
             }
 
-            if (Options.IgnoreNullValues && value == null)
+            if (Options.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull && value == null)
             {
                 return;
             }

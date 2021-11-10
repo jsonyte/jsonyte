@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using Jsonyte.Tests.Models;
 using Xunit;
 
@@ -287,7 +288,7 @@ namespace Jsonyte.Tests.Reflection
         {
             var options = new JsonSerializerOptions
             {
-                IgnoreNullValues = true
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
             var model = new ModelWithPropertyVisibilities
@@ -337,7 +338,7 @@ namespace Jsonyte.Tests.Reflection
 
             var options = new JsonSerializerOptions
             {
-                IgnoreNullValues = true
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
             var model = json.Deserialize<ModelWithPropertyVisibilities>(options);
@@ -506,7 +507,7 @@ namespace Jsonyte.Tests.Reflection
             var options = new JsonSerializerOptions
             {
                 IncludeFields = true,
-                IgnoreNullValues = true
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
             var model = new ModelWithFields
@@ -558,7 +559,7 @@ namespace Jsonyte.Tests.Reflection
             var options = new JsonSerializerOptions
             {
                 IncludeFields = true,
-                IgnoreNullValues = true
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
             var model = json.Deserialize<ModelWithFields>(options);
