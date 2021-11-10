@@ -34,14 +34,18 @@ namespace Jsonyte
         Paging (needs strategy)
         page[number]
         page[size]
-        OR
+        -- OR
         page[offset]
         page[limit]
-        OR
+        -- OR
         page[cursor]
 
         Filtering (needs strategy)
         filter[name]=something
+        -- OR
+        filter[name]=eq:something, filter[age]=lt:25
+        -- OR
+        filter=equals(lastname, 'Smith'), filter=not(equals(lastname, 'smith'))
      */
 
     /// <summary>
@@ -50,8 +54,6 @@ namespace Jsonyte
     public class JsonApiUriBuilder : UriBuilder
     {
         private static readonly ConcurrentDictionary<Type, string> TypeNames = new();
-
-        private readonly Dictionary<string, List<string>> includedFields = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonApiUriBuilder" /> class.
@@ -362,6 +364,11 @@ namespace Jsonyte
             IncludeFields(type, processed, filter);
 
             return this;
+        }
+
+        public JsonApiUriBuilder<T> FilterBy<TMember>(Expression<Func<T, TMember>> expression)
+        {
+
         }
 
         private void IncludeFields(Type type, List<Type> processed, Func<Type, string, bool>? filter)
