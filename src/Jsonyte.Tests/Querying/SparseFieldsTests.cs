@@ -95,5 +95,14 @@ namespace Jsonyte.Tests.Querying
 
             Assert.Equal("?fields[accounts]=accountNumber,id&fields[banks]=name,tag,address&fields[tags]=tag1", builder.Query);
         }
+
+        [Fact]
+        public void CanAddAllFields()
+        {
+            var builder = new JsonApiUriBuilder<Tag>()
+                .IncludeAllFields();
+
+            Assert.Equal("?fields[tags]=id,type,value", builder.Query);
+        }
     }
 }

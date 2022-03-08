@@ -14,13 +14,9 @@ namespace Jsonyte
     /*
         TODO:
 
-
-        include
         fields
-        sort
         paging
         filtering
-
 
         =========================
 
