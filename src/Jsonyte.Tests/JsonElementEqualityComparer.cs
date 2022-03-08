@@ -87,7 +87,7 @@ namespace Jsonyte.Tests
             {
                 var values = obj.EnumerateArray();
 
-                foreach(var value in values)
+                foreach (var value in values)
                 {
                     AddHashCode(value, ref hash);
                 }
