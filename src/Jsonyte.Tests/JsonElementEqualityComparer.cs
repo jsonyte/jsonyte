@@ -66,46 +66,44 @@ namespace Jsonyte.Tests
 
         public int GetHashCode(JsonElement obj)
         {
-            //var hash = new HashCode();
+            var hash = new HashCode();
 
-            //AddHashCode(obj, ref hash);
+            AddHashCode(obj, ref hash);
 
-            //return hash.ToHashCode();
-
-            return 0;
+            return hash.ToHashCode();
         }
 
-        //private void AddHashCode(JsonElement obj, ref HashCode hash)
-        //{
-        //    if (obj.ValueKind == JsonValueKind.Number)
-        //    {
-        //        hash.Add(obj.GetRawText());
-        //    }
-        //    else if (obj.ValueKind == JsonValueKind.String)
-        //    {
-        //        hash.Add(obj.GetString());
-        //    }
-        //    else if (obj.ValueKind == JsonValueKind.Array)
-        //    {
-        //        var values = obj.EnumerateArray();
+        private void AddHashCode(JsonElement obj, ref HashCode hash)
+        {
+            if (obj.ValueKind == JsonValueKind.Number)
+            {
+                hash.Add(obj.GetRawText());
+            }
+            else if (obj.ValueKind == JsonValueKind.String)
+            {
+                hash.Add(obj.GetString());
+            }
+            else if (obj.ValueKind == JsonValueKind.Array)
+            {
+                var values = obj.EnumerateArray();
 
-        //        foreach(var value in values)
-        //        {
-        //            AddHashCode(value, ref hash);
-        //        }
-        //    }
-        //    else if (obj.ValueKind == JsonValueKind.Object)
-        //    {
-        //        var properties = obj.EnumerateObject()
-        //            .OrderBy(x => x.Name, StringComparer.Ordinal);
+                foreach (var value in values)
+                {
+                    AddHashCode(value, ref hash);
+                }
+            }
+            else if (obj.ValueKind == JsonValueKind.Object)
+            {
+                var properties = obj.EnumerateObject()
+                    .OrderBy(x => x.Name, StringComparer.Ordinal);
 
-        //        foreach (var property in properties)
-        //        {
-        //            hash.Add(property.Name);
+                foreach (var property in properties)
+                {
+                    hash.Add(property.Name);
 
-        //            AddHashCode(property.Value, ref hash);
-        //        }
-        //    }
-        //}
+                    AddHashCode(property.Value, ref hash);
+                }
+            }
+        }
     }
 }
