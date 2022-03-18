@@ -15,7 +15,7 @@ namespace Jsonyte.Converters
 
         public ConcurrentDictionary<Type, AnonymousRelationshipConverter> AnonymousConverters { get; } = new();
 
-#if NETCOREAPP || NETFRAMEWORK
+#if NETCOREAPP || NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER
         public MemberAccessor MemberAccessor { get; } = new EmitMemberAccessor();
 #else
         public MemberAccessor MemberAccessor { get; } = new ReflectionMemberAccessor();

@@ -1,4 +1,4 @@
-﻿#if NETCOREAPP || NETFRAMEWORK
+﻿#if NETCOREAPP || NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER
 using System;
 using System.Reflection;
 using System.Reflection.Emit;
