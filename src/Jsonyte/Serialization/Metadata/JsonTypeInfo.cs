@@ -149,7 +149,7 @@ namespace Jsonyte.Serialization.Metadata
 
             foreach (var property in typeProperties)
             {
-                var ignoreCondition = GetIgnoreCondition(property);
+                var ignoreCondition = GetIgnoreCondition(options, property);
 
                 if (ignoreCondition != JsonIgnoreCondition.Always)
                 {
@@ -171,7 +171,7 @@ namespace Jsonyte.Serialization.Metadata
 
             foreach (var field in typeFields)
             {
-                var ignoreCondition = GetIgnoreCondition(field);
+                var ignoreCondition = GetIgnoreCondition(options, field);
 
                 if (ignoreCondition != JsonIgnoreCondition.Always)
                 {
@@ -180,9 +180,21 @@ namespace Jsonyte.Serialization.Metadata
             }
         }
 
-        private JsonIgnoreCondition? GetIgnoreCondition(MemberInfo member)
+        private JsonIgnoreCondition? GetIgnoreCondition(JsonSerializerOptions options, MemberInfo member)
         {
-            return member.GetCustomAttribute<JsonIgnoreAttribute>()?.Condition;
+            var condition = member.GetCustomAttribute<JsonIgnoreAttribute>()?.Condition;
+
+            if (condition != null)
+            {
+                return condition;
+            }
+
+            if (options.IgnoreNullValues)
+            {
+                return JsonIgnoreCondition.WhenWritingNull;
+            }
+
+            return options.DefaultIgnoreCondition;
         }
         
         private JsonMemberInfo CreateMemberInfo(Type memberInfoType, MemberInfo member, Type memberType, JsonIgnoreCondition? ignoreCondition, JsonSerializerOptions options)
