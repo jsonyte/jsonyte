@@ -85,6 +85,10 @@ namespace Jsonyte.Converters.Collections
                 {
                     included.Converter.Read(ref reader, ref tracked, included.Value, options);
                 }
+                else
+                {
+                    throw new JsonApiFormatException("JSON:API included resource must be referenced by at least one relationship");
+                }
 
                 reader.Read();
             }

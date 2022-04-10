@@ -70,8 +70,8 @@ namespace Jsonyte
             {
                 var hash = 17;
 
-                hash = hash * 23 + Id.GetHashCode();
-                hash = hash * 23 + Type.GetHashCode();
+                 hash = hash * 23 + Id.GetHashCode();
+                 hash = hash * 23 + Type.GetHashCode();
 
                 return hash;
             }
