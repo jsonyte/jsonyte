@@ -1,28 +1,28 @@
 ﻿using System;
 using System.Text.Json;
+using Jsonyte.Converters;
+using Jsonyte.Validation;
 
 namespace Jsonyte.Serialization.Metadata
 {
     internal class EmptyJsonMemberInfo : JsonMemberInfo
     {
-        public EmptyJsonMemberInfo()
+        public EmptyJsonMemberInfo(JsonSerializerOptions options)
         {
-            Name = string.Empty;
-            NameEncoded = default;
-            MemberType = typeof(string);
-            Ignored = true;
-            IsRelationship = false;
+            Options = options;
         }
 
-        public override string Name { get; }
+        public override string Name { get; } = string.Empty;
 
-        public override Type MemberType { get; }
+        public override Type MemberType { get; } = typeof(string);
 
-        public override JsonEncodedText NameEncoded { get; }
+        public override JsonEncodedText NameEncoded { get; } = default;
 
-        public override bool Ignored { get; }
+        public override bool Ignored { get; } = true;
 
-        public override bool IsRelationship { get; }
+        public override bool IsRelationship { get; } = false;
+
+        public JsonSerializerOptions Options { get; }
 
         public override object? GetValue(object resource)
         {
@@ -36,7 +36,58 @@ namespace Jsonyte.Serialization.Metadata
 
         public override void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)
         {
-            reader.Skip();
+            var state = reader.ReadRelationship();
+
+            while (reader.IsInObject())
+            {
+                var name = reader.ReadMember(ref state);
+
+                if (name == RelationshipFlags.Data)
+                {
+                    if (reader.IsObject())
+                    {
+                        var identifier = reader.ReadResourceIdentifier();
+
+                        AddEmptyTrackedObject(identifier, ref tracked);
+                    }
+                    else if (reader.IsArray())
+                    {
+                        reader.ReadArray(JsonApiArrayCode.Relationships);
+
+                        while (reader.IsInArray())
+                        {
+                            var identifier = reader.ReadResourceIdentifier();
+
+                            AddEmptyTrackedObject(identifier, ref tracked);
+
+                            reader.Read();
+                        }
+                    }
+                    else if (reader.TokenType != JsonTokenType.Null)
+                    {
+                        throw new JsonApiFormatException("Expected null, empty array, or resource linkage for relationship");
+                    }
+                }
+                else
+                {
+                    reader.Skip();
+                }
+
+                reader.Read();
+            }
+
+            state.Validate();
+        }
+
+        private void AddEmptyTrackedObject(ResourceIdentifier identifier, ref TrackedResources tracked)
+        {
+            var id = identifier.Id;
+            var type = identifier.Type;
+
+            var idString = id.GetString();
+            var typeString = type.GetString();
+
+            tracked.SetIncluded(identifier, idString, typeString, EmptyJsonObjectConverter.Default, null!);
         }
 
         public override void ReadRelationshipWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)

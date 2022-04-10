@@ -14,7 +14,7 @@ namespace Jsonyte.Serialization.Metadata
 
         private const int CachedMembers = 64;
 
-        private static readonly EmptyJsonMemberInfo EmptyMember = new();
+        private readonly EmptyJsonMemberInfo emptyMember;
 
 #if CONSTRUCTOR_CONVERTER
         private static readonly EmptyJsonParameterInfo EmptyParameter = new(-1);
@@ -30,6 +30,8 @@ namespace Jsonyte.Serialization.Metadata
 
         public JsonTypeInfo(Type type, JsonSerializerOptions options)
         {
+            emptyMember = new EmptyJsonMemberInfo(options);
+
             Creator = options.GetMemberAccessor().CreateCreator(type);
 
 #if CONSTRUCTOR_CONVERTER
@@ -100,7 +102,7 @@ namespace Jsonyte.Serialization.Metadata
         {
             if (name.IsEmpty)
             {
-                return EmptyMember;
+                return emptyMember;
             }
 
             var key = name.GetKey();
@@ -118,7 +120,7 @@ namespace Jsonyte.Serialization.Metadata
 
             return nameCache.TryGetValue(name.GetString(), out var member)
                 ? member
-                : EmptyMember;
+                : emptyMember;
         }
 
 #if CONSTRUCTOR_CONVERTER
@@ -296,7 +298,7 @@ namespace Jsonyte.Serialization.Metadata
 
             foreach (var parameter in parameters)
             {
-                var property = membersByName.GetValueOrDefault(parameter.Name!, EmptyMember);
+                var property = membersByName.GetValueOrDefault(parameter.Name!, emptyMember);
 
                 if (property.Ignored)
                 {
