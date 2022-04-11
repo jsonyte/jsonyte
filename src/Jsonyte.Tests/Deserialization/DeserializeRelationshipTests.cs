@@ -559,7 +559,7 @@ namespace Jsonyte.Tests.Deserialization
             var articles = json.Deserialize<Article[]>();
 
             Assert.NotNull(articles);
-            Assert.Equal(1, articles.Length);
+            Assert.Single(articles);
 
             Assert.Equal("1", articles[0].Id);
             Assert.Equal("articles", articles[0].Type);

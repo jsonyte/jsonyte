@@ -162,6 +162,11 @@ namespace Jsonyte
                    underlyingType == typeof(TimeSpan);
         }
 
+        public static bool CanBeNull(this Type type)
+        {
+            return !type.IsValueType || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+        }
+
         private static bool HasMember(Type type, string name)
         {
             var property = type.GetProperty(name, MemberFlags);
