@@ -1,6 +1,9 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Jsonyte.Tests.Models;
 using Xunit;
+#pragma warning disable SYSLIB0020
 
 namespace Jsonyte.Tests.Reflection
 {
@@ -627,6 +630,40 @@ namespace Jsonyte.Tests.Reflection
 
             Assert.Null(model.Value);
             Assert.Null(model.ValueWithNameAttribute);
+        }
+
+        [Fact]
+        public void DefaultValuesAreIgnoredWhenSerializing()
+        {
+            var model = new
+            {
+                id = "1",
+                type = "model",
+                actualValue = "title",
+                nullValue = (string) null,
+                stringValue = default(string),
+                intValue = default(int),
+                dateTimeValue = default(DateTime)
+            };
+
+            var options = new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                IncludeFields = true
+            };
+
+            var json = model.Serialize(options);
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model',
+                    'attributes': {
+                      'actualValue': 'title'
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
         }
     }
 }

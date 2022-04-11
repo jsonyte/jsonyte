@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Converters;
 using Jsonyte.Serialization.Contracts;
+#pragma warning disable SYSLIB0020
 
 namespace Jsonyte.Serialization.Metadata
 {
@@ -61,9 +62,11 @@ namespace Jsonyte.Serialization.Metadata
             NameEncoded = JsonEncodedText.Encode(name);
             IsPrimitiveType = memberType.GetIsPrimitive();
             IsNumericType = GetIsNumericType(memberType);
+            CanBeNull = memberType.CanBeNull();
             TypedConverter = (JsonConverter<T>) converter;
             WrappedConverter = converter as WrappedJsonConverter<T>;
-            IgnoreCondition = ignoreCondition;
+            IgnoreDefaultValuesOnRead = GetIgnoreValuesOnRead(ignoreCondition, CanBeNull);
+            IgnoreDefaultValuesOnWrite = GetIgnoreValuesOnWrite(ignoreCondition, CanBeNull);
             isRelationship = memberType.IsRelationship();
         }
 
@@ -78,6 +81,12 @@ namespace Jsonyte.Serialization.Metadata
         public bool IsPrimitiveType { get; }
 
         public bool IsNumericType { get; }
+
+        public bool CanBeNull { get; }
+
+        public bool IgnoreDefaultValuesOnRead { get; }
+
+        public bool IgnoreDefaultValuesOnWrite { get; }
 
         public JsonConverter<T> TypedConverter { get; }
 
@@ -101,8 +110,6 @@ namespace Jsonyte.Serialization.Metadata
             }
         }
 
-        public JsonIgnoreCondition? IgnoreCondition { get; }
-
         public abstract Func<object, T>? Get { get; }
 
         public abstract Action<object, T>? Set { get; }
@@ -116,7 +123,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = Get(resource);
 
-            if (Options.IgnoreNullValues && value == null)
+            if (IgnoreDefaultValuesOnWrite && value == null)
             {
                 return null;
             }
@@ -144,7 +151,7 @@ namespace Jsonyte.Serialization.Metadata
                     : TypedConverter.Read(ref reader, MemberType, Options);
             }
 
-            if (Options.IgnoreNullValues && value == null)
+            if (IgnoreDefaultValuesOnRead && value == null)
             {
                 return;
             }
@@ -161,7 +168,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = RelationshipConverter.Read(ref reader, ref tracked, Options);
 
-            if (Options.IgnoreNullValues && value.Resource == null)
+            if (IgnoreDefaultValuesOnRead && value.Resource == null)
             {
                 return;
             }
@@ -178,7 +185,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = RelationshipConverter.ReadWrapped(ref reader, ref tracked, default, Options);
 
-            if (Options.IgnoreNullValues && value.Resource == null)
+            if (IgnoreDefaultValuesOnRead && value.Resource == null)
             {
                 return;
             }
@@ -195,12 +202,12 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = Get(resource);
 
-            if ((Options.IgnoreNullValues || IgnoreCondition == JsonIgnoreCondition.WhenWritingNull) && value == null)
+            if (IgnoreDefaultValuesOnWrite && value == null)
             {
                 return false;
             }
 
-            if (value != null && IgnoreCondition == JsonIgnoreCondition.WhenWritingDefault && EqualityComparer<T>.Default.Equals(default!, value))
+            if (IgnoreDefaultValuesOnWrite && value != null && EqualityComparer<T>.Default.Equals(default!, value))
             {
                 return false;
             }
@@ -265,7 +272,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = Get(resource);
 
-            if (Options.IgnoreNullValues && value == null)
+            if (IgnoreDefaultValuesOnWrite && value == null)
             {
                 return;
             }
@@ -304,7 +311,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var value = Get(resource);
 
-            if (Options.IgnoreNullValues && value == null)
+            if (IgnoreDefaultValuesOnWrite && value == null)
             {
                 return;
             }
@@ -337,7 +344,7 @@ namespace Jsonyte.Serialization.Metadata
                 return;
             }
 
-            if (Options.IgnoreNullValues && value == null)
+            if (IgnoreDefaultValuesOnRead && value == null)
             {
                 return;
             }
@@ -382,6 +389,36 @@ namespace Jsonyte.Serialization.Metadata
                    underlyingType == typeof(uint) ||
                    underlyingType == typeof(long) ||
                    underlyingType == typeof(ulong);
+        }
+
+        private bool GetIgnoreValuesOnRead(JsonIgnoreCondition? ignoreCondition, bool canBeNull)
+        {
+            return Options.IgnoreNullValues && canBeNull;
+        }
+
+        private bool GetIgnoreValuesOnWrite(JsonIgnoreCondition? ignoreCondition, bool canBeNull)
+        {
+            if (ignoreCondition != null)
+            {
+                return ignoreCondition switch
+                {
+                    JsonIgnoreCondition.WhenWritingDefault => true,
+                    JsonIgnoreCondition.WhenWritingNull when canBeNull => true,
+                    _ => false
+                };
+            }
+
+            if (Options.IgnoreNullValues)
+            {
+                return canBeNull;
+            }
+
+            return Options.DefaultIgnoreCondition switch
+            {
+                JsonIgnoreCondition.WhenWritingNull => canBeNull,
+                JsonIgnoreCondition.WhenWritingDefault => true,
+                _ => false
+            };
         }
 
         protected bool IsPublic(MethodInfo? method)
