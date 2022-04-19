@@ -246,8 +246,6 @@ namespace Jsonyte
 
                         if (!string.IsNullOrEmpty(value))
                         {
-                            TypeNames[x] = value!;
-
                             return value!;
                         }
                     }
