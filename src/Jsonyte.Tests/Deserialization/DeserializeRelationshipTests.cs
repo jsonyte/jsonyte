@@ -6,6 +6,66 @@ namespace Jsonyte.Tests.Deserialization
     public class DeserializeRelationshipTests
     {
         [Fact]
+        public void CanDeserializeRelationshipWithEmptyData()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Rails is Omakase'
+                    },
+                    'relationships': {
+                      'comments': {
+                        'data': []
+                      }
+                    }
+                  }
+                }";
+
+            var article = json.Deserialize<ArticleWithAuthor>();
+
+            Assert.NotNull(article);
+            Assert.NotNull(article.Comments);
+
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal("Rails is Omakase", article.Title);
+
+            Assert.Empty(article.Comments);
+        }
+
+        [Fact]
+        public void CanDeserializeRelationshipWithNullData()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Rails is Omakase'
+                    },
+                    'relationships': {
+                      'comments': {
+                        'data': null
+                      }
+                    }
+                  }
+                }";
+
+            var article = json.Deserialize<ArticleWithAuthor>();
+
+            Assert.NotNull(article);
+            Assert.Null(article.Comments);
+
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal("Rails is Omakase", article.Title);
+        }
+
+        [Fact]
         public void CanDeserializeSingleRelationship()
         {
             const string json = @"
