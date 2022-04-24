@@ -37,7 +37,7 @@ namespace Jsonyte.Tests.Deserialization
         }
 
         [Fact]
-        public void CanDeserializeRelationshipWithNullData()
+        public void CanDeserializeRelationshipArrayWithNullData()
         {
             const string json = @"
                 {
@@ -59,6 +59,35 @@ namespace Jsonyte.Tests.Deserialization
 
             Assert.NotNull(article);
             Assert.Null(article.Comments);
+
+            Assert.Equal("1", article.Id);
+            Assert.Equal("articles", article.Type);
+            Assert.Equal("Rails is Omakase", article.Title);
+        }
+
+        [Fact]
+        public void CanDeserializeRelationshipWithNullData()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'articles',
+                    'id': '1',
+                    'attributes': {
+                      'title': 'Rails is Omakase'
+                    },
+                    'relationships': {
+                      'author': {
+                        'data': null
+                      }
+                    }
+                  }
+                }";
+
+            var article = json.Deserialize<ArticleWithAuthor>();
+
+            Assert.NotNull(article);
+            Assert.Null(article.Author);
 
             Assert.Equal("1", article.Id);
             Assert.Equal("articles", article.Type);
