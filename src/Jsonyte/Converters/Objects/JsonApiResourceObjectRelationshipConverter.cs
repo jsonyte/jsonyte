@@ -47,6 +47,11 @@ namespace Jsonyte.Converters.Objects
 
         public override RelationshipResource<T> ReadWrapped(ref Utf8JsonReader reader, ref TrackedResources tracked, RelationshipResource<T> existingValue, JsonSerializerOptions options)
         {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return default;
+            }
+
             var identifier = reader.ReadResourceIdentifier();
 
             if (tracked.TryGetIncluded(identifier, out var included))
