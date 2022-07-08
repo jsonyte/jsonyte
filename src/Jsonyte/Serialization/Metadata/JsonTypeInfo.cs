@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Jsonyte.Serialization.Attributes;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -41,6 +43,7 @@ namespace Jsonyte.Serialization.Metadata
 
             var members = GetProperties(type, options)
                 .Concat(GetFields(type, options))
+                .Concat(GetInfoFromAttributes(type, options))
                 .ToArray();
 
             var duplicates = members
@@ -178,6 +181,18 @@ namespace Jsonyte.Serialization.Metadata
                 if (ignoreCondition != JsonIgnoreCondition.Always)
                 {
                     yield return CreateMemberInfo(typeof(JsonFieldInfo<>), field, field.FieldType, ignoreCondition, options);
+                }
+            }
+        }
+
+        private IEnumerable<JsonMemberInfo> GetInfoFromAttributes(Type type, JsonSerializerOptions options)
+        {
+            var attributes = type.GetCustomAttributes();
+            foreach (var attribute in attributes)
+            {
+                if (attribute is ResourceObjectAttribute resourceObjectAttribute)
+                {
+                    yield return new ResourceObjectAttributeMemberInfo(resourceObjectAttribute, options);
                 }
             }
         }

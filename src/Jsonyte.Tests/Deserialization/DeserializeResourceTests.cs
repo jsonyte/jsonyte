@@ -540,5 +540,29 @@ namespace Jsonyte.Tests.Deserialization
             Assert.Equal("comment 1", model.Comments[0].Body);
             Assert.Equal("comment 2", model.Comments[1].Body);
         }
+
+        [Fact]
+        public void CanDeserializeResourceWithAttributeObject()
+        {
+            const string json = @"
+                {
+                  'data': {
+                    'type': 'model-with-attribute',
+                    'id': '1',
+                    'attributes': {
+                      'value': 'Jsonapi',
+                      'intValue': 466
+                    }
+                  }
+                }";
+
+            var model = json.Deserialize<ModelWithAttribute>();
+
+            Assert.NotNull(model);
+            Assert.Equal("1", model.Id);
+            Assert.Equal("Jsonapi", model.Value);
+            Assert.Equal(466, model.IntValue);
+
+        }
     }
 }

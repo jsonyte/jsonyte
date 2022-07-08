@@ -942,5 +942,121 @@ namespace Jsonyte.Tests.Serialization
                   ]
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeResourceWithAttributeArray()
+        {
+            var articles = new ModelWithAttribute[]
+            {
+                new()
+                {
+                    Id = "1",
+                    Value = "Book 1",
+                    IntValue = 1
+                },
+                new()
+                {
+                    Id = "2",
+                    Value = "Book 2",
+                    IntValue = 2
+                }
+            };
+
+            var json = articles.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'model-with-attribute',
+                      'attributes': {
+                        'value': 'Book 1',
+                        'intValue': 1
+                      }
+                    },
+                    {
+                      'id': '2',
+                      'type': 'model-with-attribute',
+                      'attributes': {
+                        'title': 'Book 2',
+                        'intValue': 2
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeResourceWithAttributeAndRelationshipArray()
+        {
+            var subModels = new[]
+            {
+                new ModelWithAttribute
+                {
+                    Id = "1",
+                    Value = "First Model",
+                    IntValue = 12
+                },
+                new ModelWithAttribute
+                {
+                    Id = "12",
+                    Value = "Second Model",
+                    IntValue = 30
+                }
+            };
+
+            var model = new ModelWithAttributeAndArray
+            {
+                Id = "45",
+                Title = "The Title",
+                AssociatedObjects = subModels
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '45',
+                    'type': 'model-attribute-array',
+                    'attributes': {
+                        'title': 'The Title'
+                    },
+                    'relationships': {
+                      'associatedObjects': {
+                        'data': [
+                          {
+                            'id': '1',
+                            'type': 'model-with-attribute'
+                          },
+                          {
+                            'id': '12',
+                            'type': 'model-with-attribute'
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '1',
+                      'type': 'model-with-attribute',
+                      'attributes': {
+                        'value': 'First Model',
+                        'intValue': 12
+                      }
+                    },
+                    {
+                      'id': '12',
+                      'type': 'model-with-attribute',
+                      'attributes': {
+                        'value': 'Second Model',
+                        'intValue': 30
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }

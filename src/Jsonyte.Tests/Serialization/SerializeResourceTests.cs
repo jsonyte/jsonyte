@@ -938,5 +938,30 @@ namespace Jsonyte.Tests.Serialization
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
         }
+
+        [Fact]
+        public void CanSerializeResourceWithAttribute()
+        {
+            var model = new ModelWithAttribute
+            {
+                Id = "12",
+                Value = "TheValue",
+                IntValue = 453
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '12',
+                    'type': 'model-with-attribute',
+                    'attributes': {
+                      'value': 'TheValue',
+                      'intValue': 453
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
     }
 }
