@@ -63,6 +63,18 @@ public class Article
 }
 ```
 
+You can also specify your resource type using attributes:
+
+```csharp
+[JsonApiResource("articles")]
+public class Article
+{
+    public string Id { get; set; } = "1";
+
+    public string Title { get; set; } = "JSON:API";
+}
+```
+
 ## Documentation
 See the [wiki](https://github.com/jsonyte/jsonyte/wiki) for examples and help using Jsonyte.
 
