@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -937,6 +938,47 @@ namespace Jsonyte.Tests.Serialization
                     }
                   }
                 }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CanSerializeResourceWithAttribute()
+        {
+            var model = new ModelWithAttribute
+            {
+                Id = "12",
+                Value = "TheValue",
+                IntValue = 453
+            };
+
+            var json = model.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '12',
+                    'type': 'model-with-attribute',
+                    'attributes': {
+                      'value': 'TheValue',
+                      'intValue': 453
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
+        public void CantSerializeResourceWithAttributeAndType()
+        {
+            var model = new ModelWithAttributeAndType
+            {
+                Id = "12",
+                Type = "FakeType",
+                Value = "TheValue",
+                IntValue = 453
+            };
+
+            Action action = () => model.Serialize();
+
+            Assert.Throws<InvalidOperationException>(action);
         }
     }
 }

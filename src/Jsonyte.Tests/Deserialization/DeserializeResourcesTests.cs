@@ -312,5 +312,105 @@ namespace Jsonyte.Tests.Deserialization
             Assert.Same(models[0], models[0].First.Second);
             Assert.Same(models[1], models[1].First.Second);
         }
+
+        [Fact]
+        public void CanDeserializeResourceObjectWithAttributeArray()
+        {
+            const string json = @"
+                {
+                  'data': [{
+                    'type': 'model-with-attribute',
+                    'id': '1',
+                    'attributes': {
+                      'value': 'Jsonapi',
+                      'intValue': 1
+                    }
+                  },
+                  {
+                    'type': 'model-with-attribute',
+                    'id': '2',
+                    'attributes': {
+                      'value': 'Jsonapi 2',
+                      'intValue': 2
+                    }
+                  }]
+                }";
+
+            var models = json.Deserialize<ModelWithAttribute[]>();
+
+            Assert.NotNull(models);
+            Assert.NotEmpty(models);
+
+            Assert.Equal("1", models[0].Id);
+            Assert.Equal("Jsonapi", models[0].Value);
+            Assert.Equal(1, models[0].IntValue);
+
+            Assert.Equal("2", models[1].Id);
+            Assert.Equal("Jsonapi 2", models[1].Value);
+            Assert.Equal(2, models[1].IntValue);
+        }
+
+        [Fact]
+        public void CanDeserializeResourceObjectWithAttributeArray_MultipleObjects()
+        {
+            const string json =  @"
+                {
+                  'data': {
+                    'id': '45',
+                    'type': 'model-attribute-array',
+                    'attributes': {
+                        'title': 'The Title'
+                    },
+                    'relationships': {
+                      'associatedObjects': {
+                        'data': [
+                          {
+                            'id': '1',
+                            'type': 'model-with-attribute'
+                          },
+                          {
+                            'id': '12',
+                            'type': 'model-with-attribute'
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  'included': [
+                    {
+                      'id': '1',
+                      'type': 'model-with-attribute',
+                      'attributes': {
+                        'value': 'First Model',
+                        'intValue': 12
+                      }
+                    },
+                    {
+                      'id': '12',
+                      'type': 'model-with-attribute',
+                      'attributes': {
+                        'value': 'Second Model',
+                        'intValue': 30
+                      }
+                    }
+                  ]
+                }";
+
+            var model = json.Deserialize<ModelWithAttributeAndArray>();
+
+            Assert.NotNull(model);
+            Assert.NotEmpty(model.AssociatedObjects);
+
+            Assert.Equal("45", model.Id);
+            Assert.Equal("The Title", model.Title);
+
+            Assert.Equal("1", model.AssociatedObjects[0].Id);
+            Assert.Equal("First Model", model.AssociatedObjects[0].Value);
+            Assert.Equal(12, model.AssociatedObjects[0].IntValue);
+
+            Assert.Equal("12", model.AssociatedObjects[1].Id);
+            Assert.Equal("Second Model", model.AssociatedObjects[1].Value);
+            Assert.Equal(30, model.AssociatedObjects[1].IntValue);
+        }
     }
 }

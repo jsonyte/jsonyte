@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Jsonyte.Serialization.Attributes;
 using Jsonyte.Serialization.Contracts;
 using Jsonyte.Serialization.Metadata;
 
@@ -13,12 +14,12 @@ namespace Jsonyte
 
         public static bool IsResource(this Type type)
         {
-            return HasMember(type, JsonApiMembers.Type);
+            return HasMember(type, JsonApiMembers.Type) || type.GetCustomAttribute<JsonApiResourceAttribute>() != null;
         }
 
         public static bool IsResourceIdentifier(this Type type)
         {
-            return HasMember(type, JsonApiMembers.Id) && HasMember(type, JsonApiMembers.Type);
+            return HasMember(type, JsonApiMembers.Id) && type.IsResource();
         }
 
         public static bool IsRelationship(this Type type)
