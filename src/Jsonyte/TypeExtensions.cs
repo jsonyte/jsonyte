@@ -14,7 +14,7 @@ namespace Jsonyte
 
         public static bool IsResource(this Type type)
         {
-            return HasMember(type, JsonApiMembers.Type) || type.GetCustomAttribute<ResourceObjectAttribute>() != null;
+            return HasMember(type, JsonApiMembers.Type) || type.GetCustomAttribute<JsonApiResourceAttribute>() != null;
         }
 
         public static bool IsResourceIdentifier(this Type type)

@@ -979,7 +979,7 @@ namespace Jsonyte.Tests.Serialization
                       'id': '2',
                       'type': 'model-with-attribute',
                       'attributes': {
-                        'title': 'Book 2',
+                        'value': 'Book 2',
                         'intValue': 2
                       }
                     }

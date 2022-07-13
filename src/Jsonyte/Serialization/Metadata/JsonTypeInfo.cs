@@ -187,14 +187,7 @@ namespace Jsonyte.Serialization.Metadata
 
         private IEnumerable<JsonMemberInfo> GetInfoFromAttributes(Type type, JsonSerializerOptions options)
         {
-            var attributes = type.GetCustomAttributes();
-            foreach (var attribute in attributes)
-            {
-                if (attribute is ResourceObjectAttribute resourceObjectAttribute)
-                {
-                    yield return new ResourceObjectAttributeMemberInfo(resourceObjectAttribute, options);
-                }
-            }
+            return type.GetCustomAttributes<JsonApiResourceAttribute>().Select(attr => new JsonApiResourceAttributeMemberInfo(attr, options));
         }
 
         private JsonIgnoreCondition? GetIgnoreCondition(MemberInfo member)

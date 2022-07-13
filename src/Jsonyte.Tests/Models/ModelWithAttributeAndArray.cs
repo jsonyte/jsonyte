@@ -3,7 +3,7 @@ using Jsonyte.Serialization.Attributes;
 
 namespace Jsonyte.Tests.Models
 {
-    [ResourceObject("model-attribute-array")]
+    [JsonApiResource("model-attribute-array")]
     public class ModelWithAttributeAndArray
     {
         public string Id { get; set; }
@@ -13,4 +13,3 @@ namespace Jsonyte.Tests.Models
         public ModelWithAttribute[] AssociatedObjects { get; set; }
     }
 }
-

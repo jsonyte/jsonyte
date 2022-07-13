@@ -562,7 +562,6 @@ namespace Jsonyte.Tests.Deserialization
             Assert.Equal("1", model.Id);
             Assert.Equal("Jsonapi", model.Value);
             Assert.Equal(466, model.IntValue);
-
         }
     }
 }

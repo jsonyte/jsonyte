@@ -351,7 +351,7 @@ namespace Jsonyte.Tests.Deserialization
         }
 
         [Fact]
-        public void DoTest()
+        public void CanDeserializeResourceObjectWithAttributeArray_MultipleObjects()
         {
             const string json =  @"
                 {
@@ -412,6 +412,5 @@ namespace Jsonyte.Tests.Deserialization
             Assert.Equal("Second Model", model.AssociatedObjects[1].Value);
             Assert.Equal(30, model.AssociatedObjects[1].IntValue);
         }
-
     }
 }
