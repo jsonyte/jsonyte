@@ -32,7 +32,9 @@ namespace Jsonyte.Converters.Objects
         {
             var document = new T();
 
-            var state = reader.ReadDocument();
+            reader.ReadDocument();
+
+            var state = new DocumentState();
             var tracked = new TrackedResources();
 
             Utf8JsonReader savedReader = default;

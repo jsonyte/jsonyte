@@ -13,7 +13,9 @@ namespace Jsonyte.Converters.Objects
         {
             var relationship = new JsonApiRelationship();
 
-            var state = reader.ReadRelationship();
+            reader.ReadRelationship();
+
+            var state = new RelationshipState();
 
             while (reader.IsInObject())
             {

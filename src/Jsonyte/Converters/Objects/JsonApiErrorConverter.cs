@@ -11,7 +11,9 @@ namespace Jsonyte.Converters.Objects
         {
             JsonApiError? firstError = null;
 
-            var state = reader.ReadDocument();
+            reader.ReadDocument();
+
+            var state = new DocumentState();
             var tracked = new TrackedResources();
 
             while (reader.IsInObject())
@@ -55,7 +57,9 @@ namespace Jsonyte.Converters.Objects
         {
             var error = new JsonApiError();
 
-            var state = reader.ReadError();
+            reader.ReadError();
+
+            var state = new ErrorState();
 
             while (reader.IsInObject())
             {

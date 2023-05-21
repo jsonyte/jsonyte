@@ -36,7 +36,9 @@ namespace Jsonyte.Serialization.Metadata
 
         public override void ReadRelationship(ref Utf8JsonReader reader, ref TrackedResources tracked, object resource)
         {
-            var state = reader.ReadRelationship();
+            reader.ReadRelationship();
+
+            var state = new RelationshipState();
 
             while (reader.IsInObject())
             {
@@ -79,7 +81,7 @@ namespace Jsonyte.Serialization.Metadata
             state.Validate();
         }
 
-        private void AddEmptyTrackedObject(ResourceIdentifier identifier, ref TrackedResources tracked)
+        private void AddEmptyTrackedObject(scoped ResourceIdentifier identifier, ref TrackedResources tracked)
         {
             var id = identifier.Id;
             var type = identifier.Type;

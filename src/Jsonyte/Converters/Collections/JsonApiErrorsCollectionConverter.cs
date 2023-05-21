@@ -15,7 +15,9 @@ namespace Jsonyte.Converters.Collections
         {
             var errors = default(T);
 
-            var state = reader.ReadDocument();
+            reader.ReadDocument();
+
+            var state = new DocumentState();
             var tracked = new TrackedResources();
 
             while (reader.IsInObject())

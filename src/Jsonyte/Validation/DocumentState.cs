@@ -6,7 +6,7 @@ namespace Jsonyte.Validation
     {
         private DocumentFlags flags;
 
-        public DocumentFlags AddFlag(ReadOnlySpan<byte> member)
+        public DocumentFlags AddFlag(scoped ReadOnlySpan<byte> member)
         {
             var memberFlag = GetFlag(member);
 
@@ -20,7 +20,7 @@ namespace Jsonyte.Validation
             return memberFlag;
         }
 
-        private DocumentFlags GetFlag(ReadOnlySpan<byte> member)
+        private DocumentFlags GetFlag(scoped ReadOnlySpan<byte> member)
         {
             var key = member.GetKey();
 

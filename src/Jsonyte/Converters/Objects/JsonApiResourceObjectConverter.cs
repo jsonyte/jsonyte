@@ -14,7 +14,9 @@ namespace Jsonyte.Converters.Objects
         {
             var resource = default(T);
 
-            var state = reader.ReadDocument();
+            reader.ReadDocument();
+
+            var state = new DocumentState();
             var tracked = new TrackedResources();
 
             Utf8JsonReader savedReader = default;
@@ -69,7 +71,9 @@ namespace Jsonyte.Converters.Objects
 
             EnsureTypeInfo(options);
 
-            var state = reader.ReadResource();
+            reader.ReadResource();
+
+            var state = new ResourceState();
 
             var resource = existingValue ?? info!.Creator();
 

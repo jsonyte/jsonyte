@@ -37,32 +37,24 @@ namespace Jsonyte
             reader.Read();
         }
 
-        public static DocumentState ReadDocument(this ref Utf8JsonReader reader)
+        public static void ReadDocument(this ref Utf8JsonReader reader)
         {
             reader.ReadObject(JsonApiMemberCode.Document);
-
-            return new DocumentState();
         }
 
-        public static ResourceState ReadResource(this ref Utf8JsonReader reader)
+        public static void ReadResource(this ref Utf8JsonReader reader)
         {
             reader.ReadObject(JsonApiMemberCode.Resource);
-
-            return new ResourceState();
         }
 
-        public static RelationshipState ReadRelationship(this ref Utf8JsonReader reader)
+        public static void ReadRelationship(this ref Utf8JsonReader reader)
         {
             reader.ReadObject(JsonApiMemberCode.Relationship);
-
-            return new RelationshipState();
         }
 
-        public static ErrorState ReadError(this ref Utf8JsonReader reader)
+        public static void ReadError(this ref Utf8JsonReader reader)
         {
             reader.ReadObject(JsonApiMemberCode.Error);
-
-            return new ErrorState();
         }
 
         public static void ReadObject(this ref Utf8JsonReader reader, JsonApiMemberCode code)
@@ -75,28 +67,28 @@ namespace Jsonyte
             reader.Read();
         }
 
-        public static DocumentFlags ReadMember(this ref Utf8JsonReader reader, ref DocumentState state)
+        public static DocumentFlags ReadMember(this ref Utf8JsonReader reader, scoped ref DocumentState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.TopLevel);
 
             return state.AddFlag(name);
         }
 
-        public static ResourceFlags ReadMember(this ref Utf8JsonReader reader, ref ResourceState state)
+        public static ResourceFlags ReadMember(this ref Utf8JsonReader reader, scoped ref ResourceState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Resource);
 
             return state.AddFlag(name);
         }
 
-        public static RelationshipFlags ReadMember(this ref Utf8JsonReader reader, ref RelationshipState state)
+        public static RelationshipFlags ReadMember(this ref Utf8JsonReader reader, scoped ref RelationshipState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Relationship);
 
             return state.AddFlag(name);
         }
 
-        public static ErrorFlags ReadMember(this ref Utf8JsonReader reader, ref ErrorState state)
+        public static ErrorFlags ReadMember(this ref Utf8JsonReader reader, scoped ref ErrorState state)
         {
             var name = reader.ReadMember(JsonApiMemberCode.Error);
 
