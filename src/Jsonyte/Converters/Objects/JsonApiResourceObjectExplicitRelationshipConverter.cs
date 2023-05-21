@@ -20,7 +20,9 @@ namespace Jsonyte.Converters.Objects
 
         public override RelationshipResource<T> Read(ref Utf8JsonReader reader, ref TrackedResources tracked, JsonSerializerOptions options)
         {
-            var state = reader.ReadRelationship();
+            reader.ReadRelationship();
+
+            var state = new RelationshipState();
 
             EnsureTypeInfo(options);
 

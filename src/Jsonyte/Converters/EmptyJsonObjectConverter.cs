@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Jsonyte.Serialization;
+using Jsonyte.Validation;
 
 namespace Jsonyte.Converters
 {
@@ -9,7 +10,9 @@ namespace Jsonyte.Converters
 
         public override void Read(ref Utf8JsonReader reader, ref TrackedResources tracked, object existingValue, JsonSerializerOptions options)
         {
-            var state = reader.ReadResource();
+            reader.ReadResource();
+
+            var state = new ResourceState();
 
             while (reader.IsInObject())
             {

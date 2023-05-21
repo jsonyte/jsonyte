@@ -22,7 +22,9 @@ namespace Jsonyte.Converters.Objects
         {
             var relationship = default(RelationshipResource<T>);
 
-            var state = reader.ReadRelationship();
+            reader.ReadRelationship();
+
+            var state = new RelationshipState();
 
             while (reader.IsInObject())
             {

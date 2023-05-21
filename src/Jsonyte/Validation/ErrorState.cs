@@ -6,7 +6,7 @@ namespace Jsonyte.Validation
     {
         private ErrorFlags flags;
 
-        public ErrorFlags AddFlag(ReadOnlySpan<byte> member)
+        public ErrorFlags AddFlag(scoped ReadOnlySpan<byte> member)
         {
             var memberFlag = GetFlag(member);
 
@@ -20,7 +20,7 @@ namespace Jsonyte.Validation
             return memberFlag;
         }
 
-        private ErrorFlags GetFlag(ReadOnlySpan<byte> member)
+        private ErrorFlags GetFlag(scoped ReadOnlySpan<byte> member)
         {
             var key = member.GetKey();
 

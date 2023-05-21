@@ -86,7 +86,7 @@ namespace Jsonyte.Serialization
         }
 
         public void SetIncluded(
-            ResourceIdentifier identifier,
+            scoped ResourceIdentifier identifier,
             string idString,
             string typeString,
             JsonObjectConverter converter,
@@ -157,7 +157,7 @@ namespace Jsonyte.Serialization
             Count++;
         }
 
-        public bool TryGetIncluded(ResourceIdentifier identifier, out IncludedRef value)
+        public bool TryGetIncluded(scoped ResourceIdentifier identifier, out IncludedRef value)
         {
             if (references == null)
             {
@@ -220,7 +220,7 @@ namespace Jsonyte.Serialization
             return false;
         }
 
-        private bool HasIdentifier(ResourceIdentifier identifier, out ulong idKey, out ulong typeKey, string idString, string typeString)
+        private bool HasIdentifier(scoped ResourceIdentifier identifier, out ulong idKey, out ulong typeKey, string idString, string typeString)
         {
             idKey = identifier.Id.GetKey();
             typeKey = identifier.Type.GetKey();
