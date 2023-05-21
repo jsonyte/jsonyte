@@ -1,10 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using static Bullseye.Targets;
 using static SimpleExec.Command;
 
-var version = GetGitVersion();
+var version = await GetGitVersion();
 
 Target("clean", () =>
 {
@@ -26,10 +27,10 @@ Target("build", DependsOn("restore"), () =>
     Run("dotnet", "build " +
                   "--no-restore " +
                   "--configuration Release " +
-                  $"/p:Version={version.SemVer} " +
-                  $"/p:AssemblyVersion={version.AssemblySemVer} " +
-                  $"/p:FileVersion={version.AssemblySemFileVer} " +
-                  $"/p:InformationalVersion={version.InformationalVersion}");
+                  $"--property Version={version.SemVer} " +
+                  $"--property AssemblyVersion={version.AssemblySemVer} " +
+                  $"--property FileVersion={version.AssemblySemFileVer} " +
+                  $"--property InformationalVersion={version.InformationalVersion}");
 });
 
 Target("test", DependsOn("build"), () =>
@@ -39,7 +40,7 @@ Target("test", DependsOn("build"), () =>
 
 Target("package", DependsOn("build", "test"), () =>
 {
-    Run("dotnet", $"pack --configuration Release --no-restore --no-build --output artifacts /p:Version={version.SemVer}");
+    Run("dotnet", $"pack --configuration Release --no-restore --no-build --output artifacts --property Version={version.SemVer}");
 });
 
 Target("publish", DependsOn("package"), () =>
@@ -51,13 +52,13 @@ Target("publish", DependsOn("package"), () =>
 
 Target("default", DependsOn("package"));
 
-RunTargetsAndExit(args);
+await RunTargetsAndExitAsync(args);
 
-GitVersion GetGitVersion()
+async Task<GitVersion> GetGitVersion()
 {
     Run("dotnet", "tool restore");
 
-    var value = Read("dotnet", "dotnet-gitversion");
+    var (value, _) = await ReadAsync("dotnet", "dotnet-gitversion");
 
     return JsonSerializer.Deserialize<GitVersion>(value);
 }
