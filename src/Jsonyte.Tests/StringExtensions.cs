@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text.Json;
 
@@ -6,6 +7,22 @@ namespace Jsonyte.Tests
 {
     public static class StringExtensions
     {
+        public static string EncodeQuery(this string value)
+        {
+            var parameters = new NameValueCollection();
+
+            var parts = value.TrimStart('?').Split('&');
+
+            foreach (var part in parts)
+            {
+                var keyValue = part.Split('=');
+
+                parameters.Add(Uri.EscapeDataString(keyValue[0]), Uri.EscapeDataString(keyValue[1]));
+            }
+
+            return $"?{string.Join("&", parameters.AllKeys.Select(x => $"{x}={parameters[x]}"))}";
+        }
+
         public static string Format(this string value)
         {
             return value.TrimIndent().ReplaceQuotes();
