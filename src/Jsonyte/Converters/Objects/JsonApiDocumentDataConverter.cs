@@ -226,7 +226,7 @@ namespace Jsonyte.Converters.Objects
             {
                 var included = tracked.Get(index);
 
-                if (!tracked.IsEmitted(included))
+                if (included.ShouldSerialize() && !tracked.IsEmitted(included))
                 {
                     if (!nameWritten)
                     {
@@ -257,7 +257,7 @@ namespace Jsonyte.Converters.Objects
             {
                 var included = tracked.Get(index);
 
-                if (!tracked.IsEmitted(included))
+                if (included.ShouldSerialize() && !tracked.IsEmitted(included))
                 {
                     if (!nameWritten)
                     {

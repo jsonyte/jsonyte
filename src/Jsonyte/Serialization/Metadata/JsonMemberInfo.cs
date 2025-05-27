@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jsonyte.Converters;
+using Jsonyte.Serialization.Attributes;
 using Jsonyte.Serialization.Contracts;
 #pragma warning disable SYSLIB0020
 
@@ -38,7 +39,7 @@ namespace Jsonyte.Serialization.Metadata
 
         public abstract void WriteRelationship(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, ref bool wroteSection);
 
-        public abstract void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource);
+        public abstract void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, RelationshipSerializationType relationshipSerializationType);
     }
 
     [DebuggerDisplay(@"\{{Name,nq}\}")]
@@ -51,6 +52,8 @@ namespace Jsonyte.Serialization.Metadata
         private JsonConverter<InlineResource<T>>? inlineResourceConverter;
 
         private bool isRelationship;
+
+        private RelationshipSerializationType relationshipSerializationType;
 
         protected JsonMemberInfo(MemberInfo member, Type memberType, JsonIgnoreCondition? ignoreCondition, JsonConverter converter, JsonSerializerOptions options)
         {
@@ -68,6 +71,7 @@ namespace Jsonyte.Serialization.Metadata
             IgnoreDefaultValuesOnRead = GetIgnoreValuesOnRead(ignoreCondition, CanBeNull);
             IgnoreDefaultValuesOnWrite = GetIgnoreValuesOnWrite(ignoreCondition, CanBeNull);
             isRelationship = memberType.IsRelationship();
+            relationshipSerializationType = GetRelationshipSerializationType(member);
         }
 
         public JsonSerializerOptions Options { get; }
@@ -226,7 +230,7 @@ namespace Jsonyte.Serialization.Metadata
 
             if (relationshipType == RelationshipType.PotentialCollection)
             {
-                var collection = new PotentialRelationshipCollection(NameEncoded, value, false);
+                var collection = new PotentialRelationshipCollection(NameEncoded, value, false, relationshipSerializationType);
 
                 Options.GetWrappedConverter<PotentialRelationshipCollection>().WriteWrapped(writer, ref tracked, collection, Options);
 
@@ -293,16 +297,16 @@ namespace Jsonyte.Serialization.Metadata
 
                 if (relationshipType == RelationshipType.Declared)
                 {
-                    RelationshipConverter.Write(writer, ref tracked, new RelationshipResource<T>(value), Options);
+                    RelationshipConverter.Write(writer, ref tracked, new RelationshipResource<T>(value, relationshipSerializationType), Options);
                 }
                 else
                 {
-                    Options.GetAnonymousRelationshipConverter(value.GetType()).Write(writer, ref tracked, value, Options);
+                    Options.GetAnonymousRelationshipConverter(value.GetType()).Write(writer, ref tracked, value, relationshipSerializationType, Options);
                 }
             }
         }
 
-        public override void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource)
+        public override void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, RelationshipSerializationType relationshipSerializationType)
         {
             if (Get == null || Ignored)
             {
@@ -322,17 +326,17 @@ namespace Jsonyte.Serialization.Metadata
 
                 if (relationshipType == RelationshipType.PotentialCollection)
                 {
-                    var collection = new PotentialRelationshipCollection(NameEncoded, value, true);
+                    var collection = new PotentialRelationshipCollection(NameEncoded, value, true, relationshipSerializationType);
 
                     Options.GetWrappedConverter<PotentialRelationshipCollection>().WriteWrapped(writer, ref tracked, collection, Options);
                 }
                 else if (relationshipType is RelationshipType.Object or RelationshipType.TypedCollection)
                 {
-                    Options.GetAnonymousRelationshipConverter(value.GetType()).WriteWrapped(writer, ref tracked, value, Options);
+                    Options.GetAnonymousRelationshipConverter(value.GetType()).WriteWrapped(writer, ref tracked, value, relationshipSerializationType, Options);
                 }
                 else
                 {
-                    RelationshipConverter.WriteWrapped(writer, ref tracked, new RelationshipResource<T>(value), Options);
+                    RelationshipConverter.WriteWrapped(writer, ref tracked, new RelationshipResource<T>(value, relationshipSerializationType), Options);
                 }
             }
         }
@@ -490,5 +494,11 @@ namespace Jsonyte.Serialization.Metadata
         {
             return TypedConverter is WrappedResourceJsonConverter<T>;
         }
+
+        private RelationshipSerializationType GetRelationshipSerializationType(MemberInfo member)
+        {
+            return member.GetCustomAttribute<SerializeAsAttribute>(false)?.Type ?? RelationshipSerializationType.Included;
+        }
+
     }
 }

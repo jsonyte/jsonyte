@@ -91,7 +91,8 @@ namespace Jsonyte.Serialization
             string typeString,
             JsonObjectConverter converter,
             object value,
-            JsonEncodedText? unwrittenRelationship = null)
+            JsonEncodedText? unwrittenRelationship = null,
+            RelationshipSerializationType relationshipSerializationType = RelationshipSerializationType.Included)
         {
             references ??= new IncludedRef[CachedIncludes];
 
@@ -100,7 +101,7 @@ namespace Jsonyte.Serialization
                 return;
             }
 
-            SetIncluded(idKey, typeKey, identifier.Id.ToArray(), identifier.Type.ToArray(), idString, typeString, converter, value, unwrittenRelationship);
+            SetIncluded(idKey, typeKey, identifier.Id.ToArray(), identifier.Type.ToArray(), idString, typeString, converter, value, relationshipSerializationType, unwrittenRelationship);
         }
 
         public void SetIncluded(
@@ -110,7 +111,8 @@ namespace Jsonyte.Serialization
             string typeString,
             JsonObjectConverter converter,
             object value,
-            JsonEncodedText? unwrittenRelationship = null)
+            JsonEncodedText? unwrittenRelationship = null,
+            RelationshipSerializationType relationshipSerializationType = RelationshipSerializationType.Included)
         {
             references ??= new IncludedRef[CachedIncludes];
 
@@ -121,7 +123,7 @@ namespace Jsonyte.Serialization
                 return;
             }
 
-            SetIncluded(idKey, typeKey, id, type, idString, typeString, converter, value, unwrittenRelationship);
+            SetIncluded(idKey, typeKey, id, type, idString, typeString, converter, value, relationshipSerializationType, unwrittenRelationship);
         }
 
         private void SetIncluded(
@@ -133,13 +135,14 @@ namespace Jsonyte.Serialization
             string typeString,
             JsonObjectConverter converter,
             object value,
+            RelationshipSerializationType relationshipSerializationType,
             JsonEncodedText? unwrittenRelationship = null)
         {
             var relationshipId = unwrittenRelationship != null
                 ? Relationships.SetRelationship(unwrittenRelationship.Value)
                 : null;
 
-            var included = new IncludedRef(idKey, typeKey, id, type, idString, typeString, converter, value, relationshipId);
+            var included = new IncludedRef(idKey, typeKey, id, type, idString, typeString, converter, value, relationshipSerializationType, relationshipId);
 
             if (Count < CachedIncludes)
             {

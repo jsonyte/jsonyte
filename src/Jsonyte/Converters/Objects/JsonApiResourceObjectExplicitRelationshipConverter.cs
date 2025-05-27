@@ -69,7 +69,8 @@ namespace Jsonyte.Converters.Objects
 
         public override void Write(Utf8JsonWriter writer, RelationshipResource<T> value, JsonSerializerOptions options)
         {
-            throw new NotSupportedException();
+            var tracked = new TrackedResources();
+            this.Write(writer, ref tracked, value, options);
         }
 
         public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, RelationshipResource<T> value, JsonSerializerOptions options)
@@ -106,7 +107,7 @@ namespace Jsonyte.Converters.Objects
             if (data != null)
             {
                 writer.WritePropertyName(JsonApiMembers.DataEncoded);
-                info.DataMember.WriteRelationshipWrapped(writer, ref tracked, value.Resource);
+                info.DataMember.WriteRelationshipWrapped(writer, ref tracked, value.Resource, value.RelationshipSerializationType);
             }
 
             info.LinksMember.Write(writer, ref tracked, value.Resource);

@@ -114,7 +114,7 @@ namespace Jsonyte.Converters.Collections
                 {
                     var included = tracked.Get(index);
 
-                    if (!tracked.IsEmitted(included))
+                    if (included.ShouldSerialize() && !tracked.IsEmitted(included))
                     {
                         if (!nameWritten)
                         {

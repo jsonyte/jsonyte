@@ -106,7 +106,7 @@ namespace Jsonyte.Serialization.Metadata
         {
         }
 
-        public override void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource)
+        public override void WriteRelationshipWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object resource, RelationshipSerializationType relationshipSerializationType)
         {
         }
 

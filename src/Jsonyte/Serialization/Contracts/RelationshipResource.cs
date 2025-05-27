@@ -4,9 +4,12 @@
     {
         public readonly T Resource;
 
-        public RelationshipResource(T resource)
+        public readonly RelationshipSerializationType RelationshipSerializationType;
+
+        public RelationshipResource(T resource, RelationshipSerializationType relationshipSerializationType = RelationshipSerializationType.Included)
         {
             Resource = resource;
+            RelationshipSerializationType = relationshipSerializationType;
         }
     }
 }

@@ -10,11 +10,14 @@ namespace Jsonyte.Serialization.Contracts
 
         public readonly bool WriteImmediately;
 
-        public PotentialRelationshipCollection(JsonEncodedText relationship, object? value, bool writeImmediately)
+        public readonly RelationshipSerializationType RelationshipSerializationType;
+
+        public PotentialRelationshipCollection(JsonEncodedText relationship, object? value, bool writeImmediately, RelationshipSerializationType relationshipSerializationType)
         {
             Relationship = relationship;
             Value = value;
             WriteImmediately = writeImmediately;
+            RelationshipSerializationType = relationshipSerializationType;
         }
     }
 }

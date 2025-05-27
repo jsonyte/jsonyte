@@ -128,7 +128,7 @@ namespace Jsonyte.Converters.Objects
 
             writer.WriteEndObject();
 
-            tracked.SetIncluded(idEncoded, typeEncoded, id!, type!, GetConverter(options), value.Resource);
+            tracked.SetIncluded(idEncoded, typeEncoded, id!, type!, GetConverter(options), value.Resource, relationshipSerializationType: value.RelationshipSerializationType);
         }
 
         private JsonObjectConverter GetConverter(JsonSerializerOptions options)
