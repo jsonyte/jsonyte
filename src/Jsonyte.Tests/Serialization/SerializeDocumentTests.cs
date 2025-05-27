@@ -344,6 +344,99 @@ namespace Jsonyte.Tests.Serialization
         }
 
         [Fact]
+        public void CanSerializeIdandTypeOnlyRelationship() {
+            var model = new ModelWithIdAndTypeRelationship
+            {
+                Id = "1",
+                Model = new ModelWithAttribute
+                {
+                    Id = "2",
+                    Value = "2",
+                    IntValue = 2
+                }
+            };
+
+            var document = JsonApiDocument.Create(model);
+
+            var json = document.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': {
+                    'id': '1',
+                    'type': 'model-with-id-and-type-relationship',
+                    'relationships': {
+                      'model': {
+                        'data': {
+                          'id': '2',
+                          'type': 'model-with-attribute'
+                        }
+                      }
+                    }
+                  }
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+         [Fact]
+        public void CanSerializeIdandTypeOnlyRelationshipCollection()
+        {
+            var model1 = new ModelWithIdAndTypeRelationship
+            {
+                Id = "1",
+                Model = new ModelWithAttribute
+                {
+                    Id = "2",
+                    Value = "2",
+                    IntValue = 2
+                }
+            };
+            var model2 = new ModelWithIdAndTypeRelationship
+            {
+                Id = "3",
+                Model = new ModelWithAttribute
+                {
+                    Id = "4",
+                    Value = "4",
+                    IntValue = 4
+                }
+            };
+
+            var document = JsonApiDocument.Create(new[] { model1, model2 });
+
+            var json = document.Serialize();
+
+            Assert.Equal(@"
+                {
+                  'data': [
+                    {
+                      'id': '1',
+                      'type': 'model-with-id-and-type-relationship',
+                      'relationships': {
+                        'model': {
+                          'data': {
+                            'id': '2',
+                            'type': 'model-with-attribute'
+                          }
+                        }
+                      }
+                    },
+                    {
+                      'id': '3',
+                      'type': 'model-with-id-and-type-relationship',
+                      'relationships': {
+                        'model': {
+                          'data': {
+                            'id': '4',
+                            'type': 'model-with-attribute'
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }".Format(), json, JsonStringEqualityComparer.Default);
+        }
+
+        [Fact]
         public void CanSerializeIncludedAndRelationshipsWithDocument()
         {
             var document = new JsonApiDocument

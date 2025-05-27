@@ -6,9 +6,9 @@ namespace Jsonyte.Converters
 {
     internal abstract class AnonymousRelationshipConverter
     {
-        public abstract void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value, JsonSerializerOptions options);
+        public abstract void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value, RelationshipSerializationType relationshipSerializationType, JsonSerializerOptions options);
 
-        public abstract void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object value, JsonSerializerOptions options);
+        public abstract void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object value, RelationshipSerializationType relationshipSerializationType, JsonSerializerOptions options);
     }
 
     internal class AnonymousRelationshipConverter<T> : AnonymousRelationshipConverter
@@ -20,14 +20,14 @@ namespace Jsonyte.Converters
 
         public JsonApiRelationshipDetailsConverter<T> Converter { get; }
 
-        public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, ref TrackedResources tracked, object value, RelationshipSerializationType relationshipSerializationType, JsonSerializerOptions options)
         {
-            Converter.Write(writer, ref tracked, new RelationshipResource<T>((T) value), options);
+            Converter.Write(writer, ref tracked, new RelationshipResource<T>((T) value, relationshipSerializationType), options);
         }
 
-        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object value, JsonSerializerOptions options)
+        public override void WriteWrapped(Utf8JsonWriter writer, ref TrackedResources tracked, object value, RelationshipSerializationType relationshipSerializationType, JsonSerializerOptions options)
         {
-            Converter.WriteWrapped(writer, ref tracked, new RelationshipResource<T>((T) value), options);
+            Converter.WriteWrapped(writer, ref tracked, new RelationshipResource<T>((T) value, relationshipSerializationType), options);
         }
     }
 }

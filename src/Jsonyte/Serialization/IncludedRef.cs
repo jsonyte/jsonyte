@@ -22,6 +22,8 @@ namespace Jsonyte.Serialization
 
         public readonly int? RelationshipId;
 
+        private readonly RelationshipSerializationType RelationshipSerializationType;
+
         public IncludedRef(
             ulong idKey,
             ulong typeKey,
@@ -31,6 +33,7 @@ namespace Jsonyte.Serialization
             string typeString,
             JsonObjectConverter converter,
             object value,
+            RelationshipSerializationType relationshipSerializationType,
             int? relationshipId = null)
         {
             IdKey = idKey;
@@ -41,6 +44,7 @@ namespace Jsonyte.Serialization
             TypeString = typeString;
             Converter = converter;
             Value = value;
+            RelationshipSerializationType = relationshipSerializationType;
             RelationshipId = relationshipId;
         }
 
@@ -49,6 +53,11 @@ namespace Jsonyte.Serialization
         public bool IsUnwritten()
         {
             return RelationshipId != null;
+        }
+
+        public bool ShouldSerialize()
+        {
+            return RelationshipSerializationType == RelationshipSerializationType.Included;
         }
     }
 }

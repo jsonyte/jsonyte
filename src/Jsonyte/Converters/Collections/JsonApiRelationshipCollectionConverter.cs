@@ -105,7 +105,7 @@ namespace Jsonyte.Converters.Collections
 
                 foreach (var element in collection)
                 {
-                    var resource = new RelationshipResource<TElement>(element);
+                    var resource = new RelationshipResource<TElement>(element, value.RelationshipSerializationType);
 
                     converter.WriteWrapped(writer, ref tracked, resource, options);
                 }

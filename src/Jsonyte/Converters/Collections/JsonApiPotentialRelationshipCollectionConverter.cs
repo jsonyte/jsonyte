@@ -145,11 +145,11 @@ namespace Jsonyte.Converters.Collections
 
                 writer.WriteEndObject();
 
-                tracked.SetIncluded(idEncoded, typeEncoded, id!, type!, converter, value);
+                tracked.SetIncluded(idEncoded, typeEncoded, id!, type!, converter, value, relationshipSerializationType: container.RelationshipSerializationType);
             }
             else
             {
-                tracked.SetIncluded(idEncoded, typeEncoded, id!, type!, converter, value, container.Relationship);
+                tracked.SetIncluded(idEncoded, typeEncoded, id!, type!, converter, value, container.Relationship, container.RelationshipSerializationType);
             }
         }
 
