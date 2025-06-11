@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JetBrains.Annotations;
 using Jsonyte.Serialization;
 using Jsonyte.Serialization.Contracts;
 using Jsonyte.Serialization.Metadata;
@@ -175,7 +174,6 @@ namespace Jsonyte.Converters.Objects
             }
         }
 
-        [AssertionMethod]
         protected abstract void ValidateDocument(T document);
 
         private WrappedJsonConverter<AnonymousResource> GetContainerConverter(JsonSerializerOptions options)

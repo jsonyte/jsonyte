@@ -3,14 +3,14 @@ updates:
   - package-ecosystem: "nuget"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
 
   - package-ecosystem: "nuget"
     directory: "/build"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
 
   - package-ecosystem: "nuget"
     directory: "/.config"
     schedule:
-      interval: "weekly"
+      interval: "monthly"

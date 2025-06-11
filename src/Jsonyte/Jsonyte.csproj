@@ -1,26 +1,31 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.1.0</Version>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net472;net6.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
 
+  <PropertyGroup>
     <Authors>Robert Coltheart</Authors>
     <Description>A JSON:API serializer/deserializer for System.Text.Json</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/jsonyte/jsonyte</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jsonyte/jsonyte</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageTags>jsonapi json api json:api serializer deserializer serialization deserialization</PackageTags>
     <PackageIcon>logo-128.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" PrivateAssets="All" />
-    <PackageReference Include="System.Text.Json" Version="6.0.0" />
+    <PackageReference Include="System.Text.Json" Version="6.0.10" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="" />
     <None Include="../../images/logo-128.png" Visible="false" Pack="true" PackagePath="" />
   </ItemGroup>
 

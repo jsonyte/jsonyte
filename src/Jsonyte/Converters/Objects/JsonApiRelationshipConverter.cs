@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JetBrains.Annotations;
 using Jsonyte.Validation;
 
 namespace Jsonyte.Converters.Objects
@@ -118,7 +117,6 @@ namespace Jsonyte.Converters.Objects
             writer.WriteEndObject();
         }
 
-        [AssertionMethod]
         private void ValidateRelationship(JsonApiRelationship relationship)
         {
             if (relationship.Data == null && relationship.Links == null && relationship.Meta == null)
