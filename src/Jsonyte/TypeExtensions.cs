@@ -117,6 +117,25 @@ namespace Jsonyte
             return type.IsArray || JsonApiTypes.Enumerable.IsAssignableFrom(type);
         }
 
+        public static MemberInfo? GetTypeMember(this Type type)
+        {
+            var property = type.GetProperty(JsonApiMembers.Type, MemberFlags);
+
+            if (property != null && property.PropertyType == typeof(string))
+            {
+                return property;
+            }
+
+            var field = type.GetField(JsonApiMembers.Type, MemberFlags);
+
+            if (field != null && field.FieldType == typeof(string))
+            {
+                return property;
+            }
+
+            return null;
+        }
+
         public static JsonTypeCategory GetTypeCategory(this Type type)
         {
             if (!type.IsCollection())
